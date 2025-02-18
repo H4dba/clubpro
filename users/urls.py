@@ -1,0 +1,12 @@
+from django.urls import path
+from .views import *
+from django.contrib.auth.views import LogoutView
+
+urlpatterns = [
+    path("login/", CustomLoginView.as_view(), name="login"),
+    path("logout/", custom_logout, name="logout"),
+    path("register/", register_view, name="register"),
+    path("landing-page/", landing_page, name="landing-page"),
+    path("user_info/", teste_lichess, name="teste_lichess")
+
+]

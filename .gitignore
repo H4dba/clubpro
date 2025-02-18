@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+*.env
+*.venv
+
+# Django secret key file (if you store it separately)
+.env
+*.env.*
+
+# Database and migrations
+*.sqlite3
+db.sqlite3
+db.sqlite3-journal
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sql
+*.mysql
+
+# Django migration files
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Media and static files (uncomment if using external storage)
+media/
+staticfiles/
+
+# VSCode settings
+.vscode/
+
+# PyCharm settings
+.idea/
+*.iml
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
