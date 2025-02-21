@@ -1,28 +1,13 @@
-{% extends "base.html" %}
-
-{% load widget_tweaks %}
-
-{% block title %}Login | AXM{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 card shadow p-5">
-        <h2 class="text-center mb-4">Login</h2>
-        {% if form.errors %}
-            <div class="alert alert-danger">Invalid username or password.</div>
-        {% endif %}
-        <form method="post" class="justify">
-            {% csrf_token %}
-            <div class="form-group mb-3 text-center">
-                <label class="form-label w-100 text-start">Username</label>
-                {{ form.username|add_class:"form-control" }}
-            </div>
-            <div class="form-group mb-3 text-center">
-                <label class="form-label w-100 text-start">Password</label>
-                {{ form.password|add_class:"form-control" }}
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Login</button>
-        </form>
-    </div>
+<div class="login-container">
+    <h2>Login</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
 </div>
-{% endblock %}
+{% endblock %} 

@@ -29,7 +29,20 @@ class UsuarioCustom(AbstractUser):
         blank=True
     )
 
-    lichess_access_token = models.CharField(max_length=255, blank=True, null=True)
+    lichess_id = models.CharField(max_length=100, null=True, blank=True)
+    lichess_access_token = models.CharField(max_length=255, null=True, blank=True)
+    lichess_rating_bullet = models.IntegerField(null=True, blank=True)
+    lichess_rating_blitz = models.IntegerField(null=True, blank=True)
+    lichess_rating_rapid = models.IntegerField(null=True, blank=True)
+    lichess_rating_classical = models.IntegerField(null=True, blank=True)
+    is_lichess_connected = models.BooleanField(default=False)
+
+    def update_lichess_ratings(self, ratings_data):
+        self.lichess_rating_bullet = ratings_data.get('bullet', {}).get('rating')
+        self.lichess_rating_blitz = ratings_data.get('blitz', {}).get('rating')
+        self.lichess_rating_rapid = ratings_data.get('rapid', {}).get('rating')
+        self.lichess_rating_classical = ratings_data.get('classical', {}).get('rating')
+        self.save()
 
     def verifica_membro_pago(self):
         return self.tipo_plano and self.tipo_plano.preco > 0
