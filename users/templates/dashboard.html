@@ -51,9 +51,29 @@
                     <div class="games-list">
                         {% for game in current_games %}
                         <div class="game-card">
-                            <p>vs {{ game.opponent }}</p>
-                            <a href="https://lichess.org/{{ game.gameId }}" target="_blank" class="btn btn-sm btn-primary">
-                                Watch Game
+                            <div class="players">
+                                <div class="white-player">
+                                    <span class="player-name">{{ game.white.name }}</span>
+                                    <span class="player-rating">({{ game.white.rating }})</span>
+                                </div>
+                                <div class="vs">vs</div>
+                                <div class="black-player">
+                                    <span class="player-name">{{ game.black.name }}</span>
+                                    <span class="player-rating">({{ game.black.rating }})</span>
+                                </div>
+                            </div>
+                            <div class="game-info">
+                                <span class="game-speed">{{ game.speed|title }}</span>
+                                {% if game.winner == 'white' %}
+                                    <span class="game-result">White won</span>
+                                {% elif game.winner == 'black' %}
+                                    <span class="game-result">Black won</span>
+                                {% else %}
+                                    <span class="game-result">Draw</span>
+                                {% endif %}
+                            </div>
+                            <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-secondary">
+                                View Game
                             </a>
                         </div>
                         {% endfor %}

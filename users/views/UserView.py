@@ -69,22 +69,47 @@ def dashboard(request):
     context = {
         'user': request.user,
     }
-    print(request.user.lichess_access_token)
 
     if request.user.is_lichess_connected:
         # Initialize API with user's token
         lichess_api = LichessApi(request.user.lichess_access_token)
         
-        # Get fresh user data
-        user_data = lichess_api.get_user_info(request.user.username)
-        recent_games = lichess_api.get_user_games(request.user.username, max_games=5)
-        current_games = lichess_api.get_user_current_games(request.user.username)
-        
-        context.update({
-            'lichess_data': user_data,
-            'recent_games': recent_games,
-            'current_games': current_games,
-        })
+        try:
+            # Get fresh user data
+            user_data = lichess_api.get_user_info(request.user.username)
+            
+            # Get and process recent games
+            recent_games_data = list(lichess_api.get_user_games(request.user.username, max_games=5))
+            recent_games = []
+            
+            for game in recent_games_data:
+                game_info = {
+                    'id': game['id'],
+                    'white': {
+                        'name': game['players']['white'].get('user', {}).get('name', 'Anonymous'),
+                        'rating': game['players']['white'].get('rating', '?')
+                    },
+                    'black': {
+                        'name': game['players']['black'].get('user', {}).get('name', 'Anonymous'),
+                        'rating': game['players']['black'].get('rating', '?')
+                    },
+                    'winner': game.get('winner', 'draw'),
+                    'status': game.get('status', ''),
+                    'speed': game.get('speed', ''),
+                    'timestamp': game.get('createdAt', '')
+                }
+                recent_games.append(game_info)
+            
+            current_games = lichess_api.get_user_current_games(request.user.username)
+            
+            context.update({
+                'lichess_data': user_data,
+                'recent_games': recent_games,
+                'current_games': current_games,
+            })
+        except Exception as e:
+            print(f"Error fetching Lichess data: {str(e)}")
+            messages.error(request, "Failed to fetch some Lichess data")
 
     # Get top players for leaderboard
     top_players = User.objects.filter(
