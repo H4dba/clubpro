@@ -25,7 +25,23 @@ SECRET_KEY = 'django-insecure-c8(wy72pbfxzm$*nlzywiiwyy4#nca_0uzi&rn!#2+fgzs=6#*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# CSRF & Security Settings
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.app',  # Trust all ngrok-free.app subdomains
+]
+
+# If you're using CORS headers, also add:
+CORS_ALLOWED_ORIGINS = [
+    'https://*.ngrok-free.app',
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# For development only - adjust your allowed hosts
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.ngrok-free.app',  # Allow all subdomains of ngrok-free.app
+]
 
 
 # Application definition
@@ -38,6 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'lichess',
+    'widget_tweaks',
+    'corsheaders',
 ]
 
 AUTH_USER_MODEL = "users.UsuarioCustom"
@@ -45,6 +64,7 @@ AUTH_USER_MODEL = "users.UsuarioCustom"
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -124,3 +144,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Redirect to this URL after successful login
+LOGIN_REDIRECT_URL = 'landing-page'  # Replace 'dashboard' with your desired URL name
+LICHESS_CLIENT_SECRET = 'lichess-api-demo'
+LICHESS_REDIRECT_URI = 'https://818c-168-121-201-241.ngrok-free.app/users/lichess-callback/'
+LICHESS_CLIENT_ID = 'https://818c-168-121-201-241.ngrok-free.app'
