@@ -29,8 +29,7 @@ class UsuarioCustom(AbstractUser):
         blank=True
     )
 
-<<<<<<< HEAD
-=======
+
     lichess_id = models.CharField(max_length=100, null=True, blank=True)
     lichess_access_token = models.CharField(max_length=255, null=True, blank=True)
     lichess_rating_bullet = models.IntegerField(null=True, blank=True)
@@ -46,7 +45,6 @@ class UsuarioCustom(AbstractUser):
         self.lichess_rating_classical = ratings_data.get('classical', {}).get('rating')
         self.save()
 
->>>>>>> 6a5248121375816dc7f53a70106fc207186fe823
     def verifica_membro_pago(self):
         return self.tipo_plano and self.tipo_plano.preco > 0
 
