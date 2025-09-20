@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="tournament-form-container">
+    <div class="header">
+        <h1>{{ title }}</h1>
+        <a href="{% url 'tournament_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <form method="post" class="tournament-form">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-grid">
+            <!-- Tournament Basic Info -->
+            <div class="form-section">
+                <h3>Basic Information</h3>
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Tournament Name*</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="error-message">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="error-message">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tournament Settings -->
+            <div class="form-section">
+                <h3>Tournament Settings</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.tournament_type.id_for_label }}">Type*</label>
+                        {{ form.tournament_type }}
+                        {% if form.tournament_type.errors %}
+                            <div class="error-message">{{ form.tournament_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.tournament_speed.id_for_label }}">Speed*</label>
+                        {{ form.tournament_speed }}
+                        {% if form.tournament_speed.errors %}
+                            <div class="error-message">{{ form.tournament_speed.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.clock_limit.id_for_label }}">Initial Time (minutes)*</label>
+                        {{ form.clock_limit }}
+                        {% if form.clock_limit.errors %}
+                            <div class="error-message">{{ form.clock_limit.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.clock_increment.id_for_label }}">Increment (seconds)*</label>
+                        {{ form.clock_increment }}
+                        {% if form.clock_increment.errors %}
+                            <div class="error-message">{{ form.clock_increment.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.minutes.id_for_label }}">Duration (minutes)*</label>
+                    {{ form.minutes }}
+                    {% if form.minutes.errors %}
+                        <div class="error-message">{{ form.minutes.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.start_time.id_for_label }}">Start Time*</label>
+                    {{ form.start_time }}
+                    {% if form.start_time.errors %}
+                        <div class="error-message">{{ form.start_time.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tournament Restrictions -->
+            <div class="form-section">
+                <h3>Restrictions</h3>
+                <div class="form-group checkbox-group">
+                    <label for="{{ form.is_private.id_for_label }}">
+                        {{ form.is_private }}
+                        Private Tournament
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.min_rating.id_for_label }}">Minimum Rating</label>
+                        {{ form.min_rating }}
+                        {% if form.min_rating.errors %}
+                            <div class="error-message">{{ form.min_rating.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.max_rating.id_for_label }}">Maximum Rating</label>
+                        {{ form.max_rating }}
+                        {% if form.max_rating.errors %}
+                            <div class="error-message">{{ form.max_rating.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}">Password (optional)</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="error-message">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if tournament %}Update Tournament{% else %}Create Tournament{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+.tournament-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.tournament-form {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-grid {
+    display: grid;
+    gap: 30px;
+}
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section h3 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="datetime-local"],
+.form-group input[type="password"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    min-height: 100px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+.form-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: #2196f3;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+</style>
+
+<script>
+// Add any JavaScript for form validation or dynamic behavior here
+document.addEventListener('DOMContentLoaded', function() {
+    // Example: Show/hide password field based on private tournament checkbox
+    const isPrivateCheckbox = document.getElementById('{{ form.is_private.id_for_label }}');
+    const passwordField = document.getElementById('{{ form.password.id_for_label }}').parentElement;
+    
+    function togglePasswordField() {
+        passwordField.style.display = isPrivateCheckbox.checked ? 'block' : 'none';
+    }
+    
+    isPrivateCheckbox.addEventListener('change', togglePasswordField);
+    togglePasswordField(); // Initial state
+});
+</script>
+{% endblock %}
