@@ -1,8 +1,8 @@
-# AXM - Sistema de Gestão para Clubes de Xadrez
+# ClubPro - Sistema de Gestão para Clubes de Xadrez
 
 ## 📋 Sobre o Projeto
 
-O AXM é uma plataforma web desenvolvida em Django para gestão completa de clubes de xadrez. O sistema oferece ferramentas para gerenciamento de sócios, organização de torneios e eventos, com foco especial na integração com a plataforma Lichess para torneios online.
+O ClubPro é uma plataforma web desenvolvida em Django para gestão completa de clubes de xadrez. O sistema oferece ferramentas para gerenciamento de sócios, organização de torneios e eventos, com foco especial na integração com a plataforma Lichess para torneios online.
 
 ## 🎯 Objetivos
 
@@ -54,8 +54,8 @@ O AXM é uma plataforma web desenvolvida em Django para gestão completa de club
 
 1. **Clone o repositório**
    ```bash
-   git clone https://github.com/H4dba/axm.git
-   cd axm
+   git clone https://github.com/H4dba/clubpro.git
+   cd clubpro
    ```
 
 2. **Crie um ambiente virtual**
@@ -118,8 +118,8 @@ Para integrar com o Lichess:
 ## 📁 Estrutura do Projeto
 
 ```
-axm/
-├── axm/                    # Configurações principais do Django
+clubpro/
+├── clubpro/                # Configurações principais do Django
 │   ├── settings.py         # Configurações do projeto
 │   ├── urls.py            # URLs principais
 │   └── wsgi.py            # Configuração WSGI
@@ -196,8 +196,8 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 - **Desenvolvedor**: Guilherme Hadba
 - **GitHub**: [@H4dba](https://github.com/H4dba)
-- **Repositório**: [https://github.com/H4dba/axm](https://github.com/H4dba/axm)
+- **Repositório**: [https://github.com/H4dba/clubpro](https://github.com/H4dba/clubpro)
 
 ---
 
-**AXM** - Transformando a gestão de clubes de xadrez com tecnologia moderna! ♟️
+**ClubPro** - Transformando a gestão de clubes de xadrez com tecnologia moderna! ♟️
