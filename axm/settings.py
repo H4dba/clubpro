@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'lichess',
+    'main',
     'widget_tweaks',
     'corsheaders',
 ]

@@ -47,3 +47,7 @@ class Tournament(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('main:tournament_detail', args=[str(self.id)])

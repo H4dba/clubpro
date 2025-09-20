@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="tournament-manager">
+    <div class="header">
+        <h1>Tournament Manager</h1>
+        <a href="{% url 'tournament_create' %}" class="btn btn-primary">Create New Tournament</a>
+    </div>
+
+    <div class="tournament-filters">
+        <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter" class="form-select">
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="created">Created</option>
+                <option value="started">Started</option>
+                <option value="finished">Finished</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="tournaments-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Speed</th>
+                    <th>Start Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tournament in tournaments %}
+                <tr data-status="{{ tournament.status }}">
+                    <td>{{ tournament.name }}</td>
+                    <td>{{ tournament.get_tournament_type_display }}</td>
+                    <td>{{ tournament.get_tournament_speed_display }}</td>
+                    <td>{{ tournament.start_time|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ tournament.status }}">
+                            {{ tournament.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        {% if tournament.status == 'pending' %}
+                            <a href="{% url 'tournament_edit' tournament.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                        {% endif %}
+                        {% if tournament.lichess_id %}
+                            <a href="https://lichess.org/tournament/{{ tournament.lichess_id }}" 
+                               target="_blank" 
+                               class="btn btn-sm btn-secondary">
+                                View on Lichess
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No tournaments found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.tournament-manager {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.tournament-filters {
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.status-pending { background: #ffd700; }
+.status-created { background: #90caf9; }
+.status-started { background: #81c784; }
+.status-finished { background: #a5d6a7; }
+.status-cancelled { background: #ef9a9a; }
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+}
+</style>
+
+<script>
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const status = this.value;
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
