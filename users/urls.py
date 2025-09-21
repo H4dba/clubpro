@@ -10,5 +10,6 @@ urlpatterns = [
     #path("user_info/", teste_lichess, name="teste_lichess"),
     path('connect-lichess/', connect_lichess, name='connect_lichess'),
     path('lichess-callback/', lichess_callback, name='lichess_callback'),
+    path('atualizar-lichess/', atualizar_dados_lichess, name='atualizar_dados_lichess'),
     path('dashboard/', dashboard, name='dashboard'),
 ]

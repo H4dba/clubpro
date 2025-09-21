@@ -3,51 +3,68 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="profile-section">
-        <h2>Welcome, {{ user.username }}!</h2>
+        <h2>Bem-vindo, {{ user.username }}!</h2>
         
         {% if not user.is_lichess_connected %}
             <div class="connect-lichess-box">
-                <p>Connect your Lichess account to see your ratings and participate in tournaments!</p>
-                <a href="{% url 'connect_lichess' %}" class="btn btn-primary">Connect Lichess Account</a>
+                <p>Conecte sua conta Lichess para ver seus ratings e participar de torneios!</p>
+                <a href="{% url 'connect_lichess' %}" class="btn btn-primary">Conectar Conta Lichess</a>
             </div>
         {% else %}
             <div class="user-stats">
                 <div class="ratings-box">
-                    <h3>Your Lichess Ratings</h3>
+                    <h3>Seus Ratings no Lichess</h3>
                     <div class="ratings-grid">
-                        {% if user.lichess_rating_bullet %}
+                        {% if perfil_lichess.bullet_rating %}
                         <div class="rating-card">
                             <h4>Bullet</h4>
-                            <span class="rating">{{ user.lichess_rating_bullet }}</span>
+                            <span class="rating">{{ perfil_lichess.bullet_rating }}</span>
+                            <small>{{ perfil_lichess.bullet_games_played }} jogos</small>
                         </div>
                         {% endif %}
                         
-                        {% if user.lichess_rating_blitz %}
+                        {% if perfil_lichess.blitz_rating %}
                         <div class="rating-card">
                             <h4>Blitz</h4>
-                            <span class="rating">{{ user.lichess_rating_blitz }}</span>
+                            <span class="rating">{{ perfil_lichess.blitz_rating }}</span>
+                            <small>{{ perfil_lichess.blitz_games_played }} jogos</small>
                         </div>
                         {% endif %}
                         
-                        {% if user.lichess_rating_rapid %}
+                        {% if perfil_lichess.rapid_rating %}
                         <div class="rating-card">
                             <h4>Rapid</h4>
-                            <span class="rating">{{ user.lichess_rating_rapid }}</span>
+                            <span class="rating">{{ perfil_lichess.rapid_rating }}</span>
+                            <small>{{ perfil_lichess.rapid_games_played }} jogos</small>
                         </div>
                         {% endif %}
                         
-                        {% if user.lichess_rating_classical %}
+                        {% if perfil_lichess.classical_rating %}
                         <div class="rating-card">
                             <h4>Classical</h4>
-                            <span class="rating">{{ user.lichess_rating_classical }}</span>
+                            <span class="rating">{{ perfil_lichess.classical_rating }}</span>
+                            <small>{{ perfil_lichess.classical_games_played }} jogos</small>
                         </div>
                         {% endif %}
+                        
+                        {% if perfil_lichess.puzzles_rating %}
+                        <div class="rating-card">
+                            <h4>Puzzles</h4>
+                            <span class="rating">{{ perfil_lichess.puzzles_rating }}</span>
+                            <small>{{ perfil_lichess.puzzles_solved }} resolvidos</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="update-section">
+                        <a href="{% url 'atualizar_dados_lichess' %}" class="btn btn-success">
+                            🔄 Atualizar Dados do Lichess
+                        </a>
                     </div>
                 </div>
 
                 {% if current_games %}
                 <div class="current-games">
-                    <h3>Current Games</h3>
+                    <h3>Jogos Atuais</h3>
                     <div class="games-list">
                         {% for game in current_games %}
                         <div class="game-card">
@@ -73,7 +90,7 @@
                                 {% endif %}
                             </div>
                             <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-secondary">
-                                View Game
+                                Ver Jogo
                             </a>
                         </div>
                         {% endfor %}
@@ -83,14 +100,14 @@
 
                 {% if recent_games %}
                 <div class="recent-games">
-                    <h3>Recent Games</h3>
+                    <h3>Jogos Recentes</h3>
                     <div class="games-list">
                         {% for game in recent_games %}
                         <div class="game-card">
                             <p>{{ game.white.name }} vs {{ game.black.name }}</p>
                             <p>Result: {{ game.winner|default:"Draw" }}</p>
                             <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-sm btn-secondary">
-                                View Game
+                                Ver Jogo
                             </a>
                         </div>
                         {% endfor %}
@@ -102,14 +119,14 @@
     </div>
 
     <div class="leaderboard-section">
-        <h3>Club Leaderboard</h3>
+        <h3>Ranking do Clube</h3>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Rapid Rating</th>
-                    <th>Blitz Rating</th>
+                    <th>Posição</th>
+                    <th>Jogador</th>
+                    <th>Rating Rapid</th>
+                    <th>Rating Blitz</th>
                 </tr>
             </thead>
             <tbody>
@@ -117,8 +134,8 @@
                 <tr {% if player.username == user.username %}class="current-user"{% endif %}>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ player.username }}</td>
-                    <td>{{ player.lichess_rating_rapid|default:"-" }}</td>
-                    <td>{{ player.lichess_rating_blitz|default:"-" }}</td>
+                    <td>{{ player.rapid_rating|default:"-" }}</td>
+                    <td>{{ player.blitz_rating|default:"-" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -189,6 +206,18 @@
     .btn-secondary {
         background: #6c757d;
         color: white;
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .update-section {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
     }
 
     .btn-sm {

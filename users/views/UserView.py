@@ -74,6 +74,14 @@ def dashboard(request):
         'user': request.user,
     }
 
+    # Obtém o perfil Lichess do usuário se existir
+    from users.models import LichessProfile
+    try:
+        perfil_lichess = LichessProfile.objects.get(user=request.user)
+        context['perfil_lichess'] = perfil_lichess
+    except LichessProfile.DoesNotExist:
+        context['perfil_lichess'] = None
+
     if request.user.is_lichess_connected:
         # Inicializa API com o token do usuário
         lichess_api = LichessApi(request.user.lichess_access_token)
@@ -120,12 +128,23 @@ def dashboard(request):
             print(f"Erro ao buscar dados do Lichess: {str(e)}")
             messages.error(request, "Falha ao buscar alguns dados do Lichess")
 
-    # Obtém os melhores jogadores para o ranking
-    top_players = User.objects.filter(
-        is_lichess_connected=True
-    ).exclude(
-        lichess_rating_rapid__isnull=True
-    ).order_by('-lichess_rating_rapid')[:10]
+    # Obtém os melhores jogadores para o ranking usando LichessProfile
+    from users.models import LichessProfile
+    top_players_profiles = LichessProfile.objects.filter(
+        user__is_lichess_connected=True,
+        rapid_rating__isnull=False
+    ).select_related('user').order_by('-rapid_rating')[:10]
+    
+    # Converte para uma lista de dados formatados
+    top_players = []
+    for perfil in top_players_profiles:
+        top_players.append({
+            'username': perfil.user.username,
+            'rapid_rating': perfil.rapid_rating,
+            'blitz_rating': perfil.blitz_rating,
+            'bullet_rating': perfil.bullet_rating,
+            'classical_rating': perfil.classical_rating,
+        })
 
     context['top_players'] = top_players
     return render(request, 'dashboard.html', context)
@@ -139,52 +158,118 @@ def connect_lichess(request):
 
 @login_required
 def lichess_callback(request):
-    """Callback para processar a resposta da autorização do Lichess"""
-    code = request.GET.get('code')
-    error = request.GET.get('error')
-    error_description = request.GET.get('error_description')
+    """Callback para processar a resposta da autorização do Lichess (Lichess OAuth)"""
+    codigo = request.GET.get('code')
+    erro = request.GET.get('error')
+    descricao_erro = request.GET.get('error_description')
 
-    if error or not code:
-        messages.error(request, f'Falha na autorização: {error_description or "Nenhum código recebido"}')
+    if erro or not codigo:
+        messages.error(request, f'Falha na autorização: {descricao_erro or "Nenhum código recebido"}')
         return redirect('dashboard')
 
     oauth = LichessOAuth()
     try:
-        # Obtém token de acesso usando PKCE
-        access_token = oauth.get_access_token(request, code)
-        print(f"Token de acesso recebido: {access_token[:10]}...")  # Log de debug
-        
+        # Obtém o token de acesso usando PKCE
+        token_acesso = oauth.get_access_token(request, codigo)
+        print(f"Token de acesso recebido: {token_acesso[:10]}...")  # Log de depuração
+
         # Inicializa API do Lichess com o novo token
-        lichess_api = LichessApi(access_token)
-        
+        lichess_api = LichessApi(token_acesso)
+
         # Obtém dados do usuário e trata resposta em lista
-        user_data_list = lichess_api.get_user_info(request.user.username)
-        print(f"Dados do usuário: {user_data_list}")  # Log de debug
-        
+        dados_usuario_lista = lichess_api.get_user_info(request.user.username)
+        print(f"Dados do usuário: {dados_usuario_lista}")  # Log de depuração
+
         # Obtém o primeiro item se for uma lista
-        user_data = user_data_list[0] if isinstance(user_data_list, list) else user_data_list
-        
-        if user_data and 'perfs' in user_data:
-            print('Salvando token do usuário')
-            # Atualiza informações do Lichess do usuário
-            request.user.lichess_id = user_data.get('id')
-            request.user.lichess_access_token = access_token
+        dados_usuario = dados_usuario_lista[0] if isinstance(dados_usuario_lista, list) else dados_usuario_lista
+
+        if dados_usuario and 'perfs' in dados_usuario:
+            print('Salvando token e perfil do usuário')
+            # Atualiza informações básicas do usuário
+            request.user.lichess_id = dados_usuario.get('id')
+            request.user.lichess_access_token = token_acesso
             request.user.is_lichess_connected = True
-            
-            # Atualiza ratings dos perfs
-            perfs = user_data['perfs']
-            request.user.lichess_rating_bullet = perfs.get('bullet', {}).get('rating')
-            request.user.lichess_rating_blitz = perfs.get('blitz', {}).get('rating')
-            request.user.lichess_rating_rapid = perfs.get('rapid', {}).get('rating')
-            request.user.lichess_rating_classical = perfs.get('classical', {}).get('rating')
-            
             request.user.save()
-            messages.success(request, 'Conectado ao Lichess com sucesso!')
+
+            # Atualiza ou cria o perfil Lichess
+            from users.models import LichessProfile
+            perfil, criado = LichessProfile.objects.get_or_create(user=request.user)
+            perfil.lichess_id = dados_usuario.get('id')
+            perfs = dados_usuario['perfs']
+            # Ratings e jogos
+            perfil.bullet_rating = perfs.get('bullet', {}).get('rating')
+            perfil.bullet_games_played = perfs.get('bullet', {}).get('games')
+            perfil.blitz_rating = perfs.get('blitz', {}).get('rating')
+            perfil.blitz_games_played = perfs.get('blitz', {}).get('games')
+            perfil.rapid_rating = perfs.get('rapid', {}).get('rating')
+            perfil.rapid_games_played = perfs.get('rapid', {}).get('games')
+            perfil.classical_rating = perfs.get('classical', {}).get('rating')
+            perfil.classical_games_played = perfs.get('classical', {}).get('games')
+            # Puzzles
+            perfil.puzzles_rating = perfs.get('puzzle', {}).get('rating')
+            perfil.puzzles_solved = perfs.get('puzzle', {}).get('games')
+            perfil.save()
+            messages.success(request, 'Conectado ao Lichess e perfil atualizado com sucesso!')
         else:
-            messages.error(request, f'Falha ao buscar dados do usuário no Lichess. Resposta: {user_data}')
-            
+            messages.error(request, f'Falha ao buscar dados do usuário no Lichess. Resposta: {dados_usuario}')
+
     except Exception as e:
         messages.error(request, f'Falha ao conectar com o Lichess: {str(e)}')
-        print(f"Detalhes da exceção: {str(e)}")  # Log de debug
+        print(f"Detalhes da exceção: {str(e)}")  # Log de depuração
 
+    return redirect('dashboard')
+
+
+@login_required
+def atualizar_dados_lichess(request):
+    """Atualiza os dados do usuário a partir do Lichess"""
+    if not request.user.is_lichess_connected:
+        messages.error(request, 'Você precisa estar conectado ao Lichess para atualizar os dados.')
+        return redirect('dashboard')
+    
+    if not request.user.lichess_access_token:
+        messages.error(request, 'Token de acesso não encontrado. Reconecte sua conta Lichess.')
+        return redirect('dashboard')
+    
+    try:
+        # Inicializa API do Lichess com o token do usuário
+        lichess_api = LichessApi(request.user.lichess_access_token)
+        
+        # Obtém dados atualizados do usuário
+        dados_usuario_lista = lichess_api.get_user_info(request.user.username)
+        dados_usuario = dados_usuario_lista[0] if isinstance(dados_usuario_lista, list) else dados_usuario_lista
+        
+        if dados_usuario and 'perfs' in dados_usuario:
+            # Atualiza ou cria o perfil Lichess
+            from users.models import LichessProfile
+            perfil, criado = LichessProfile.objects.get_or_create(user=request.user)
+            
+            # Atualiza informações básicas
+            perfil.lichess_id = dados_usuario.get('id')
+            perfs = dados_usuario['perfs']
+            
+            # Atualiza ratings e jogos para todos os controles de tempo
+            perfil.bullet_rating = perfs.get('bullet', {}).get('rating')
+            perfil.bullet_games_played = perfs.get('bullet', {}).get('games')
+            perfil.blitz_rating = perfs.get('blitz', {}).get('rating')
+            perfil.blitz_games_played = perfs.get('blitz', {}).get('games')
+            perfil.rapid_rating = perfs.get('rapid', {}).get('rating')
+            perfil.rapid_games_played = perfs.get('rapid', {}).get('games')
+            perfil.classical_rating = perfs.get('classical', {}).get('rating')
+            perfil.classical_games_played = perfs.get('classical', {}).get('games')
+            
+            # Atualiza dados de puzzles
+            perfil.puzzles_rating = perfs.get('puzzle', {}).get('rating')
+            perfil.puzzles_solved = perfs.get('puzzle', {}).get('games')
+            
+            perfil.save()
+            
+            messages.success(request, 'Dados do Lichess atualizados com sucesso!')
+        else:
+            messages.error(request, 'Falha ao buscar dados atualizados do Lichess.')
+            
+    except Exception as e:
+        messages.error(request, f'Erro ao atualizar dados do Lichess: {str(e)}')
+        print(f"Erro na atualização: {str(e)}")  # Log de depuração
+    
     return redirect('dashboard')
