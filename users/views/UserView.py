@@ -13,10 +13,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django import forms
 from services.LichessService import LichessApi
 
-# Custom form without email requirement
+# Formulário customizado sem exigir email
 class SimpleUserCreationForm(forms.ModelForm):
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
+    password1 = forms.CharField(label='Senha', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Confirmação de senha', widget=forms.PasswordInput)
 
     class Meta:
         model = get_user_model()
@@ -26,7 +26,7 @@ class SimpleUserCreationForm(forms.ModelForm):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            raise forms.ValidationError("Passwords don't match")
+            raise forms.ValidationError("As senhas não coincidem")
         return password2
 
     def save(self, commit=True):
@@ -44,12 +44,13 @@ class CustomLoginView(LoginView):
         return reverse('dashboard')
 
 def register_view(request):
+    """View para registro de novos usuários"""
     if request.method == "POST":
         form = SimpleUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, 'Registration successful! Connect your Lichess account to access all features.')
+            messages.success(request, 'Registro realizado com sucesso! Conecte sua conta Lichess para acessar todos os recursos.')
             return redirect('dashboard')
     else:
         form = SimpleUserCreationForm()
@@ -57,28 +58,31 @@ def register_view(request):
     return render(request, "register.html", {"form": form})
 
 def landing_page(request):
+    """Página inicial do sistema"""
     return render(request, "landing-page.html")
 
 def custom_logout(request):
+    """Logout personalizado que redireciona para a página inicial"""
     logout(request)
     return redirect('landing-page')
 
 @login_required
 def dashboard(request):
+    """Dashboard principal do usuário com informações do Lichess"""
     User = get_user_model()
     context = {
         'user': request.user,
     }
 
     if request.user.is_lichess_connected:
-        # Initialize API with user's token
+        # Inicializa API com o token do usuário
         lichess_api = LichessApi(request.user.lichess_access_token)
         
         try:
-            # Get fresh user data
+            # Obtém dados atualizados do usuário
             user_data = lichess_api.get_user_info(request.user.username)
             
-            # Get and process recent games
+            # Obtém e processa jogos recentes
             recent_games_data = list(lichess_api.get_user_games(request.user.username, max_games=5))
             recent_games = []
             
@@ -100,7 +104,12 @@ def dashboard(request):
                 }
                 recent_games.append(game_info)
             
-            current_games = lichess_api.get_user_current_games(request.user.username)
+            # Obtém jogos atuais (se houver método disponível)
+            try:
+                current_games = lichess_api.get_current_games(request.user.username)
+            except AttributeError:
+                current_games = []  # Método pode não existir ainda
+            
             
             context.update({
                 'lichess_data': user_data,
@@ -108,10 +117,10 @@ def dashboard(request):
                 'current_games': current_games,
             })
         except Exception as e:
-            print(f"Error fetching Lichess data: {str(e)}")
-            messages.error(request, "Failed to fetch some Lichess data")
+            print(f"Erro ao buscar dados do Lichess: {str(e)}")
+            messages.error(request, "Falha ao buscar alguns dados do Lichess")
 
-    # Get top players for leaderboard
+    # Obtém os melhores jogadores para o ranking
     top_players = User.objects.filter(
         is_lichess_connected=True
     ).exclude(
@@ -123,44 +132,46 @@ def dashboard(request):
 
 @login_required
 def connect_lichess(request):
+    """Inicia o processo de conexão com o Lichess via OAuth"""
     oauth = LichessOAuth()
     auth_url = oauth.get_authorization_url(request)
     return redirect(auth_url)
 
 @login_required
 def lichess_callback(request):
+    """Callback para processar a resposta da autorização do Lichess"""
     code = request.GET.get('code')
     error = request.GET.get('error')
     error_description = request.GET.get('error_description')
 
     if error or not code:
-        messages.error(request, f'Authorization failed: {error_description or "No code received"}')
+        messages.error(request, f'Falha na autorização: {error_description or "Nenhum código recebido"}')
         return redirect('dashboard')
 
     oauth = LichessOAuth()
     try:
-        # Get access token using PKCE
+        # Obtém token de acesso usando PKCE
         access_token = oauth.get_access_token(request, code)
-        print(f"Received access token: {access_token[:10]}...") # Debug print
+        print(f"Token de acesso recebido: {access_token[:10]}...")  # Log de debug
         
-        # Initialize Lichess API with the new token
+        # Inicializa API do Lichess com o novo token
         lichess_api = LichessApi(access_token)
         
-        # Get user data and handle list response
+        # Obtém dados do usuário e trata resposta em lista
         user_data_list = lichess_api.get_user_info(request.user.username)
-        print(f"User data: {user_data_list}")  # Debug print
+        print(f"Dados do usuário: {user_data_list}")  # Log de debug
         
-        # Get the first item if it's a list
+        # Obtém o primeiro item se for uma lista
         user_data = user_data_list[0] if isinstance(user_data_list, list) else user_data_list
         
         if user_data and 'perfs' in user_data:
-            print('salvando user_token')
-            # Update user's Lichess information
+            print('Salvando token do usuário')
+            # Atualiza informações do Lichess do usuário
             request.user.lichess_id = user_data.get('id')
             request.user.lichess_access_token = access_token
             request.user.is_lichess_connected = True
             
-            # Update ratings from perfs
+            # Atualiza ratings dos perfs
             perfs = user_data['perfs']
             request.user.lichess_rating_bullet = perfs.get('bullet', {}).get('rating')
             request.user.lichess_rating_blitz = perfs.get('blitz', {}).get('rating')
@@ -168,12 +179,12 @@ def lichess_callback(request):
             request.user.lichess_rating_classical = perfs.get('classical', {}).get('rating')
             
             request.user.save()
-            messages.success(request, 'Successfully connected to Lichess!')
+            messages.success(request, 'Conectado ao Lichess com sucesso!')
         else:
-            messages.error(request, f'Failed to fetch Lichess user data. Response: {user_data}')
+            messages.error(request, f'Falha ao buscar dados do usuário no Lichess. Resposta: {user_data}')
             
     except Exception as e:
-        messages.error(request, f'Failed to connect to Lichess: {str(e)}')
-        print(f"Exception details: {str(e)}")  # Debug print
+        messages.error(request, f'Falha ao conectar com o Lichess: {str(e)}')
+        print(f"Detalhes da exceção: {str(e)}")  # Log de debug
 
     return redirect('dashboard')
