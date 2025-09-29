@@ -149,5 +149,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Redirect to this URL after successful login
 LOGIN_REDIRECT_URL = 'landing-page'  # Replace 'dashboard' with your desired URL name
 LICHESS_CLIENT_SECRET = 'lichess-api-demo'
-LICHESS_REDIRECT_URI = 'https://957fb7099ae8.ngrok-free.app/users/lichess-callback/'
-LICHESS_CLIENT_ID = 'https://957fb7099ae8.ngrok-free.app'
+LICHESS_REDIRECT_URI = 'https://738e2ed0cbd6.ngrok-free.app/users/lichess-callback/'
+LICHESS_CLIENT_ID = 'https://738e2ed0cbd6.ngrok-free.app'
