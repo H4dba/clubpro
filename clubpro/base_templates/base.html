@@ -76,6 +76,7 @@
             display: flex;
             flex-direction: column;
             line-height: 1.6;
+            padding-top: 80px; /* Compensar altura do navbar fixo */
         }
 
         /* Navbar Moderna */
@@ -207,7 +208,6 @@
         }
 
         .alerts-container {
-            margin-top: 80px;
             margin-bottom: 1rem;
         }
 
@@ -243,16 +243,16 @@
 
         /* Responsividade */
         @media (max-width: 768px) {
+            body {
+                padding-top: 70px; /* Navbar menor em mobile */
+            }
+            
             .navbar-brand {
                 font-size: 1.25rem;
             }
             
             .main-container {
                 padding: 1rem 0;
-            }
-
-            .alerts-container {
-                margin-top: 70px;
             }
             
             .btn {
@@ -317,11 +317,32 @@
                                 Torneios
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'socios:dashboard' %}">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-users"></i>
                                 Sócios
                             </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'socios:dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'socios:listar' %}">
+                                    <i class="fas fa-list me-2"></i>Listar Sócios
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'socios:cadastrar' %}">
+                                    <i class="fas fa-user-plus me-2"></i>Cadastrar Sócio
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'socios:pendencias' %}">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Pendências
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'socios:relatorio_financeiro' %}">
+                                    <i class="fas fa-chart-line me-2"></i>Relatório Financeiro
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'socios:tipos_assinatura' %}">
+                                    <i class="fas fa-tags me-2"></i>Tipos de Assinatura
+                                </a></li>
+                            </ul>
                         </li>
                     {% endif %}
                 </ul>
