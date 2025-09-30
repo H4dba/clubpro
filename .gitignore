@@ -25,9 +25,7 @@ db.sqlite3-journal
 *.sql
 *.mysql
 
-# Django migration files
-**/migrations/*.py
-!**/migrations/__init__.py
+
 
 # Media and static files (uncomment if using external storage)
 media/
