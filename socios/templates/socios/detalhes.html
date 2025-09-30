@@ -36,11 +36,11 @@
                     </div>
                     <div class="col-md-4 text-end">
                         <div class="btn-group" role="group">
-                            <a href="{% url 'socios:editar' socio.id %}" class="btn btn-warning">
+                            <a href="{% url 'socios:editar' socio.id %}" class="btn btn-gold">
                                 <i class="fas fa-edit me-2"></i>
                                 Editar
                             </a>
-                            <a href="{% url 'socios:listar' %}" class="btn btn-outline-light">
+                            <a href="{% url 'socios:listar' %}" class="btn btn-outline">
                                 <i class="fas fa-arrow-left me-2"></i>
                                 Voltar
                             </a>
@@ -50,6 +50,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Ações Sugeridas -->
+    {% if acoes_sugeridas %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6 class="alert-heading">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Ações Sugeridas
+                </h6>
+                <div class="row">
+                    {% for acao in acoes_sugeridas %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex align-items-center">
+                            <i class="{{ acao.icone }} me-2 text-{% if acao.tipo == 'alerta' %}danger{% elif acao.tipo == 'aviso' %}warning{% else %}info{% endif %}"></i>
+                            <div>
+                                <strong>{{ acao.titulo }}</strong>
+                                <br><small>{{ acao.descricao }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="row">
         <!-- Informações Principais -->
@@ -67,20 +94,27 @@
                         <div class="col-md-6">
                             <div class="info-item mb-3">
                                 <label class="info-label">Nome Completo</label>
-                                <div class="info-value">{{ socio.nome }}</div>
+                                <div class="info-value">{{ socio.nome_completo }}</div>
                             </div>
                             
-                            {% if socio.nome_preferencia %}
+                            {% if socio.nome_social %}
                             <div class="info-item mb-3">
-                                <label class="info-label">Nome de Preferência</label>
-                                <div class="info-value">{{ socio.nome_preferencia }}</div>
+                                <label class="info-label">Nome Social</label>
+                                <div class="info-value">{{ socio.nome_social }}</div>
                             </div>
                             {% endif %}
                             
                             <div class="info-item mb-3">
                                 <label class="info-label">CPF</label>
-                                <div class="info-value">{{ socio.cpf_formatado }}</div>
+                                <div class="info-value">{{ socio.cpf }}</div>
                             </div>
+
+                            {% if socio.rg %}
+                            <div class="info-item mb-3">
+                                <label class="info-label">RG</label>
+                                <div class="info-value">{{ socio.rg }}</div>
+                            </div>
+                            {% endif %}
                         </div>
                         
                         <div class="col-md-6">
@@ -96,6 +130,13 @@
                             <div class="info-item mb-3">
                                 <label class="info-label">Gênero</label>
                                 <div class="info-value">{{ socio.get_genero_display }}</div>
+                            </div>
+                            {% endif %}
+
+                            {% if socio.profissao %}
+                            <div class="info-item mb-3">
+                                <label class="info-label">Profissão</label>
+                                <div class="info-value">{{ socio.profissao }}</div>
                             </div>
                             {% endif %}
                         </div>
@@ -148,22 +189,42 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        {% if socio.celular %}
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="info-label">
+                                    <i class="fas fa-mobile-alt me-1 text-info"></i>
+                                    Celular
+                                </label>
+                                <div class="info-value">
+                                    <a href="tel:{{ socio.celular }}" class="text-decoration-none">
+                                        {{ socio.celular }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     
-                    {% if socio.endereco %}
+                    {% if socio.endereco_completo %}
+                    <hr class="my-3">
                     <div class="info-item">
                         <label class="info-label">
                             <i class="fas fa-map-marker-alt me-1 text-danger"></i>
-                            Endereço
+                            Endereço Completo
                         </label>
-                        <div class="info-value">{{ socio.endereco }}</div>
+                        <div class="info-value">{{ socio.endereco_completo }}</div>
+                        {% if socio.cep %}
+                        <small class="text-muted">CEP: {{ socio.cep }}</small>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Dados do Xadrez -->
-            {% if socio.rating_fide or socio.rating_nacional or socio.categoria %}
+            {% if socio.rating_fide or socio.rating_cbx or socio.categoria_cbx %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -184,23 +245,23 @@
                         </div>
                         {% endif %}
                         
-                        {% if socio.rating_nacional %}
+                        {% if socio.rating_cbx %}
                         <div class="col-md-4">
                             <div class="info-item mb-3">
-                                <label class="info-label">Rating Nacional</label>
+                                <label class="info-label">Rating CBX</label>
                                 <div class="info-value">
-                                    <span class="badge bg-success fs-6">{{ socio.rating_nacional }}</span>
+                                    <span class="badge bg-success fs-6">{{ socio.rating_cbx }}</span>
                                 </div>
                             </div>
                         </div>
                         {% endif %}
                         
-                        {% if socio.categoria %}
+                        {% if socio.categoria_cbx %}
                         <div class="col-md-4">
                             <div class="info-item mb-3">
-                                <label class="info-label">Categoria</label>
+                                <label class="info-label">Categoria CBX</label>
                                 <div class="info-value">
-                                    <span class="badge bg-info fs-6">{{ socio.get_categoria_display }}</span>
+                                    <span class="badge bg-info fs-6">{{ socio.categoria_cbx }}</span>
                                 </div>
                             </div>
                         </div>
@@ -234,10 +295,10 @@
                         <i class="fas fa-credit-card me-2"></i>
                         Histórico de Pagamentos
                     </h5>
-                    <button class="btn btn-sm btn-outline-primary" onclick="adicionarPagamento()">
+                    <a href="{% url 'socios:registrar_pagamento' socio.id %}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-plus me-1"></i>
                         Novo Pagamento
-                    </button>
+                    </a>
                 </div>
                 <div class="card-body">
                     {% if pagamentos %}
@@ -296,10 +357,10 @@
                         <i class="fas fa-folder-open me-2"></i>
                         Documentos
                     </h5>
-                    <button class="btn btn-sm btn-outline-primary" onclick="adicionarDocumento()">
+                    <a href="{% url 'socios:upload_documento' socio.id %}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-upload me-1"></i>
                         Adicionar Documento
-                    </button>
+                    </a>
                 </div>
                 <div class="card-body">
                     {% if documentos %}
@@ -322,9 +383,9 @@
                                     <a href="{{ documento.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-1">
                                         <i class="fas fa-download"></i>
                                     </a>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="removerDocumento({{ documento.id }})">
+                                    <a href="#" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja remover este documento?')">
                                         <i class="fas fa-trash"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                             {% endfor %}
@@ -359,7 +420,7 @@
                             </span>
                             <div class="mt-1">
                                 <small class="text-muted">
-                                    R$ {{ socio.tipo_assinatura.valor|floatformat:2 }} / {{ socio.tipo_assinatura.get_periodicidade_display }}
+                                    R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}/mês
                                 </small>
                             </div>
                         </div>
@@ -427,10 +488,10 @@
                             Gerar Carteirinha
                         </button>
                         
-                        <button class="btn btn-outline-warning" onclick="adicionarPagamento()">
+                        <a href="{% url 'socios:registrar_pagamento' socio.id %}" class="btn btn-outline-warning">
                             <i class="fas fa-plus me-2"></i>
                             Registrar Pagamento
-                        </button>
+                        </a>
                         
                         <hr>
                         
@@ -439,10 +500,10 @@
                             Editar Dados
                         </a>
                         
-                        <button class="btn btn-outline-danger" onclick="confirmarExclusao()">
-                            <i class="fas fa-trash me-2"></i>
-                            Excluir Sócio
-                        </button>
+                        <a href="{% url 'socios:upload_documento' socio.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-upload me-2"></i>
+                            Upload Documento
+                        </a>
                     </div>
                 </div>
             </div>
@@ -482,31 +543,7 @@
     </div>
 </div>
 
-<!-- Modal de Confirmação de Exclusão -->
-<div class="modal fade" id="modalExclusao" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar Exclusão</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja excluir o sócio <strong>{{ socio.nome_exibicao }}</strong>?</p>
-                <p class="text-danger">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    Esta ação não pode ser desfeita e removerá todos os dados associados.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <a href="{% url 'socios:excluir' socio.id %}" class="btn btn-danger">
-                    <i class="fas fa-trash me-1"></i>
-                    Confirmar Exclusão
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <style>
     /* Socio Details Styles */
@@ -683,30 +720,19 @@
 </style>
 
 <script>
-    function confirmarExclusao() {
-        new bootstrap.Modal(document.getElementById('modalExclusao')).show();
-    }
-
-    function adicionarPagamento() {
-        // Implementar modal ou redirecionar para página de pagamento
-        alert('Funcionalidade de pagamento em desenvolvimento');
-    }
-
-    function adicionarDocumento() {
-        // Implementar upload de documento
-        alert('Funcionalidade de upload em desenvolvimento');
-    }
-
-    function removerDocumento(documentoId) {
-        if (confirm('Tem certeza que deseja remover este documento?')) {
-            // Implementar remoção de documento
-            console.log('Remover documento:', documentoId);
-        }
-    }
-
     function gerarCarteirinha() {
-        // Implementar geração de carteirinha
         alert('Funcionalidade de carteirinha em desenvolvimento');
     }
+
+    // Auto-hide das ações sugeridas após 10 segundos
+    document.addEventListener('DOMContentLoaded', function() {
+        const acoesSugeridas = document.querySelector('.alert-info');
+        if (acoesSugeridas) {
+            setTimeout(() => {
+                acoesSugeridas.style.transition = 'opacity 0.5s ease';
+                acoesSugeridas.style.opacity = '0.7';
+            }, 10000);
+        }
+    });
 </script>
 {% endblock %}

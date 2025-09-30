@@ -1,0 +1,588 @@
+{% extends 'base.html' %}
+
+{% block title %}Pendências e Alertas - ClubPro{% endblock %}
+
+{% block content %}
+<div class="pendencias-dashboard fade-in-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="header-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 class="page-title mb-1">Pendências e Alertas</h1>
+                                <p class="page-subtitle mb-0">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ total_pendencias }} pendência{{ total_pendencias|pluralize }} encontrada{{ total_pendencias|pluralize }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'socios:dashboard' %}" class="btn btn-outline">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Voltar ao Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas Resumidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-danger">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ inadimplentes.count }}</div>
+                    <div class="stat-label">Inadimplentes</div>
+                    <div class="stat-sublabel">R$ {{ valor_total_atraso|floatformat:2 }} em atraso</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ vencem_em_breve.count }}</div>
+                    <div class="stat-label">Vencem em 7 dias</div>
+                    <div class="stat-sublabel">R$ {{ receita_vencimentos|floatformat:2 }} esperados</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ sem_documentos.count }}</div>
+                    <div class="stat-label">Sem Documentos</div>
+                    <div class="stat-sublabel">Documentação pendente</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card stat-secondary">
+                <div class="stat-icon">
+                    <i class="fas fa-pause-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ pagamentos_pendentes.count }}</div>
+                    <div class="stat-label">Pagamentos Pendentes</div>
+                    <div class="stat-sublabel">Aguardando confirmação</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sócios Inadimplentes -->
+    {% if inadimplentes %}
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Sócios Inadimplentes ({{ inadimplentes.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sócio</th>
+                            <th>Plano</th>
+                            <th>Vencimento</th>
+                            <th>Dias em Atraso</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for socio in inadimplentes %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="socio-avatar-sm me-2">
+                                        {% if socio.foto %}
+                                            <img src="{{ socio.foto.url }}" alt="{{ socio.nome_completo }}" class="rounded-circle">
+                                        {% else %}
+                                            <div class="avatar-placeholder-sm">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <strong>{{ socio.nome_exibicao }}</strong>
+                                        <br><small class="text-muted">{{ socio.numero_socio }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge" style="background-color: {{ socio.tipo_assinatura.cor }}20; color: {{ socio.tipo_assinatura.cor }};">
+                                    {{ socio.tipo_assinatura.nome }}
+                                </span>
+                            </td>
+                            <td>{{ socio.data_vencimento|date:"d/m/Y" }}</td>
+                            <td>
+                                {% with dias_atraso=socio.data_vencimento|timesince %}
+                                <span class="badge bg-danger">
+                                    {{ socio.dias_para_vencimento|add:"-1"|add:"-1" }} dias
+                                </span>
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <strong class="text-danger">
+                                    R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}
+                                </strong>
+                            </td>
+                            <td>
+                                <div class="btn-group-sm" role="group">
+                                    <a href="{% url 'socios:detalhe' socio.id %}" class="btn btn-sm btn-outline-primary" title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'socios:registrar_pagamento' socio.id %}" class="btn btn-sm btn-outline-success" title="Registrar Pagamento">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                    {% if socio.email %}
+                                    <a href="mailto:{{ socio.email }}" class="btn btn-sm btn-outline-info" title="Enviar E-mail">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Vencem em Breve -->
+    {% if vencem_em_breve %}
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="fas fa-clock me-2"></i>
+                Vencimentos nos Próximos 7 Dias ({{ vencem_em_breve.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sócio</th>
+                            <th>Plano</th>
+                            <th>Vencimento</th>
+                            <th>Dias Restantes</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for socio in vencem_em_breve %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="socio-avatar-sm me-2">
+                                        {% if socio.foto %}
+                                            <img src="{{ socio.foto.url }}" alt="{{ socio.nome_completo }}" class="rounded-circle">
+                                        {% else %}
+                                            <div class="avatar-placeholder-sm">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <strong>{{ socio.nome_exibicao }}</strong>
+                                        <br><small class="text-muted">{{ socio.numero_socio }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge" style="background-color: {{ socio.tipo_assinatura.cor }}20; color: {{ socio.tipo_assinatura.cor }};">
+                                    {{ socio.tipo_assinatura.nome }}
+                                </span>
+                            </td>
+                            <td>{{ socio.data_vencimento|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    {% if socio.dias_para_vencimento == 0 %}
+                                        Vence hoje
+                                    {% else %}
+                                        {{ socio.dias_para_vencimento }} dia{{ socio.dias_para_vencimento|pluralize }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <strong class="text-success">
+                                    R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}
+                                </strong>
+                            </td>
+                            <td>
+                                <div class="btn-group-sm" role="group">
+                                    <a href="{% url 'socios:detalhe' socio.id %}" class="btn btn-sm btn-outline-primary" title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if socio.email %}
+                                    <a href="mailto:{{ socio.email }}" class="btn btn-sm btn-outline-info" title="Enviar Lembrete">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if socio.telefone %}
+                                    <a href="https://wa.me/55{{ socio.telefone|cut:'(' |cut:')' |cut:' ' |cut:'-' }}" target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Outras Pendências -->
+        <div class="col-lg-6">
+            <!-- Sem Documentos -->
+            {% if sem_documentos %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Sócios Sem Documentos ({{ sem_documentos.count }})
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for socio in sem_documentos %}
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <div>
+                            <strong>{{ socio.nome_exibicao }}</strong>
+                            <br><small class="text-muted">{{ socio.numero_socio }}</small>
+                        </div>
+                        <div>
+                            <a href="{% url 'socios:upload_documento' socio.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-upload me-1"></i>
+                                Adicionar
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Sem Foto -->
+            {% if sem_foto %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-camera me-2"></i>
+                        Sócios Sem Foto ({{ sem_foto.count }})
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for socio in sem_foto %}
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <div>
+                            <strong>{{ socio.nome_exibicao }}</strong>
+                            <br><small class="text-muted">{{ socio.numero_socio }}</small>
+                        </div>
+                        <div>
+                            <a href="{% url 'socios:editar' socio.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>
+                                Editar
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-6">
+            <!-- Pagamentos Pendentes -->
+            {% if pagamentos_pendentes %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-hourglass-half me-2"></i>
+                        Pagamentos Pendentes ({{ pagamentos_pendentes.count }})
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for pagamento in pagamentos_pendentes %}
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <div>
+                            <strong>{{ pagamento.socio.nome_exibicao }}</strong>
+                            <br><small class="text-muted">{{ pagamento.mes_referencia|date:"m/Y" }} - R$ {{ pagamento.valor|floatformat:2 }}</small>
+                        </div>
+                        <div>
+                            <a href="{% url 'socios:detalhe' pagamento.socio.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>
+                                Ver
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Inativos há Tempo -->
+            {% if inativos_ha_tempo %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-slash me-2"></i>
+                        Inativos há Mais de 6 Meses ({{ inativos_ha_tempo.count }})
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for socio in inativos_ha_tempo %}
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <div>
+                            <strong>{{ socio.nome_exibicao }}</strong>
+                            <br><small class="text-muted">Inativo desde {{ socio.updated_at|date:"d/m/Y" }}</small>
+                        </div>
+                        <div>
+                            <a href="{% url 'socios:detalhe' socio.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>
+                                Ver
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Ações em Massa -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary w-100 mb-2" onclick="enviarLembretesVencimento()">
+                                <i class="fas fa-bell me-2"></i>
+                                Enviar Lembretes de Vencimento
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-warning w-100 mb-2" onclick="marcarInadimplentes()">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Marcar Inadimplentes
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'socios:relatorio_inadimplentes' %}" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-file-pdf me-2"></i>
+                                Relatório de Inadimplentes
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-success w-100 mb-2" onclick="exportarPendencias()">
+                                <i class="fas fa-download me-2"></i>
+                                Exportar Pendências
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Página de Pendências */
+    .pendencias-dashboard {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    .page-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    /* Cards de Estatísticas */
+    .stat-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+        border-left: 4px solid;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-danger { border-left-color: var(--danger-color); }
+    .stat-warning { border-left-color: var(--warning-color); }
+    .stat-info { border-left-color: var(--info-color); }
+    .stat-secondary { border-left-color: var(--gray-600); }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-danger .stat-icon { color: var(--danger-color); }
+    .stat-warning .stat-icon { color: var(--warning-color); }
+    .stat-info .stat-icon { color: var(--info-color); }
+    .stat-secondary .stat-icon { color: var(--gray-600); }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-sublabel {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Avatar pequeno para tabelas */
+    .socio-avatar-sm {
+        width: 40px;
+        height: 40px;
+    }
+
+    .socio-avatar-sm img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder-sm {
+        width: 40px;
+        height: 40px;
+        background: var(--gray-300);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-600);
+    }
+
+    /* Tabelas responsivas */
+    .table th {
+        font-weight: 600;
+        color: var(--gray-700);
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<script>
+    function enviarLembretesVencimento() {
+        if (confirm('Deseja enviar lembretes de vencimento para todos os sócios que vencem em breve?')) {
+            alert('Funcionalidade em desenvolvimento - Integração com sistema de e-mail');
+        }
+    }
+
+    function marcarInadimplentes() {
+        if (confirm('Deseja marcar automaticamente todos os sócios em atraso como inadimplentes?')) {
+            alert('Funcionalidade em desenvolvimento - Atualização em massa');
+        }
+    }
+
+    function exportarPendencias() {
+        alert('Funcionalidade em desenvolvimento - Exportação de relatórios');
+    }
+
+    // Auto-refresh da página a cada 5 minutos para manter dados atualizados
+    setTimeout(() => {
+        location.reload();
+    }, 300000); // 5 minutos
+</script>
+{% endblock %}

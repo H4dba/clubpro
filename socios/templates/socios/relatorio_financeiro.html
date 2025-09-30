@@ -1,0 +1,774 @@
+{% extends 'base.html' %}
+
+{% block title %}Relatório Financeiro - ClubPro{% endblock %}
+
+{% block content %}
+<div class="relatorio-financeiro fade-in-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="header-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 class="page-title mb-1">Relatório Financeiro</h1>
+                                <p class="page-subtitle mb-0">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ titulo_periodo }} ({{ data_inicio|date:"d/m/Y" }} a {{ hoje|date:"d/m/Y" }})
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-gold" onclick="exportarRelatorio()">
+                                <i class="fas fa-download me-2"></i>
+                                Exportar PDF
+                            </button>
+                            <a href="{% url 'socios:dashboard' %}" class="btn btn-outline">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Período -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">
+                                <i class="fas fa-filter me-2"></i>
+                                Período de Análise
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="btn-group w-100" role="group">
+                                <a href="?periodo=1" class="btn btn-outline-primary {% if periodo == '1' %}active{% endif %}">
+                                    Mês Atual
+                                </a>
+                                <a href="?periodo=3" class="btn btn-outline-primary {% if periodo == '3' %}active{% endif %}">
+                                    3 Meses
+                                </a>
+                                <a href="?periodo=6" class="btn btn-outline-primary {% if periodo == '6' %}active{% endif %}">
+                                    6 Meses
+                                </a>
+                                <a href="?periodo=12" class="btn btn-outline-primary {% if periodo == '12' %}active{% endif %}">
+                                    12 Meses
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Métricas Principais -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-success">
+                <div class="metric-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-number">R$ {{ receita_periodo|floatformat:2 }}</div>
+                    <div class="metric-label">Receita no Período</div>
+                    <div class="metric-sublabel">{{ titulo_periodo }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-primary">
+                <div class="metric-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-number">R$ {{ receita_mensal_estimada|floatformat:2 }}</div>
+                    <div class="metric-label">Receita Mensal Estimada</div>
+                    <div class="metric-sublabel">Baseada em sócios ativos</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-warning">
+                <div class="metric-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-number">R$ {{ valor_inadimplencia|floatformat:2 }}</div>
+                    <div class="metric-label">Valor em Inadimplência</div>
+                    <div class="metric-sublabel">{{ taxa_inadimplencia }}% dos sócios</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-info">
+                <div class="metric-icon">
+                    <i class="fas fa-chart-trend-up"></i>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-number">{{ crescimento_liquido|stringformat:"+d" }}</div>
+                    <div class="metric-label">Crescimento Líquido</div>
+                    <div class="metric-sublabel">{{ novos_socios }} novos - {{ socios_perdidos }} perdidos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de Evolução de Receitas -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Evolução das Receitas (Últimos 12 Meses)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="receitasChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo Executivo -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Resumo Executivo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="summary-item">
+                        <div class="summary-label">Total de Sócios</div>
+                        <div class="summary-value">{{ total_socios }}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Sócios Ativos</div>
+                        <div class="summary-value text-success">{{ socios_ativos }}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Taxa de Retenção</div>
+                        <div class="summary-value">{{ taxa_retencao }}%</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Ticket Médio</div>
+                        <div class="summary-value">R$ {{ ticket_medio|floatformat:2 }}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">LTV Estimado</div>
+                        <div class="summary-value">R$ {{ ltv_estimado|floatformat:2 }}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Receita Anual Projetada</div>
+                        <div class="summary-value text-primary">R$ {{ receita_anual_projetada|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análise por Plano -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Análise por Tipo de Assinatura
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Plano</th>
+                                    <th>Sócios Ativos</th>
+                                    <th>Valor Mensal</th>
+                                    <th>Receita Mensal</th>
+                                    <th>Receita Anual Estimada</th>
+                                    <th>Participação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for plano in analise_por_plano %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="plano-cor me-2" style="background-color: {{ plano.cor }};"></div>
+                                            <strong>{{ plano.nome }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ plano.total_socios }}</span>
+                                    </td>
+                                    <td>R$ {{ plano.valor_mensal|floatformat:2 }}</td>
+                                    <td>
+                                        <strong class="text-success">R$ {{ plano.receita_mensal|floatformat:2 }}</strong>
+                                    </td>
+                                    <td>R$ {{ plano.receita_anual|floatformat:2 }}</td>
+                                    <td>
+                                        {% with participacao=plano.receita_mensal|floatformat:2|add:0 receita_total=receita_mensal_estimada|floatformat:2|add:0 %}
+                                        {% if receita_total > 0 %}
+                                        {% widthratio plano.receita_mensal receita_mensal_estimada 100 as percent %}
+                                        {{ percent|floatformat:1 }}%
+                                        {% else %}
+                                        0%
+                                        {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        Nenhum plano ativo encontrado
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previsões e Alertas -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-crystal-ball me-2"></i>
+                        Previsões dos Próximos 30 Dias
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="prediction-item">
+                        <div class="prediction-icon">
+                            <i class="fas fa-money-bill-wave text-success"></i>
+                        </div>
+                        <div class="prediction-content">
+                            <div class="prediction-title">Receita Esperada</div>
+                            <div class="prediction-value">R$ {{ vencimentos_proximos|floatformat:2 }}</div>
+                            <div class="prediction-desc">Baseado nos vencimentos programados</div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-item">
+                        <div class="prediction-icon">
+                            <i class="fas fa-chart-line text-primary"></i>
+                        </div>
+                        <div class="prediction-content">
+                            <div class="prediction-title">Projeção Anual</div>
+                            <div class="prediction-value">R$ {{ receita_anual_projetada|floatformat:2 }}</div>
+                            <div class="prediction-desc">Se mantido o ritmo atual</div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-item">
+                        <div class="prediction-icon">
+                            <i class="fas fa-users text-info"></i>
+                        </div>
+                        <div class="prediction-content">
+                            <div class="prediction-title">Meta de Sócios</div>
+                            <div class="prediction-value">{{ socios_ativos|add:10 }}</div>
+                            <div class="prediction-desc">Para aumentar receita em 10%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Insights e Recomendações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="insights-list">
+                        {% if taxa_inadimplencia > 10 %}
+                        <div class="insight-item insight-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>
+                                <strong>Alta Taxa de Inadimplência</strong>
+                                <p>{{ taxa_inadimplencia }}% está acima do ideal (máximo 5%). Considere implementar lembretes automáticos.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if crescimento_liquido < 0 %}
+                        <div class="insight-item insight-danger">
+                            <i class="fas fa-arrow-down"></i>
+                            <div>
+                                <strong>Crescimento Negativo</strong>
+                                <p>O clube perdeu {{ crescimento_liquido|add:"-1"|add:"-1" }} sócios no período. Analise as causas de cancelamento.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if ticket_medio < 100 %}
+                        <div class="insight-item insight-info">
+                            <i class="fas fa-arrow-up"></i>
+                            <div>
+                                <strong>Oportunidade de Upgrade</strong>
+                                <p>Ticket médio baixo (R$ {{ ticket_medio|floatformat:2 }}). Considere criar planos premium.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="insight-item insight-success">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Diversificação de Planos</strong>
+                                <p>{{ analise_por_plano.count }} tipos de assinatura ativas oferecendo opções aos sócios.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Estratégicas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>
+                        Ações Estratégicas Recomendadas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="action-card">
+                                <div class="action-icon bg-primary">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h6>Cobrança Automática</h6>
+                                <p>Implementar sistema de lembretes para reduzir inadimplência</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="implementarCobranca()">
+                                    Implementar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="action-card">
+                                <div class="action-icon bg-success">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <h6>Programa de Fidelidade</h6>
+                                <p>Criar incentivos para retenção de sócios antigos</p>
+                                <button class="btn btn-sm btn-outline-success" onclick="criarFidelidade()">
+                                    Criar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="action-card">
+                                <div class="action-icon bg-warning">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h6>Análise de Churn</h6>
+                                <p>Identificar padrões de cancelamento</p>
+                                <button class="btn btn-sm btn-outline-warning" onclick="analisarChurn()">
+                                    Analisar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="action-card">
+                                <div class="action-icon bg-info">
+                                    <i class="fas fa-bullhorn"></i>
+                                </div>
+                                <h6>Campanha de Captação</h6>
+                                <p>Atrair novos sócios com promoções</p>
+                                <button class="btn btn-sm btn-outline-info" onclick="criarCampanha()">
+                                    Criar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Relatório Financeiro */
+    .relatorio-financeiro {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    .page-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    /* Metric Cards */
+    .metric-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+        border-left: 4px solid;
+        margin-bottom: 1rem;
+        height: 100%;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .metric-primary { border-left-color: var(--primary-color); }
+    .metric-success { border-left-color: var(--success-color); }
+    .metric-warning { border-left-color: var(--warning-color); }
+    .metric-info { border-left-color: var(--info-color); }
+
+    .metric-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .metric-primary .metric-icon { color: var(--primary-color); }
+    .metric-success .metric-icon { color: var(--success-color); }
+    .metric-warning .metric-icon { color: var(--warning-color); }
+    .metric-info .metric-icon { color: var(--info-color); }
+
+    .metric-number {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .metric-sublabel {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Summary Items */
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+
+    .summary-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    /* Plano Cor */
+    .plano-cor {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    /* Predictions */
+    .prediction-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .prediction-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .prediction-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .prediction-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .prediction-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .prediction-desc {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Insights */
+    .insight-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid;
+    }
+
+    .insight-item i {
+        margin-right: 0.75rem;
+        margin-top: 0.25rem;
+        font-size: 1.1rem;
+    }
+
+    .insight-warning { 
+        background: rgba(243, 156, 18, 0.1); 
+        border-left-color: var(--warning-color);
+    }
+
+    .insight-danger { 
+        background: rgba(231, 76, 60, 0.1); 
+        border-left-color: var(--danger-color);
+    }
+
+    .insight-info { 
+        background: rgba(52, 152, 219, 0.1); 
+        border-left-color: var(--info-color);
+    }
+
+    .insight-success { 
+        background: rgba(39, 174, 96, 0.1); 
+        border-left-color: var(--success-color);
+    }
+
+    .insight-item strong {
+        color: var(--gray-800);
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .insight-item p {
+        margin: 0;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+
+    /* Action Cards */
+    .action-card {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-normal);
+    }
+
+    .action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .action-card h6 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--gray-800);
+    }
+
+    .action-card p {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .metric-number {
+            font-size: 1.5rem;
+        }
+
+        .metric-card {
+            padding: 1rem;
+        }
+
+        .prediction-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .prediction-icon {
+            margin-bottom: 1rem;
+            margin-right: 0;
+        }
+    }
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Gráfico de Evolução das Receitas
+    const ctx = document.getElementById('receitasChart').getContext('2d');
+    const receitasData = {{ evolucao_receitas|safe }};
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: receitasData.map(item => item.mes),
+            datasets: [{
+                label: 'Receita Mensal (R$)',
+                data: receitasData.map(item => item.receita),
+                borderColor: '#1a1a2e',
+                backgroundColor: 'rgba(26, 26, 46, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#f39c12',
+                pointBorderColor: '#1a1a2e',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR');
+                        }
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverRadius: 8
+                }
+            }
+        }
+    });
+
+    // Funções das ações estratégicas
+    function exportarRelatorio() {
+        alert('Funcionalidade de exportação em desenvolvimento');
+    }
+
+    function implementarCobranca() {
+        alert('Funcionalidade de cobrança automática em desenvolvimento');
+    }
+
+    function criarFidelidade() {
+        alert('Funcionalidade de programa de fidelidade em desenvolvimento');
+    }
+
+    function analisarChurn() {
+        alert('Funcionalidade de análise de churn em desenvolvimento');
+    }
+
+    function criarCampanha() {
+        alert('Funcionalidade de campanha de captação em desenvolvimento');
+    }
+</script>
+{% endblock %}

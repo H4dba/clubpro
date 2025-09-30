@@ -26,6 +26,8 @@ urlpatterns = [
     path('tipos/<int:tipo_id>/editar/', views.editar_tipo_assinatura, name='editar_tipo'),
     path('tipos/<int:tipo_id>/excluir/', views.excluir_tipo_assinatura, name='excluir_tipo'),
     
-    # Relatórios
+    # Relatórios e Pendências
+    path('pendencias/', views.pagina_pendencias, name='pendencias'),
+    path('relatorios/financeiro/', views.relatorio_financeiro, name='relatorio_financeiro'),
     path('relatorios/inadimplentes/', views.relatorio_inadimplentes, name='relatorio_inadimplentes'),
 ]

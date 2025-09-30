@@ -164,7 +164,7 @@
                                                 <i class="fas fa-id-card me-1"></i>
                                                 Nº {{ socio.numero_socio }}
                                                 {% if socio.cpf %}
-                                                    • CPF: {{ socio.cpf_formatado }}
+                                                    • CPF: {{ socio.cpf }}
                                                 {% endif %}
                                             </small>
                                         </div>
@@ -175,7 +175,7 @@
                                                 {{ socio.tipo_assinatura.nome }}
                                             </span>
                                             <small class="d-block text-muted mt-1">
-                                                R$ {{ socio.tipo_assinatura.valor|floatformat:2 }}
+                                                R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}
                                             </small>
                                         </div>
                                     </td>
@@ -199,10 +199,7 @@
                                         <div class="data-info">
                                             <div class="fw-bold">{{ socio.data_associacao|date:"d/m/Y" }}</div>
                                             <small class="text-muted">
-                                                {% now "Y-m-d" as hoje %}
-                                                {% if socio.data_associacao|timesince:hoje %}
-                                                    há {{ socio.data_associacao|timesince }}
-                                                {% endif %}
+                                                há {{ socio.data_associacao|timesince }}
                                             </small>
                                         </div>
                                     </td>
@@ -229,7 +226,7 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{% url 'socios:visualizar' socio.id %}" 
+                                            <a href="{% url 'socios:detalhe' socio.id %}" 
                                                class="btn btn-sm btn-outline-primary" 
                                                title="Ver detalhes">
                                                 <i class="fas fa-eye"></i>

@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, F
 from django.http import JsonResponse
 from django.urls import reverse
 from django.utils import timezone
@@ -92,8 +92,8 @@ def listar_socios(request):
     
     # Filtros
     status_filter = request.GET.get('status')
-    tipo_filter = request.GET.get('tipo')
-    search = request.GET.get('search')
+    tipo_filter = request.GET.get('plano')  # Mudado de 'tipo' para 'plano'
+    search = request.GET.get('busca')  # Mudado de 'search' para 'busca'
     
     if status_filter:
         socios = socios.filter(status=status_filter)
@@ -119,7 +119,7 @@ def listar_socios(request):
     tipos_assinatura = TipoAssinatura.objects.filter(ativo=True)
     
     context = {
-        'page_obj': page_obj,
+        'socios': page_obj,  # Mudado para 'socios'
         'tipos_assinatura': tipos_assinatura,
         'current_status': status_filter,
         'current_tipo': tipo_filter,
@@ -136,19 +136,82 @@ def detalhe_socio(request, socio_id):
     
     socio = get_object_or_404(Socio, id=socio_id)
     
-    # Histórico de pagamentos
+    # Histórico de pagamentos (últimos 10)
     pagamentos = socio.pagamentos.order_by('-data_pagamento')[:10]
     
     # Documentos
     documentos = socio.documentos.order_by('-data_upload')
     
+    # Estatísticas do sócio
+    total_pagamentos = socio.pagamentos.filter(status='confirmado').count()
+    total_pago = socio.pagamentos.filter(status='confirmado').aggregate(
+        total=Sum('valor')
+    )['total'] or Decimal('0.00')
+    total_documentos = documentos.count()
+    
+    # Pagamentos pendentes
+    pagamentos_pendentes = socio.pagamentos.filter(status='pendente').count()
+    
+    # Último pagamento
+    ultimo_pagamento = socio.pagamentos.filter(status='confirmado').first()
+    
+    # Verificar se há pagamento em atraso
+    hoje = timezone.now().date()
+    tem_atraso = socio.data_vencimento < hoje and socio.status in ['ativo', 'inadimplente']
+    
+    # Próximas ações sugeridas
+    acoes_sugeridas = []
+    if tem_atraso:
+        dias_atraso = (hoje - socio.data_vencimento).days
+        acoes_sugeridas.append({
+            'tipo': 'alerta',
+            'icone': 'fas fa-exclamation-triangle',
+            'titulo': 'Pagamento em Atraso',
+            'descricao': f'{dias_atraso} dias de atraso na mensalidade',
+            'acao': 'registrar_pagamento'
+        })
+    
+    if socio.dias_para_vencimento <= 7 and socio.dias_para_vencimento >= 0:
+        acoes_sugeridas.append({
+            'tipo': 'aviso',
+            'icone': 'fas fa-clock',
+            'titulo': 'Vencimento Próximo',
+            'descricao': f'Vence em {socio.dias_para_vencimento} dias',
+            'acao': 'enviar_lembrete'
+        })
+    
+    if not socio.foto:
+        acoes_sugeridas.append({
+            'tipo': 'info',
+            'icone': 'fas fa-camera',
+            'titulo': 'Adicionar Foto',
+            'descricao': 'Cadastre uma foto para o sócio',
+            'acao': 'editar_socio'
+        })
+    
+    if documentos.count() == 0:
+        acoes_sugeridas.append({
+            'tipo': 'info',
+            'icone': 'fas fa-file-plus',
+            'titulo': 'Adicionar Documentos',
+            'descricao': 'Nenhum documento anexado',
+            'acao': 'upload_documento'
+        })
+    
     context = {
         'socio': socio,
         'pagamentos': pagamentos,
         'documentos': documentos,
+        'total_pagamentos': total_pagamentos,
+        'total_pago': total_pago,
+        'total_documentos': total_documentos,
+        'pagamentos_pendentes': pagamentos_pendentes,
+        'ultimo_pagamento': ultimo_pagamento,
+        'tem_atraso': tem_atraso,
+        'acoes_sugeridas': acoes_sugeridas,
     }
     
-    return render(request, 'socios/detalhe.html', context)
+    return render(request, 'socios/detalhes.html', context)
 
 
 @login_required
@@ -413,6 +476,185 @@ def upload_documento(request, socio_id):
 
 @login_required
 @user_passes_test(is_admin_or_manager)
+def relatorio_financeiro(request):
+    """Relatório financeiro completo do clube"""
+    
+    hoje = timezone.now().date()
+    
+    # Filtros de período (padrão: últimos 12 meses)
+    periodo = request.GET.get('periodo', '12')
+    if periodo == '1':
+        data_inicio = hoje.replace(day=1)  # Mês atual
+        titulo_periodo = "Mês Atual"
+    elif periodo == '3':
+        data_inicio = hoje - timedelta(days=90)  # Últimos 3 meses
+        titulo_periodo = "Últimos 3 Meses"
+    elif periodo == '6':
+        data_inicio = hoje - timedelta(days=180)  # Últimos 6 meses
+        titulo_periodo = "Últimos 6 Meses"
+    else:
+        data_inicio = hoje - timedelta(days=365)  # Últimos 12 meses (padrão)
+        titulo_periodo = "Últimos 12 Meses"
+        periodo = '12'
+    
+    # ============ ESTATÍSTICAS GERAIS ============
+    
+    # Total de sócios por status
+    total_socios = Socio.objects.count()
+    socios_ativos = Socio.objects.filter(status='ativo').count()
+    socios_inadimplentes = Socio.objects.filter(status='inadimplente').count()
+    socios_inativos = Socio.objects.filter(status='inativo').count()
+    
+    # ============ RECEITAS ============
+    
+    # Receita confirmada no período
+    receita_periodo = HistoricoPagamento.objects.filter(
+        data_pagamento__gte=data_inicio,
+        status='confirmado'
+    ).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+    
+    # Receita mensal atual (estimativa baseada nos planos ativos)
+    receita_mensal_estimada = Socio.objects.filter(
+        status='ativo'
+    ).aggregate(
+        total=Sum('tipo_assinatura__valor_mensal')
+    )['total'] or Decimal('0.00')
+    
+    # Receita anual projetada
+    receita_anual_projetada = receita_mensal_estimada * 12
+    
+    # ============ INADIMPLÊNCIA ============
+    
+    # Sócios inadimplentes
+    inadimplentes = Socio.objects.filter(
+        data_vencimento__lt=hoje,
+        status__in=['ativo', 'inadimplente']
+    ).select_related('tipo_assinatura')
+    
+    valor_inadimplencia = sum(
+        s.tipo_assinatura.valor_mensal for s in inadimplentes
+    )
+    
+    taxa_inadimplencia = (inadimplentes.count() / total_socios * 100) if total_socios > 0 else 0
+    
+    # ============ CRESCIMENTO ============
+    
+    # Novos sócios no período
+    novos_socios = Socio.objects.filter(
+        data_associacao__gte=data_inicio
+    ).count()
+    
+    # Sócios que se tornaram inativos no período
+    socios_perdidos = Socio.objects.filter(
+        status='inativo',
+        updated_at__gte=data_inicio
+    ).count()
+    
+    crescimento_liquido = novos_socios - socios_perdidos
+    
+    # ============ ANÁLISE POR PLANO ============
+    
+    analise_por_plano = TipoAssinatura.objects.annotate(
+        total_socios=Count('socio', filter=Q(socio__status='ativo')),
+        receita_mensal=F('valor_mensal') * Count('socio', filter=Q(socio__status='ativo')),
+        receita_anual=F('valor_mensal') * Count('socio', filter=Q(socio__status='ativo')) * 12
+    ).filter(ativo=True).order_by('-receita_mensal')
+    
+    # ============ EVOLUÇÃO TEMPORAL ============
+    
+    # Receitas mensais dos últimos 12 meses
+    evolucao_receitas = []
+    for i in range(12):
+        mes = hoje - timedelta(days=30*i)
+        mes_inicio = mes.replace(day=1)
+        if i == 0:
+            # Mês atual até hoje
+            mes_fim = hoje
+        else:
+            # Mês completo
+            proximo_mes = mes_inicio.replace(day=28) + timedelta(days=4)
+            mes_fim = proximo_mes - timedelta(days=proximo_mes.day)
+        
+        receita_mes = HistoricoPagamento.objects.filter(
+            data_pagamento__gte=mes_inicio,
+            data_pagamento__lte=mes_fim,
+            status='confirmado'
+        ).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+        
+        evolucao_receitas.append({
+            'mes': mes_inicio.strftime('%m/%Y'),
+            'receita': float(receita_mes)
+        })
+    
+    evolucao_receitas.reverse()
+    
+    # ============ PREVISÕES ============
+    
+    # Vencimentos nos próximos 30 dias
+    vencimentos_proximos = Socio.objects.filter(
+        data_vencimento__gte=hoje,
+        data_vencimento__lte=hoje + timedelta(days=30),
+        status='ativo'
+    ).aggregate(
+        total=Sum('tipo_assinatura__valor_mensal')
+    )['total'] or Decimal('0.00')
+    
+    # ============ MÉTRICAS DE PERFORMANCE ============
+    
+    # Ticket médio
+    ticket_medio = receita_mensal_estimada / socios_ativos if socios_ativos > 0 else 0
+    
+    # Lifetime Value estimado (baseado em 2 anos de permanência média)
+    ltv_estimado = ticket_medio * 24
+    
+    # Taxa de retenção (simplificada)
+    taxa_retencao = ((socios_ativos - novos_socios) / socios_ativos * 100) if socios_ativos > 0 else 0
+    
+    context = {
+        # Filtros e período
+        'periodo': periodo,
+        'titulo_periodo': titulo_periodo,
+        'data_inicio': data_inicio,
+        'hoje': hoje,
+        
+        # Estatísticas gerais
+        'total_socios': total_socios,
+        'socios_ativos': socios_ativos,
+        'socios_inadimplentes': socios_inadimplentes,
+        'socios_inativos': socios_inativos,
+        
+        # Receitas
+        'receita_periodo': receita_periodo,
+        'receita_mensal_estimada': receita_mensal_estimada,
+        'receita_anual_projetada': receita_anual_projetada,
+        
+        # Inadimplência
+        'valor_inadimplencia': valor_inadimplencia,
+        'taxa_inadimplencia': round(taxa_inadimplencia, 1),
+        
+        # Crescimento
+        'novos_socios': novos_socios,
+        'socios_perdidos': socios_perdidos,
+        'crescimento_liquido': crescimento_liquido,
+        
+        # Análises
+        'analise_por_plano': analise_por_plano,
+        'evolucao_receitas': evolucao_receitas,
+        
+        # Previsões
+        'vencimentos_proximos': vencimentos_proximos,
+        
+        # Métricas
+        'ticket_medio': ticket_medio,
+        'ltv_estimado': ltv_estimado,
+        'taxa_retencao': round(taxa_retencao, 1),
+    }
+    
+    return render(request, 'socios/relatorio_financeiro.html', context)
+
+
+@login_required
+@user_passes_test(is_admin_or_manager)
 def relatorio_inadimplentes(request):
     """Relatório de sócios inadimplentes"""
     
@@ -436,6 +678,92 @@ def relatorio_inadimplentes(request):
     }
     
     return render(request, 'socios/relatorio_inadimplentes.html', context)
+
+
+@login_required
+@user_passes_test(is_admin_or_manager)
+def pagina_pendencias(request):
+    """Dashboard de pendências e alertas"""
+    
+    hoje = timezone.now().date()
+    
+    # Sócios com pagamento em atraso
+    inadimplentes = Socio.objects.filter(
+        data_vencimento__lt=hoje,
+        status__in=['ativo', 'inadimplente']
+    ).select_related('tipo_assinatura').order_by('data_vencimento')
+    
+    # Sócios que vencem nos próximos 7 dias
+    vencem_em_breve = Socio.objects.filter(
+        data_vencimento__gte=hoje,
+        data_vencimento__lte=hoje + timedelta(days=7),
+        status='ativo'
+    ).select_related('tipo_assinatura').order_by('data_vencimento')
+    
+    # Sócios que vencem nos próximos 30 dias
+    vencem_no_mes = Socio.objects.filter(
+        data_vencimento__gte=hoje,
+        data_vencimento__lte=hoje + timedelta(days=30),
+        status='ativo'
+    ).select_related('tipo_assinatura').order_by('data_vencimento')
+    
+    # Sócios sem documentos
+    sem_documentos = Socio.objects.filter(
+        documentos__isnull=True,
+        status='ativo'
+    ).distinct()
+    
+    # Sócios sem foto
+    sem_foto = Socio.objects.filter(
+        foto='',
+        status='ativo'
+    )
+    
+    # Pagamentos pendentes
+    pagamentos_pendentes = HistoricoPagamento.objects.filter(
+        status='pendente'
+    ).select_related('socio').order_by('-data_vencimento')
+    
+    # Sócios inativos há mais de 6 meses
+    data_limite_inativo = hoje - timedelta(days=180)
+    inativos_ha_tempo = Socio.objects.filter(
+        status='inativo',
+        updated_at__lt=data_limite_inativo
+    ).order_by('updated_at')
+    
+    # Estatísticas gerais
+    total_pendencias = (
+        inadimplentes.count() +
+        vencem_em_breve.count() +
+        sem_documentos.count() +
+        pagamentos_pendentes.count()
+    )
+    
+    # Valor total em atraso
+    valor_total_atraso = sum(
+        s.tipo_assinatura.valor_mensal for s in inadimplentes
+    )
+    
+    # Receita potencial dos vencimentos próximos
+    receita_vencimentos = sum(
+        s.tipo_assinatura.valor_mensal for s in vencem_em_breve
+    )
+    
+    context = {
+        'inadimplentes': inadimplentes,
+        'vencem_em_breve': vencem_em_breve,
+        'vencem_no_mes': vencem_no_mes,
+        'sem_documentos': sem_documentos,
+        'sem_foto': sem_foto,
+        'pagamentos_pendentes': pagamentos_pendentes,
+        'inativos_ha_tempo': inativos_ha_tempo,
+        'total_pendencias': total_pendencias,
+        'valor_total_atraso': valor_total_atraso,
+        'receita_vencimentos': receita_vencimentos,
+        'hoje': hoje,
+    }
+    
+    return render(request, 'socios/pendencias.html', context)
 
 
 @login_required

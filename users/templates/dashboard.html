@@ -254,6 +254,72 @@
         </div>
     {% endif %}
 
+    <!-- Acesso Rápido aos Sistemas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>
+                        Acesso Rápido aos Sistemas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'socios:dashboard' %}" class="system-card-link">
+                                <div class="system-card">
+                                    <div class="system-icon bg-primary">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="system-content">
+                                        <h6>Sistema de Sócios</h6>
+                                        <p>Gerencie membros, pagamentos e assinaturas do clube</p>
+                                        <div class="system-stats">
+                                            <small><i class="fas fa-user-check me-1"></i>Gestão Completa</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'tournament_dashboard' %}" class="system-card-link">
+                                <div class="system-card">
+                                    <div class="system-icon bg-warning">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div class="system-content">
+                                        <h6>Sistema de Torneios</h6>
+                                        <p>Organize competições e acompanhe resultados</p>
+                                        <div class="system-stats">
+                                            <small><i class="fas fa-chess me-1"></i>Competições</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="system-card disabled">
+                                <div class="system-icon bg-secondary">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <div class="system-content">
+                                    <h6>Configurações</h6>
+                                    <p>Personalize seu clube e preferências</p>
+                                    <div class="system-stats">
+                                        <small><i class="fas fa-wrench me-1"></i>Em Breve</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Ranking do Clube -->
     <div class="row">
         <div class="col-12">
@@ -594,6 +660,76 @@
         height: 24px;
     }
 
+    /* System Cards */
+    .system-card-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .system-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: all var(--transition-normal);
+        border: 2px solid var(--gray-200);
+        height: 100%;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .system-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-color);
+    }
+
+    .system-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .system-card.disabled:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: var(--gray-200);
+    }
+
+    .system-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .system-content {
+        flex: 1;
+    }
+
+    .system-content h6 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--gray-800);
+        font-size: 1.1rem;
+    }
+
+    .system-content p {
+        color: var(--gray-600);
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .system-stats {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+    }
+
     /* Responsividade */
     @media (max-width: 768px) {
         .welcome-title {
@@ -620,6 +756,18 @@
         
         .vs-divider {
             margin: 0;
+        }
+
+        .system-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .system-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+            margin: 0 auto;
         }
     }
 </style>

@@ -1,0 +1,527 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Pagamento - {{ socio.nome_exibicao }} - ClubPro{% endblock %}
+
+{% block content %}
+<div class="pagamento-form fade-in-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="header-icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 class="page-title mb-1">Registrar Pagamento</h1>
+                                <p class="page-subtitle mb-0">
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ socio.nome_exibicao }} ({{ socio.numero_socio }})
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'socios:detalhe' socio.id %}" class="btn btn-outline">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações do Sócio -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informações do Sócio
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <label class="info-label">Plano Atual</label>
+                                <div class="info-value">
+                                    <span class="badge badge-plano" style="background-color: {{ socio.tipo_assinatura.cor }}20; color: {{ socio.tipo_assinatura.cor }};">
+                                        {{ socio.tipo_assinatura.nome }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <label class="info-label">Valor Mensal</label>
+                                <div class="info-value">
+                                    <strong class="text-success">R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <label class="info-label">Vencimento Atual</label>
+                                <div class="info-value">
+                                    <span class="{% if socio.dias_para_vencimento < 0 %}text-danger{% elif socio.dias_para_vencimento <= 3 %}text-warning{% endif %}">
+                                        {{ socio.data_vencimento|date:"d/m/Y" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <label class="info-label">Status</label>
+                                <div class="info-value">
+                                    <span class="status-badge status-{{ socio.status }}">
+                                        {{ socio.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário de Pagamento -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        Dados do Pagamento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.data_pagamento.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ form.data_pagamento.label }}
+                                </label>
+                                {{ form.data_pagamento }}
+                                {% if form.data_pagamento.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.data_pagamento.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.valor.id_for_label }}" class="form-label">
+                                    <i class="fas fa-dollar-sign me-1"></i>
+                                    {{ form.valor.label }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    {{ form.valor }}
+                                </div>
+                                {% if form.valor.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.valor.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.mes_referencia.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar-check me-1"></i>
+                                    {{ form.mes_referencia.label }}
+                                </label>
+                                {{ form.mes_referencia }}
+                                {% if form.mes_referencia.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.mes_referencia.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.forma_pagamento.id_for_label }}" class="form-label">
+                                    <i class="fas fa-credit-card me-1"></i>
+                                    {{ form.forma_pagamento.label }}
+                                </label>
+                                {{ form.forma_pagamento }}
+                                {% if form.forma_pagamento.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.forma_pagamento.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    {{ form.status.label }}
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.status.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.data_vencimento.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar-times me-1"></i>
+                                    {{ form.data_vencimento.label }}
+                                </label>
+                                {{ form.data_vencimento }}
+                                {% if form.data_vencimento.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.data_vencimento.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Data limite para pagamento deste valor
+                                </small>
+                            </div>
+                        </div>
+
+                        {% if form.comprovante %}
+                        <div class="mb-3">
+                            <label for="{{ form.comprovante.id_for_label }}" class="form-label">
+                                <i class="fas fa-file-upload me-1"></i>
+                                {{ form.comprovante.label }}
+                            </label>
+                            {{ form.comprovante }}
+                            {% if form.comprovante.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.comprovante.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Anexe um comprovante do pagamento (opcional)
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        {% if form.descricao %}
+                        <div class="mb-4">
+                            <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                                <i class="fas fa-comment me-1"></i>
+                                {{ form.descricao.label }}
+                            </label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.descricao.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'socios:detalhe' socio.id %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>
+                                Registrar Pagamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Resumo do Pagamento -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>
+                        Resumo do Pagamento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="summary-item">
+                        <div class="summary-label">Valor da Mensalidade</div>
+                        <div class="summary-value text-success">R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Próximo Vencimento</div>
+                        <div class="summary-value">
+                            {% if socio.dias_para_vencimento < 0 %}
+                                <span class="text-danger">Vencido há {{ socio.dias_para_vencimento|add:"-1"|add:"-1" }} dias</span>
+                            {% elif socio.dias_para_vencimento == 0 %}
+                                <span class="text-warning">Vence hoje</span>
+                            {% else %}
+                                <span>{{ socio.data_vencimento|date:"d/m/Y" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Duração do Plano</div>
+                        <div class="summary-value">{{ socio.tipo_assinatura.duracao_dias }} dias</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimos Pagamentos -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Últimos Pagamentos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if socio.pagamentos.all %}
+                        {% for pagamento in socio.pagamentos.all|slice:":5" %}
+                        <div class="payment-history-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="payment-date">{{ pagamento.data_pagamento|date:"d/m/Y" }}</div>
+                                    <small class="text-muted">{{ pagamento.get_forma_pagamento_display }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="payment-value">R$ {{ pagamento.valor|floatformat:2 }}</div>
+                                    <span class="payment-status status-{{ pagamento.status }}">
+                                        {{ pagamento.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-receipt fa-2x mb-2"></i>
+                            <p>Nenhum pagamento anterior</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Pagamento Form Styles */
+    .pagamento-form {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    .page-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    /* Info items */
+    .info-item {
+        margin-bottom: 1rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-size: 1rem;
+    }
+
+    .badge-plano {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+    }
+
+    /* Status badges */
+    .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-ativo { 
+        background: rgba(39, 174, 96, 0.15); 
+        color: #27ae60; 
+    }
+    
+    .status-inadimplente { 
+        background: rgba(231, 76, 60, 0.15); 
+        color: #e74c3c; 
+    }
+
+    .status-confirmado { 
+        background: rgba(39, 174, 96, 0.15); 
+        color: #27ae60; 
+    }
+    
+    .status-pendente { 
+        background: rgba(243, 156, 18, 0.15); 
+        color: #f39c12; 
+    }
+
+    /* Form styling */
+    .form-control, .form-select {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-300);
+        padding: 0.75rem;
+        transition: all var(--transition-fast);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(26, 26, 46, 0.25);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    /* Summary items */
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+
+    .summary-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    /* Payment history */
+    .payment-history-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .payment-history-item:last-child {
+        border-bottom: none;
+    }
+
+    .payment-date {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.9rem;
+    }
+
+    .payment-value {
+        font-weight: 600;
+        color: var(--success-color);
+        font-size: 0.9rem;
+    }
+
+    .payment-status {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .summary-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-calcular nova data de vencimento quando status for confirmado
+        const statusField = document.querySelector('select[name="status"]');
+        const dataVencimentoField = document.querySelector('input[name="data_vencimento"]');
+        const dataPagamentoField = document.querySelector('input[name="data_pagamento"]');
+        
+        if (statusField && dataVencimentoField && dataPagamentoField) {
+            function calcularNovaDataVencimento() {
+                if (statusField.value === 'confirmado' && dataPagamentoField.value) {
+                    const dataPagamento = new Date(dataPagamentoField.value);
+                    const duracaoDias = {{ socio.tipo_assinatura.duracao_dias }};
+                    
+                    dataPagamento.setDate(dataPagamento.getDate() + duracaoDias);
+                    
+                    const ano = dataPagamento.getFullYear();
+                    const mes = String(dataPagamento.getMonth() + 1).padStart(2, '0');
+                    const dia = String(dataPagamento.getDate()).padStart(2, '0');
+                    
+                    dataVencimentoField.value = `${ano}-${mes}-${dia}`;
+                }
+            }
+            
+            statusField.addEventListener('change', calcularNovaDataVencimento);
+            dataPagamentoField.addEventListener('change', calcularNovaDataVencimento);
+        }
+    });
+</script>
+{% endblock %}
