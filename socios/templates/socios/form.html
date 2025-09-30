@@ -1,0 +1,782 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if socio.id %}Editar Sócio{% else %}Novo Sócio{% endif %} - ClubPro
+{% endblock %}
+
+{% block content %}
+<div class="socio-form fade-in-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="page-title">
+                            <i class="fas {% if socio.id %}fa-user-edit{% else %}fa-user-plus{% endif %} text-gold me-3"></i>
+                            {% if socio.id %}Editar Sócio{% else %}Novo Sócio{% endif %}
+                        </h1>
+                        <p class="page-subtitle">
+                            {% if socio.id %}
+                                Atualize as informações do sócio {{ socio.nome_exibicao }}
+                            {% else %}
+                                Preencha os dados para cadastrar um novo membro
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'socios:listar' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Voltar à Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <form method="post" enctype="multipart/form-data" id="socioForm" novalidate>
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Seção Principal -->
+            <div class="col-lg-8">
+                <!-- Dados Pessoais -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2"></i>
+                            Dados Pessoais
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.nome_completo.id_for_label }}" class="form-label required">
+                                    Nome Completo
+                                </label>
+                                {{ form.nome_completo }}
+                                {% if form.nome_completo.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.nome_completo.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Nome completo como no documento</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.nome_social.id_for_label }}" class="form-label">
+                                    Nome Social
+                                </label>
+                                {{ form.nome_social }}
+                                {% if form.nome_social.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.nome_social.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Nome social ou de preferência</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.cpf.id_for_label }}" class="form-label required">
+                                    CPF
+                                </label>
+                                {{ form.cpf }}
+                                {% if form.cpf.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.cpf.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.data_nascimento.id_for_label }}" class="form-label required">
+                                    Data de Nascimento
+                                </label>
+                                {{ form.data_nascimento }}
+                                {% if form.data_nascimento.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.data_nascimento.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.genero.id_for_label }}" class="form-label">
+                                    Gênero
+                                </label>
+                                {{ form.genero }}
+                                {% if form.genero.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.genero.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contato -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-address-book me-2"></i>
+                            Informações de Contato
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label required">
+                                    E-mail
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.telefone.id_for_label }}" class="form-label">
+                                    Telefone
+                                </label>
+                                {{ form.telefone }}
+                                {% if form.telefone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.telefone.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.endereco.id_for_label }}" class="form-label">
+                                Endereço Completo
+                            </label>
+                            {{ form.endereco }}
+                            {% if form.endereco.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.endereco.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dados do Xadrez -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chess me-2"></i>
+                            Informações de Xadrez
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.rating_fide.id_for_label }}" class="form-label">
+                                    Rating FIDE
+                                </label>
+                                {{ form.rating_fide }}
+                                {% if form.rating_fide.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.rating_fide.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.rating_cbx.id_for_label }}" class="form-label">
+                                    Rating CBX
+                                </label>
+                                {{ form.rating_cbx }}
+                                {% if form.rating_cbx.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.rating_cbx.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.categoria_cbx.id_for_label }}" class="form-label">
+                                    Categoria CBX
+                                </label>
+                                {{ form.categoria_cbx }}
+                                {% if form.categoria_cbx.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.categoria_cbx.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>
+                            Observações Adicionais
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form.observacoes }}
+                        {% if form.observacoes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.observacoes.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Informações adicionais sobre o sócio (alergias, necessidades especiais, etc.)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Foto -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-camera me-2"></i>
+                            Foto do Sócio
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="foto-preview mb-3">
+                            {% if socio.foto %}
+                                <img id="fotoPreview" src="{{ socio.foto.url }}" alt="Foto do sócio" class="img-fluid rounded-circle">
+                            {% else %}
+                                <div id="fotoPreview" class="foto-placeholder">
+                                    <i class="fas fa-user fa-3x"></i>
+                                    <p class="mt-2 mb-0">Nenhuma foto</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {{ form.foto }}
+                        {% if form.foto.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.foto.errors.0 }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="form-text mt-2">
+                            Formato: JPG, PNG (máx. 2MB)
+                        </div>
+                        
+                        {% if socio.foto %}
+                            <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="removerFoto()">
+                                <i class="fas fa-trash me-1"></i>
+                                Remover Foto
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Informações da Associação -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-id-card me-2"></i>
+                            Dados da Associação
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if not socio.id %}
+                            <div class="mb-3">
+                                <label for="{{ form.numero_socio.id_for_label }}" class="form-label">
+                                    Número do Sócio
+                                </label>
+                                {{ form.numero_socio }}
+                                {% if form.numero_socio.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.numero_socio.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Deixe em branco para gerar automaticamente</div>
+                            </div>
+                        {% else %}
+                            <div class="info-display mb-3">
+                                <label class="form-label">Número do Sócio</label>
+                                <div class="info-value">{{ socio.numero_socio }}</div>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.tipo_assinatura.id_for_label }}" class="form-label required">
+                                Tipo de Assinatura
+                            </label>
+                            {{ form.tipo_assinatura }}
+                            {% if form.tipo_assinatura.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.tipo_assinatura.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.data_associacao.id_for_label }}" class="form-label required">
+                                Data de Associação
+                            </label>
+                            {{ form.data_associacao }}
+                            {% if form.data_associacao.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.data_associacao.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.data_vencimento.id_for_label }}" class="form-label required">
+                                Próximo Vencimento
+                            </label>
+                            {{ form.data_vencimento }}
+                            {% if form.data_vencimento.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.data_vencimento.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if socio.id %}
+                            <div class="mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">
+                                    Status
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.status.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-gold btn-lg">
+                                <i class="fas {% if socio.id %}fa-save{% else %}fa-user-plus{% endif %} me-2"></i>
+                                {% if socio.id %}Salvar Alterações{% else %}Cadastrar Sócio{% endif %}
+                            </button>
+                            
+                            <a href="{% url 'socios:listar' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                            
+                            {% if socio.id %}
+                                <hr>
+                                <a href="{% url 'socios:visualizar' socio.id %}" class="btn btn-outline-info">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Ver Detalhes
+                                </a>
+                                
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmarExclusao()">
+                                    <i class="fas fa-trash me-2"></i>
+                                    Excluir Sócio
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+{% if socio.id %}
+<div class="modal fade" id="modalExclusao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o sócio <strong>{{ socio.nome_exibicao }}</strong>?</p>
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Esta ação não pode ser desfeita e removerá todos os dados associados.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="{% url 'socios:excluir' socio.id %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-1"></i>
+                    Confirmar Exclusão
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    /* Form Styles */
+    .socio-form {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Form Labels */
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-label.required::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    /* Form Controls */
+    .form-control, .form-select {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-300);
+        padding: 0.75rem;
+        transition: all var(--transition-normal);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+    }
+
+    /* Card Headers */
+    .card-header {
+        background: var(--light-gray);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        color: var(--gray-800);
+        font-weight: 600;
+    }
+
+    /* Foto Preview */
+    .foto-preview {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .foto-preview img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border: 3px solid var(--light-gray);
+    }
+
+    .foto-placeholder {
+        width: 150px;
+        height: 150px;
+        border: 2px dashed var(--gray-400);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-500);
+        background: var(--light-gray);
+    }
+
+    /* Info Display */
+    .info-display .form-label {
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        padding: 0.75rem;
+        background: var(--light-gray);
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+
+    /* Form Text */
+    .form-text {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-top: 0.25rem;
+    }
+
+    /* Invalid Feedback */
+    .invalid-feedback {
+        font-size: 0.875rem;
+        color: #dc3545;
+        margin-top: 0.25rem;
+    }
+
+    /* Button Styles */
+    .btn-gold {
+        background: var(--gold-color);
+        border-color: var(--gold-color);
+        color: var(--white);
+        font-weight: 600;
+    }
+
+    .btn-gold:hover {
+        background: var(--gold-dark);
+        border-color: var(--gold-dark);
+        color: var(--white);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .foto-preview, 
+        .foto-preview img,
+        .foto-placeholder {
+            width: 120px;
+            height: 120px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Converter datas de ISO para formato brasileiro na inicialização
+        const initialDateInputs = document.querySelectorAll('input[data-mask="00/00/0000"]');
+        initialDateInputs.forEach(function(input) {
+            if (input.value && input.value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const [year, month, day] = input.value.split('-');
+                input.value = `${day}/${month}/${year}`;
+            }
+        });
+
+        // Preview da foto
+        const fotoInput = document.getElementById('id_foto');
+        if (fotoInput) {
+            fotoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('fotoPreview');
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="img-fluid rounded-circle">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Máscara para CPF
+        const cpfInput = document.getElementById('id_cpf');
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = value;
+            });
+        }
+
+        // Máscara para telefone
+        const telefoneInput = document.getElementById('id_telefone');
+        if (telefoneInput) {
+            telefoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 10) {
+                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                } else {
+                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Máscaras para datas (dd/mm/aaaa)
+        const dateInputs = document.querySelectorAll('input[data-mask="00/00/0000"]');
+        dateInputs.forEach(function(input) {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                value = value.replace(/(\d{2})(\d)/, '$1/$2');
+                value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+                value = value.replace(/(\d{2})\/(\d{2})\/(\d{4})\d*/, '$1/$2/$3');
+                e.target.value = value;
+            });
+            
+            // Validação de data ao perder foco
+            input.addEventListener('blur', function(e) {
+                const value = e.target.value;
+                if (value && value.length === 10) {
+                    const parts = value.split('/');
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0]);
+                        const month = parseInt(parts[1]);
+                        const year = parseInt(parts[2]);
+                        
+                        // Validação básica
+                        if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) {
+                            e.target.setCustomValidity('Data inválida. Use o formato dd/mm/aaaa');
+                            e.target.classList.add('is-invalid');
+                        } else {
+                            // Validar se a data existe
+                            const testDate = new Date(year, month - 1, day);
+                            if (testDate.getDate() !== day || testDate.getMonth() !== month - 1 || testDate.getFullYear() !== year) {
+                                e.target.setCustomValidity('Data inválida. Verifique o dia e mês informados.');
+                                e.target.classList.add('is-invalid');
+                            } else {
+                                e.target.setCustomValidity('');
+                                e.target.classList.remove('is-invalid');
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Máscara para mês/ano (mm/aaaa)
+        const monthInputs = document.querySelectorAll('input[data-mask="00/0000"]');
+        monthInputs.forEach(function(input) {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                value = value.replace(/(\d{2})(\d)/, '$1/$2');
+                value = value.replace(/(\d{2})\/(\d{4})\d*/, '$1/$2');
+                e.target.value = value;
+            });
+            
+            // Validação de mês/ano ao perder foco
+            input.addEventListener('blur', function(e) {
+                const value = e.target.value;
+                if (value && value.length === 7) {
+                    const parts = value.split('/');
+                    if (parts.length === 2) {
+                        const month = parseInt(parts[0]);
+                        const year = parseInt(parts[1]);
+                        
+                        if (month < 1 || month > 12 || year < 1900 || year > 2100) {
+                            e.target.setCustomValidity('Mês/Ano inválido. Use o formato mm/aaaa');
+                            e.target.classList.add('is-invalid');
+                        } else {
+                            e.target.setCustomValidity('');
+                            e.target.classList.remove('is-invalid');
+                        }
+                    }
+                }
+            });
+        });
+
+        // Função para converter data br para iso antes do envio
+        function convertDateToISO(dateString) {
+            if (!dateString || dateString.length !== 10) return dateString;
+            const parts = dateString.split('/');
+            if (parts.length !== 3) return dateString;
+            const [day, month, year] = parts;
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+
+        // Validação do formulário
+        const form = document.getElementById('socioForm');
+        form.addEventListener('submit', function(e) {
+            // Converter datas para formato ISO antes do envio
+            const submitDateInputs = document.querySelectorAll('input[data-mask="00/00/0000"]');
+            
+            submitDateInputs.forEach(function(input) {
+                if (input.value && input.value.includes('/')) {
+                    input.value = convertDateToISO(input.value);
+                }
+            });
+
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+
+        // Auto-calcular data de vencimento
+        const dataAssociacaoInput = document.getElementById('id_data_associacao');
+        const dataVencimentoInput = document.getElementById('id_data_vencimento');
+        
+        if (dataAssociacaoInput && dataVencimentoInput) {
+            dataAssociacaoInput.addEventListener('blur', function() {
+                if (this.value && this.value.length === 10) {
+                    // Converter dd/mm/aaaa para Date
+                    const parts = this.value.split('/');
+                    if (parts.length === 3) {
+                        const dia = parseInt(parts[0]);
+                        const mes = parseInt(parts[1]) - 1; // Mês é 0-based
+                        const ano = parseInt(parts[2]);
+                        
+                        if (dia >= 1 && dia <= 31 && mes >= 0 && mes <= 11 && ano >= 1900) {
+                            const dataAssociacao = new Date(ano, mes, dia);
+                            const dataVencimento = new Date(dataAssociacao);
+                            dataVencimento.setMonth(dataVencimento.getMonth() + 1);
+                            
+                            // Formatar para dd/mm/aaaa
+                            const diaVenc = String(dataVencimento.getDate()).padStart(2, '0');
+                            const mesVenc = String(dataVencimento.getMonth() + 1).padStart(2, '0');
+                            const anoVenc = dataVencimento.getFullYear();
+                            
+                            if (!dataVencimentoInput.value) {
+                                dataVencimentoInput.value = `${diaVenc}/${mesVenc}/${anoVenc}`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    function removerFoto() {
+        const preview = document.getElementById('fotoPreview');
+        const input = document.getElementById('id_foto');
+        
+        preview.innerHTML = `
+            <div class="foto-placeholder">
+                <i class="fas fa-user fa-3x"></i>
+                <p class="mt-2 mb-0">Nenhuma foto</p>
+            </div>
+        `;
+        input.value = '';
+    }
+
+    function confirmarExclusao() {
+        new bootstrap.Modal(document.getElementById('modalExclusao')).show();
+    }
+</script>
+{% endblock %}

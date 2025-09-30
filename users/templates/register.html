@@ -1,13 +1,218 @@
 {% extends 'base.html' %}
 
+{% block title %}Cadastro - ClubPro{% endblock %}
+
 {% block content %}
-<div class="registration-container">
-    <h2>Register</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+<div class="auth-page fade-in-up">
+    <div class="container">
+        <div class="row justify-content-center min-vh-75 align-items-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h2 class="auth-title">Junte-se ao ClubPro</h2>
+                        <p class="auth-subtitle">Crie sua conta e comece a gerenciar seu clube</p>
+                    </div>
+                    
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="id_username" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Nome de Usuário
+                                    </label>
+                                    <input type="text" 
+                                           name="username" 
+                                           class="form-control" 
+                                           id="id_username"
+                                           placeholder="Escolha um nome de usuário único"
+                                           required>
+                                    <small class="form-text text-muted">
+                                        Use apenas letras, números e underscores
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_password1" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Senha
+                                    </label>
+                                    <div class="password-input">
+                                        <input type="password" 
+                                               name="password1" 
+                                               class="form-control" 
+                                               id="id_password1"
+                                               placeholder="Crie uma senha segura"
+                                               required>
+                                        <button type="button" class="password-toggle" onclick="togglePassword('id_password1', 'passwordIcon1')">
+                                            <i class="fas fa-eye" id="passwordIcon1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_password2" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Confirmar Senha
+                                    </label>
+                                    <div class="password-input">
+                                        <input type="password" 
+                                               name="password2" 
+                                               class="form-control" 
+                                               id="id_password2"
+                                               placeholder="Repita sua senha"
+                                               required>
+                                        <button type="button" class="password-toggle" onclick="togglePassword('id_password2', 'passwordIcon2')">
+                                            <i class="fas fa-eye" id="passwordIcon2"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="password-strength">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Sua senha deve ter pelo menos 8 caracteres
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    Eu concordo com os 
+                                    <a href="#" class="auth-link">Termos de Uso</a> 
+                                    e 
+                                    <a href="#" class="auth-link">Política de Privacidade</a>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Quero receber novidades e atualizações por email
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-rocket me-2"></i>
+                            Criar Conta
+                        </button>
+                    </form>
+                    
+                    <div class="auth-divider">
+                        <span>ou</span>
+                    </div>
+                    
+                    <div class="auth-links">
+                        <p class="text-center">
+                            Já tem uma conta?
+                            <a href="{% url 'login' %}" class="auth-link">
+                                Faça login aqui
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="auth-footer">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <i class="fas fa-shield-alt text-success fa-2x mb-2"></i>
+                            <p class="small text-muted">Dados Seguros</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-users text-primary fa-2x mb-2"></i>
+                            <p class="small text-muted">Comunidade Ativa</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-rocket text-warning fa-2x mb-2"></i>
+                            <p class="small text-muted">Fácil de Usar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    /* Register Page Specific Styles */
+    .password-strength {
+        margin-bottom: 1rem;
+    }
+    
+    .form-text {
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .auth-footer .row {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--gray-200);
+    }
+    
+    .auth-footer i {
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Password strength indicator */
+    .password-strength-indicator {
+        height: 4px;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        background: var(--gray-200);
+        transition: all var(--transition-fast);
+    }
+    
+    .strength-weak { background: var(--danger-color); width: 33%; }
+    .strength-medium { background: var(--warning-color); width: 66%; }
+    .strength-strong { background: var(--success-color); width: 100%; }
+</style>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const passwordIcon = document.getElementById(iconId);
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            passwordIcon.className = 'fas fa-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            passwordIcon.className = 'fas fa-eye';
+        }
+    }
+    
+    // Password strength checker
+    document.addEventListener('DOMContentLoaded', function() {
+        const password1 = document.getElementById('id_password1');
+        const password2 = document.getElementById('id_password2');
+        
+        function checkPasswordMatch() {
+            if (password2.value && password1.value !== password2.value) {
+                password2.setCustomValidity('As senhas não coincidem');
+                password2.classList.add('is-invalid');
+            } else {
+                password2.setCustomValidity('');
+                password2.classList.remove('is-invalid');
+            }
+        }
+        
+        password1.addEventListener('input', checkPasswordMatch);
+        password2.addEventListener('input', checkPasswordMatch);
+    });
+</script>
 {% endblock %} 

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'users',
     'lichess',
     'main',
+    'socios',
     'widget_tweaks',
     'corsheaders',
 ]
@@ -78,7 +79,9 @@ ROOT_URLCONF = 'clubpro.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'clubpro' / 'base_templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -147,7 +150,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Redirect to this URL after successful login
-LOGIN_REDIRECT_URL = 'landing-page'  # Replace 'dashboard' with your desired URL name
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_URL = '/users/login/'
 LICHESS_CLIENT_SECRET = 'lichess-api-demo'
 LICHESS_REDIRECT_URI = 'https://738e2ed0cbd6.ngrok-free.app/users/lichess-callback/'
 LICHESS_CLIENT_ID = 'https://738e2ed0cbd6.ngrok-free.app'

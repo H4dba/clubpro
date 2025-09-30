@@ -1,0 +1,74 @@
+[
+    {
+        "model": "socios.tipoassinatura",
+        "pk": 1,
+        "fields": {
+            "nome": "Mensalidade Básica",
+            "descricao": "Plano básico com acesso às dependências do clube",
+            "valor": "150.00",
+            "periodicidade": "mensal",
+            "cor": "#3498db",
+            "ativo": true
+        }
+    },
+    {
+        "model": "socios.tipoassinatura",
+        "pk": 2,
+        "fields": {
+            "nome": "Mensalidade Premium",
+            "descricao": "Plano premium com aulas particulares incluídas",
+            "valor": "250.00",
+            "periodicidade": "mensal",
+            "cor": "#9b59b6",
+            "ativo": true
+        }
+    },
+    {
+        "model": "socios.tipoassinatura",
+        "pk": 3,
+        "fields": {
+            "nome": "Trimestral",
+            "descricao": "Pagamento trimestral com desconto",
+            "valor": "400.00",
+            "periodicidade": "trimestral",
+            "cor": "#27ae60",
+            "ativo": true
+        }
+    },
+    {
+        "model": "socios.tipoassinatura",
+        "pk": 4,
+        "fields": {
+            "nome": "Anual",
+            "descricao": "Pagamento anual com maior desconto",
+            "valor": "1500.00",
+            "periodicidade": "anual",
+            "cor": "#f39c12",
+            "ativo": true
+        }
+    },
+    {
+        "model": "socios.tipoassinatura",
+        "pk": 5,
+        "fields": {
+            "nome": "Estudante",
+            "descricao": "Plano especial para estudantes (com comprovante)",
+            "valor": "80.00",
+            "periodicidade": "mensal",
+            "cor": "#e74c3c",
+            "ativo": true
+        }
+    },
+    {
+        "model": "socios.tipoassinatura",
+        "pk": 6,
+        "fields": {
+            "nome": "Idoso (60+)",
+            "descricao": "Plano especial para pessoas acima de 60 anos",
+            "valor": "100.00",
+            "periodicidade": "mensal",
+            "cor": "#34495e",
+            "ativo": true
+        }
+    }
+]

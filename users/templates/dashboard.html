@@ -1,228 +1,626 @@
 {% extends 'base.html' %}
 
+{% block title %}Dashboard - ClubPro{% endblock %}
+
 {% block content %}
-<div class="dashboard-container">
-    <div class="profile-section">
-        <h2>Bem-vindo, {{ user.username }}!</h2>
-        
-        {% if not user.is_lichess_connected %}
-            <div class="connect-lichess-box">
-                <p>Conecte sua conta Lichess para ver seus ratings e participar de torneios!</p>
-                <a href="{% url 'connect_lichess' %}" class="btn btn-primary">Conectar Conta Lichess</a>
+<div class="dashboard-modern fade-in-up">
+    <!-- Header do Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="welcome-title mb-2">
+                            <i class="fas fa-chess-king text-gold"></i>
+                            Olá, {{ user.username }}!
+                        </h1>
+                        <p class="welcome-subtitle mb-0">
+                            {% if user.is_lichess_connected %}
+                                Bem-vindo de volta ao ClubPro. Aqui está um resumo da sua atividade.
+                            {% else %}
+                                Conecte sua conta Lichess para desbloquear todas as funcionalidades!
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="welcome-stats">
+                            <small class="text-muted">Último acesso</small>
+                            <div class="fw-bold">{{ user.last_login|date:"d/m/Y H:i" }}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        {% else %}
-            <div class="user-stats">
-                <div class="ratings-box">
-                    <h3>Seus Ratings no Lichess</h3>
-                    <div class="ratings-grid">
-                        {% if perfil_lichess.bullet_rating %}
-                        <div class="rating-card">
-                            <h4>Bullet</h4>
-                            <span class="rating">{{ perfil_lichess.bullet_rating }}</span>
-                            <small>{{ perfil_lichess.bullet_games_played }} jogos</small>
-                        </div>
-                        {% endif %}
-                        
-                        {% if perfil_lichess.blitz_rating %}
-                        <div class="rating-card">
-                            <h4>Blitz</h4>
-                            <span class="rating">{{ perfil_lichess.blitz_rating }}</span>
-                            <small>{{ perfil_lichess.blitz_games_played }} jogos</small>
-                        </div>
-                        {% endif %}
-                        
-                        {% if perfil_lichess.rapid_rating %}
-                        <div class="rating-card">
-                            <h4>Rapid</h4>
-                            <span class="rating">{{ perfil_lichess.rapid_rating }}</span>
-                            <small>{{ perfil_lichess.rapid_games_played }} jogos</small>
-                        </div>
-                        {% endif %}
-                        
-                        {% if perfil_lichess.classical_rating %}
-                        <div class="rating-card">
-                            <h4>Classical</h4>
-                            <span class="rating">{{ perfil_lichess.classical_rating }}</span>
-                            <small>{{ perfil_lichess.classical_games_played }} jogos</small>
-                        </div>
-                        {% endif %}
-                        
-                        {% if perfil_lichess.puzzles_rating %}
-                        <div class="rating-card">
-                            <h4>Puzzles</h4>
-                            <span class="rating">{{ perfil_lichess.puzzles_rating }}</span>
-                            <small>{{ perfil_lichess.puzzles_solved }} resolvidos</small>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="update-section">
-                        <a href="{% url 'atualizar_dados_lichess' %}" class="btn btn-success">
-                            🔄 Atualizar Dados do Lichess
-                        </a>
-                    </div>
-                </div>
-
-                {% if current_games %}
-                <div class="current-games">
-                    <h3>Jogos Atuais</h3>
-                    <div class="games-list">
-                        {% for game in current_games %}
-                        <div class="game-card">
-                            <div class="players">
-                                <div class="white-player">
-                                    <span class="player-name">{{ game.white.name }}</span>
-                                    <span class="player-rating">({{ game.white.rating }})</span>
-                                </div>
-                                <div class="vs">vs</div>
-                                <div class="black-player">
-                                    <span class="player-name">{{ game.black.name }}</span>
-                                    <span class="player-rating">({{ game.black.rating }})</span>
-                                </div>
-                            </div>
-                            <div class="game-info">
-                                <span class="game-speed">{{ game.speed|title }}</span>
-                                {% if game.winner == 'white' %}
-                                    <span class="game-result">White won</span>
-                                {% elif game.winner == 'black' %}
-                                    <span class="game-result">Black won</span>
-                                {% else %}
-                                    <span class="game-result">Draw</span>
-                                {% endif %}
-                            </div>
-                            <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-secondary">
-                                Ver Jogo
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if recent_games %}
-                <div class="recent-games">
-                    <h3>Jogos Recentes</h3>
-                    <div class="games-list">
-                        {% for game in recent_games %}
-                        <div class="game-card">
-                            <p>{{ game.white.name }} vs {{ game.black.name }}</p>
-                            <p>Result: {{ game.winner|default:"Draw" }}</p>
-                            <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-sm btn-secondary">
-                                Ver Jogo
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        {% endif %}
+        </div>
     </div>
 
-    <div class="leaderboard-section">
-        <h3>Ranking do Clube</h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Posição</th>
-                    <th>Jogador</th>
-                    <th>Rating Rapid</th>
-                    <th>Rating Blitz</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for player in top_players %}
-                <tr {% if player.username == user.username %}class="current-user"{% endif %}>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ player.username }}</td>
-                    <td>{{ player.rapid_rating|default:"-" }}</td>
-                    <td>{{ player.blitz_rating|default:"-" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    {% if not user.is_lichess_connected %}
+        <!-- Card de Conexão Lichess -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card connect-lichess-card">
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="mb-2">
+                                    <i class="fab fa-lichess me-2 text-warning"></i>
+                                    Conectar ao Lichess
+                                </h4>
+                                <p class="mb-3 text-muted">
+                                    Conecte sua conta Lichess para sincronizar ratings, participar de torneios 
+                                    e acompanhar suas estatísticas em tempo real.
+                                </p>
+                                <div class="connect-benefits mb-3">
+                                    <small class="d-block mb-1">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Sincronização automática de ratings
+                                    </small>
+                                    <small class="d-block mb-1">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Participação em torneios do clube
+                                    </small>
+                                    <small class="d-block">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Histórico completo de partidas
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <a href="{% url 'connect_lichess' %}" class="btn btn-gold btn-lg">
+                                    <i class="fab fa-lichess me-2"></i>
+                                    Conectar Agora
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Seção de Ratings e Atualização -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Seus Ratings no Lichess
+                            </h5>
+                        </div>
+                        <a href="{% url 'atualizar_dados_lichess' %}" class="btn btn-sm btn-gold">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Atualizar
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="ratings-modern-grid">
+                            {% if perfil_lichess.bullet_rating %}
+                                <div class="rating-card-modern bullet">
+                                    <div class="rating-icon">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <div class="rating-content">
+                                        <h6 class="rating-type">Bullet</h6>
+                                        <div class="rating-value">{{ perfil_lichess.bullet_rating }}</div>
+                                        <small class="rating-games">{{ perfil_lichess.bullet_games_played|default:0 }} jogos</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if perfil_lichess.blitz_rating %}
+                                <div class="rating-card-modern blitz">
+                                    <div class="rating-icon">
+                                        <i class="fas fa-zap"></i>
+                                    </div>
+                                    <div class="rating-content">
+                                        <h6 class="rating-type">Blitz</h6>
+                                        <div class="rating-value">{{ perfil_lichess.blitz_rating }}</div>
+                                        <small class="rating-games">{{ perfil_lichess.blitz_games_played|default:0 }} jogos</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if perfil_lichess.rapid_rating %}
+                                <div class="rating-card-modern rapid">
+                                    <div class="rating-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="rating-content">
+                                        <h6 class="rating-type">Rapid</h6>
+                                        <div class="rating-value">{{ perfil_lichess.rapid_rating }}</div>
+                                        <small class="rating-games">{{ perfil_lichess.rapid_games_played|default:0 }} jogos</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if perfil_lichess.classical_rating %}
+                                <div class="rating-card-modern classical">
+                                    <div class="rating-icon">
+                                        <i class="fas fa-hourglass-half"></i>
+                                    </div>
+                                    <div class="rating-content">
+                                        <h6 class="rating-type">Classical</h6>
+                                        <div class="rating-value">{{ perfil_lichess.classical_rating }}</div>
+                                        <small class="rating-games">{{ perfil_lichess.classical_games_played|default:0 }} jogos</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if perfil_lichess.puzzles_rating %}
+                                <div class="rating-card-modern puzzles">
+                                    <div class="rating-icon">
+                                        <i class="fas fa-puzzle-piece"></i>
+                                    </div>
+                                    <div class="rating-content">
+                                        <h6 class="rating-type">Puzzles</h6>
+                                        <div class="rating-value">{{ perfil_lichess.puzzles_rating }}</div>
+                                        <small class="rating-games">{{ perfil_lichess.puzzles_solved|default:0 }} resolvidos</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Jogos -->
+        <div class="row mb-4">
+            {% if current_games %}
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-play-circle me-2"></i>
+                            Jogos Atuais
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="games-modern-list">
+                            {% for game in current_games %}
+                            <div class="game-modern-card">
+                                <div class="game-players">
+                                    <div class="player white">
+                                        <span class="player-name">{{ game.white.name }}</span>
+                                        <small class="player-rating">({{ game.white.rating }})</small>
+                                    </div>
+                                    <div class="vs-divider">
+                                        <i class="fas fa-chess"></i>
+                                    </div>
+                                    <div class="player black">
+                                        <span class="player-name">{{ game.black.name }}</span>
+                                        <small class="player-rating">({{ game.black.rating }})</small>
+                                    </div>
+                                </div>
+                                <div class="game-meta">
+                                    <span class="game-speed">{{ game.speed|title }}</span>
+                                    <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-sm btn-outline">
+                                        <i class="fas fa-external-link-alt me-1"></i>Ver
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if recent_games %}
+            <div class="col-lg-{% if current_games %}6{% else %}12{% endif %} mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>
+                            Jogos Recentes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="games-modern-list">
+                            {% for game in recent_games %}
+                            <div class="game-modern-card">
+                                <div class="game-players">
+                                    <div class="player white">
+                                        <span class="player-name">{{ game.white.name }}</span>
+                                        <small class="player-rating">({{ game.white.rating }})</small>
+                                    </div>
+                                    <div class="vs-divider">
+                                        {% if game.winner == 'white' %}
+                                            <i class="fas fa-crown text-warning"></i>
+                                        {% elif game.winner == 'black' %}
+                                            <i class="fas fa-crown text-dark"></i>
+                                        {% else %}
+                                            <i class="fas fa-handshake text-muted"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="player black">
+                                        <span class="player-name">{{ game.black.name }}</span>
+                                        <small class="player-rating">({{ game.black.rating }})</small>
+                                    </div>
+                                </div>
+                                <div class="game-meta">
+                                    <span class="game-speed">{{ game.speed|title }}</span>
+                                    <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-sm btn-outline">
+                                        <i class="fas fa-external-link-alt me-1"></i>Ver
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Ranking do Clube -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        Ranking do Clube
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0">
+                                        <i class="fas fa-medal me-1"></i>Posição
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-user me-1"></i>Jogador
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-clock me-1"></i>Rapid
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-zap me-1"></i>Blitz
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-bolt me-1"></i>Bullet
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player in top_players %}
+                                <tr class="{% if player.username == user.username %}table-warning{% endif %}">
+                                    <td class="align-middle">
+                                        {% if forloop.counter <= 3 %}
+                                            <span class="position-badge position-{{ forloop.counter }}">
+                                                {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}
+                                                {{ forloop.counter }}
+                                            </span>
+                                        {% else %}
+                                            <span class="position-number">{{ forloop.counter }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-xs me-2 bg-gradient rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="background: var(--gradient-primary); width: 24px; height: 24px;">
+                                                <i class="fas fa-user text-white" style="font-size: 0.7rem;"></i>
+                                            </div>
+                                            <strong>{{ player.username }}</strong>
+                                            {% if player.username == user.username %}
+                                                <small class="ms-2 text-muted">(Você)</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="rating-display">{{ player.rapid_rating|default:"-" }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="rating-display">{{ player.blitz_rating|default:"-" }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="rating-display">{{ player.bullet_rating|default:"-" }}</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="fas fa-users fa-2x mb-2 d-block"></i>
+                                        Nenhum jogador encontrado no ranking
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <style>
-    .dashboard-container {
-        max-width: 1200px;
+    /* Dashboard Específico */
+    .dashboard-modern {
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 20px;
     }
 
-    .profile-section, .leaderboard-section {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    /* Welcome Card */
+    .welcome-card {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-lg);
     }
 
-    .ratings-grid {
+    .welcome-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .welcome-stats {
+        text-align: right;
+    }
+
+    .text-gold {
+        color: var(--gold-color) !important;
+    }
+
+    /* Connect Lichess Card */
+    .connect-lichess-card {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        border: 2px dashed var(--gray-300);
+        transition: all var(--transition-normal);
+    }
+
+    .connect-lichess-card:hover {
+        border-color: var(--gold-color);
+        transform: translateY(-2px);
+    }
+
+    .connect-benefits {
+        background: rgba(var(--success-color), 0.1);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--success-color);
+    }
+
+    /* Ratings Grid Moderno */
+    .ratings-modern-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 20px;
-        margin: 20px 0;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
     }
 
-    .rating-card {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 6px;
+    .rating-card-modern {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
         text-align: center;
+        transition: all var(--transition-normal);
+        position: relative;
+        overflow: hidden;
     }
 
-    .games-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
+    .rating-card-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
     }
 
-    .game-card {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 6px;
-        text-align: center;
+    .rating-card-modern.bullet::before {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
     }
 
-    .current-user {
-        background-color: #e3f2fd;
+    .rating-card-modern.blitz::before {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
     }
 
-    .btn {
-        display: inline-block;
-        padding: 8px 16px;
-        border-radius: 4px;
-        text-decoration: none;
-        margin: 5px;
+    .rating-card-modern.rapid::before {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
     }
 
-    .btn-primary {
-        background: #2196f3;
-        color: white;
+    .rating-card-modern.classical::before {
+        background: linear-gradient(135deg, #9b59b6, #8e44ad);
     }
 
-    .btn-secondary {
-        background: #6c757d;
-        color: white;
+    .rating-card-modern.puzzles::before {
+        background: linear-gradient(135deg, #3498db, #2980b9);
     }
 
-    .btn-success {
-        background: #28a745;
-        color: white;
+    .rating-card-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
     }
 
-    .update-section {
-        text-align: center;
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #dee2e6;
+    .rating-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
     }
 
-    .btn-sm {
-        padding: 4px 8px;
+    .bullet .rating-icon { color: #e74c3c; }
+    .blitz .rating-icon { color: #f39c12; }
+    .rapid .rating-icon { color: #2ecc71; }
+    .classical .rating-icon { color: #9b59b6; }
+    .puzzles .rating-icon { color: #3498db; }
+
+    .rating-type {
         font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--gray-600);
+        margin-bottom: 0.5rem;
+    }
+
+    .rating-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .rating-games {
+        color: var(--gray-600);
+        font-size: 0.85rem;
+    }
+
+    /* Games Lists */
+    .games-modern-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .game-modern-card {
+        background: var(--light-gray);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all var(--transition-fast);
+    }
+
+    .game-modern-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .game-modern-card:hover {
+        background: var(--white);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .game-players {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .player {
+        flex: 1;
+        text-align: center;
+    }
+
+    .player-name {
+        font-weight: 600;
+        display: block;
+    }
+
+    .player-rating {
+        color: var(--gray-600);
+        font-size: 0.85rem;
+    }
+
+    .vs-divider {
+        margin: 0 1rem;
+        font-size: 1.2rem;
+        color: var(--gray-600);
+    }
+
+    .game-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .game-speed {
+        background: var(--primary-color);
+        color: var(--white);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Ranking Table */
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: var(--gray-800);
+        border-bottom: 2px solid var(--gray-200);
+        padding: 1rem;
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--primary-color), 0.05);
+    }
+
+    .table-warning {
+        background-color: rgba(var(--gold-color), 0.1) !important;
+    }
+
+    .position-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .position-number {
+        font-weight: 600;
+        color: var(--gray-600);
+    }
+
+    .rating-display {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .avatar-xs {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .welcome-title {
+            font-size: 1.75rem;
+        }
+        
+        .ratings-modern-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .rating-card-modern {
+            padding: 1rem;
+        }
+        
+        .rating-value {
+            font-size: 1.5rem;
+        }
+        
+        .game-players {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .vs-divider {
+            margin: 0;
+        }
     }
 </style>
 {% endblock %}

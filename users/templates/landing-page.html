@@ -1,2 +1,435 @@
 {% extends "base.html" %}
-Teste
+
+{% block title %}Bem-vindo ao ClubPro{% endblock %}
+
+{% block content %}
+<div class="landing-page fade-in-up">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="row align-items-center min-vh-75">
+                <div class="col-lg-6">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            <span class="gradient-text">ClubPro</span>
+                            <br>
+                            <small>Sistema de Gestão para Clubes de Xadrez</small>
+                        </h1>
+                        <p class="hero-description">
+                            A plataforma completa para gerenciar seu clube de xadrez. 
+                            Organize torneios, gerencie membros, integre com Lichess e 
+                            construa uma comunidade forte de jogadores.
+                        </p>
+                        <div class="hero-actions">
+                            {% if not user.is_authenticated %}
+                                <a href="{% url 'register' %}" class="btn btn-gold btn-lg me-3">
+                                    <i class="fas fa-rocket me-2"></i>
+                                    Começar Agora
+                                </a>
+                                <a href="{% url 'login' %}" class="btn btn-outline btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Fazer Login
+                                </a>
+                            {% else %}
+                                <a href="{% url 'dashboard' %}" class="btn btn-gold btn-lg">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    Ir ao Dashboard
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">1000+</div>
+                                <div class="stat-label">Jogadores Ativos</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Torneios Realizados</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">50+</div>
+                                <div class="stat-label">Clubes Parceiros</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <div class="hero-chess-board">
+                            <div class="chess-piece king">♛</div>
+                            <div class="chess-piece queen">♕</div>
+                            <div class="chess-piece rook">♜</div>
+                            <div class="chess-piece bishop">♝</div>
+                            <div class="chess-piece knight">♞</div>
+                            <div class="chess-piece pawn">♟</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">
+                    <i class="fas fa-star text-gold me-2"></i>
+                    Por que escolher o ClubPro?
+                </h2>
+                <p class="section-subtitle">
+                    Tudo que você precisa para gerenciar seu clube de xadrez em uma única plataforma
+                </p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon lichess">
+                            <i class="fab fa-lichess"></i>
+                        </div>
+                        <h4>Integração Lichess</h4>
+                        <p>Conecte-se automaticamente com o Lichess. Sincronize ratings, 
+                           crie torneios e acompanhe estatísticas em tempo real.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon tournaments">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h4>Gestão de Torneios</h4>
+                        <p>Organize torneios online e presenciais. Sistema completo de 
+                           inscrições, pareamento e acompanhamento de resultados.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon members">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Controle de Membros</h4>
+                        <p>Gerencie associados, mensalidades e diferentes níveis de acesso. 
+                           Mantenha sua comunidade organizada e engajada.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon analytics">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>Analytics Avançado</h4>
+                        <p>Relatórios detalhados de performance, ranking de jogadores 
+                           e estatísticas completas para melhor gestão.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon notifications">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h4>Notificações Smart</h4>
+                        <p>Sistema inteligente de notificações por email e push. 
+                           Mantenha todos informados sobre eventos importantes.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon security">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Segurança Total</h4>
+                        <p>Dados protegidos com criptografia de ponta. OAuth seguro 
+                           e backups automáticos para tranquilidade total.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-card">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h3 class="cta-title">Pronto para revolucionar seu clube?</h3>
+                        <p class="cta-description">
+                            Junte-se a centenas de clubes que já transformaram sua gestão com o ClubPro. 
+                            Comece gratuitamente hoje mesmo!
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        {% if not user.is_authenticated %}
+                            <a href="{% url 'register' %}" class="btn btn-white btn-lg">
+                                <i class="fas fa-rocket me-2"></i>
+                                Começar Gratuitamente
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    /* Landing Page Styles */
+    .landing-page {
+        overflow-x: hidden;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        color: var(--white);
+        padding: 4rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 50%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="chess" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="rgba(255,255,255,0.05)"/><rect x="5" y="5" width="5" height="5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23chess)"/></svg>');
+        opacity: 0.1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-title small {
+        font-size: 1.5rem;
+        font-weight: 500;
+        opacity: 0.9;
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    .hero-description {
+        font-size: 1.25rem;
+        line-height: 1.6;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+
+    .hero-actions {
+        margin-bottom: 3rem;
+    }
+
+    .hero-stats {
+        display: flex;
+        gap: 3rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gold-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-top: 0.25rem;
+    }
+
+    /* Hero Chess Board */
+    .hero-chess-board {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chess-piece {
+        position: absolute;
+        font-size: 4rem;
+        animation: float 6s ease-in-out infinite;
+        color: var(--gold-color);
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .chess-piece.king { top: 10%; left: 20%; animation-delay: 0s; }
+    .chess-piece.queen { top: 20%; right: 15%; animation-delay: 1s; }
+    .chess-piece.rook { bottom: 30%; left: 10%; animation-delay: 2s; }
+    .chess-piece.bishop { bottom: 20%; right: 20%; animation-delay: 3s; }
+    .chess-piece.knight { top: 50%; right: 5%; animation-delay: 4s; }
+    .chess-piece.pawn { bottom: 10%; left: 40%; animation-delay: 5s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        33% { transform: translateY(-10px) rotate(2deg); }
+        66% { transform: translateY(-5px) rotate(-1deg); }
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 5rem 0;
+        background: var(--light-gray);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: var(--gray-600);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: var(--white);
+        padding: 2.5rem 2rem;
+        border-radius: var(--radius-lg);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+        height: 100%;
+        border: 1px solid var(--gray-200);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: var(--white);
+    }
+
+    .feature-icon.lichess { background: linear-gradient(135deg, #f39c12, #e67e22); }
+    .feature-icon.tournaments { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .feature-icon.members { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .feature-icon.analytics { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .feature-icon.notifications { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .feature-icon.security { background: linear-gradient(135deg, #34495e, #2c3e50); }
+
+    .feature-card h4 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+        color: var(--gray-600);
+        line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        padding: 5rem 0;
+    }
+
+    .cta-card {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 4rem;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .cta-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .cta-description {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .btn-white {
+        background: var(--white);
+        color: var(--primary-color);
+        border: none;
+    }
+
+    .btn-white:hover {
+        background: var(--light-gray);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-title small {
+            font-size: 1.2rem;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+        }
+        
+        .hero-stats {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .chess-piece {
+            font-size: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .cta-card {
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+{% endblock %}

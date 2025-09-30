@@ -1,0 +1,712 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ socio.nome_exibicao }} - Detalhes do Sócio - ClubPro{% endblock %}
+
+{% block content %}
+<div class="socio-details fade-in-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="socio-avatar me-3">
+                                {% if socio.foto %}
+                                    <img src="{{ socio.foto.url }}" alt="{{ socio.nome_completo }}" class="rounded-circle">
+                                {% else %}
+                                    <div class="avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h1 class="page-title mb-1">{{ socio.nome_exibicao }}</h1>
+                                <p class="page-subtitle mb-0">
+                                    <span class="status-badge status-{{ socio.status }}">
+                                        {{ socio.get_status_display }}
+                                    </span>
+                                    <span class="ms-3">
+                                        <i class="fas fa-id-card me-1"></i>
+                                        Sócio Nº {{ socio.numero_socio }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'socios:editar' socio.id %}" class="btn btn-warning">
+                                <i class="fas fa-edit me-2"></i>
+                                Editar
+                            </a>
+                            <a href="{% url 'socios:listar' %}" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações Principais -->
+        <div class="col-lg-8">
+            <!-- Dados Pessoais -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Dados Pessoais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="info-label">Nome Completo</label>
+                                <div class="info-value">{{ socio.nome }}</div>
+                            </div>
+                            
+                            {% if socio.nome_preferencia %}
+                            <div class="info-item mb-3">
+                                <label class="info-label">Nome de Preferência</label>
+                                <div class="info-value">{{ socio.nome_preferencia }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="info-item mb-3">
+                                <label class="info-label">CPF</label>
+                                <div class="info-value">{{ socio.cpf_formatado }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="info-label">Data de Nascimento</label>
+                                <div class="info-value">
+                                    {{ socio.data_nascimento|date:"d/m/Y" }}
+                                    <small class="text-muted">({{ socio.idade }} anos)</small>
+                                </div>
+                            </div>
+                            
+                            {% if socio.genero %}
+                            <div class="info-item mb-3">
+                                <label class="info-label">Gênero</label>
+                                <div class="info-value">{{ socio.get_genero_display }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contato -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-address-book me-2"></i>
+                        Informações de Contato
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="info-label">
+                                    <i class="fas fa-envelope me-1 text-primary"></i>
+                                    E-mail
+                                </label>
+                                <div class="info-value">
+                                    {% if socio.email %}
+                                        <a href="mailto:{{ socio.email }}" class="text-decoration-none">
+                                            {{ socio.email }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="info-label">
+                                    <i class="fas fa-phone me-1 text-success"></i>
+                                    Telefone
+                                </label>
+                                <div class="info-value">
+                                    {% if socio.telefone %}
+                                        <a href="tel:{{ socio.telefone }}" class="text-decoration-none">
+                                            {{ socio.telefone }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if socio.endereco %}
+                    <div class="info-item">
+                        <label class="info-label">
+                            <i class="fas fa-map-marker-alt me-1 text-danger"></i>
+                            Endereço
+                        </label>
+                        <div class="info-value">{{ socio.endereco }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Dados do Xadrez -->
+            {% if socio.rating_fide or socio.rating_nacional or socio.categoria %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chess me-2"></i>
+                        Informações de Xadrez
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if socio.rating_fide %}
+                        <div class="col-md-4">
+                            <div class="info-item mb-3">
+                                <label class="info-label">Rating FIDE</label>
+                                <div class="info-value">
+                                    <span class="badge bg-primary fs-6">{{ socio.rating_fide }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if socio.rating_nacional %}
+                        <div class="col-md-4">
+                            <div class="info-item mb-3">
+                                <label class="info-label">Rating Nacional</label>
+                                <div class="info-value">
+                                    <span class="badge bg-success fs-6">{{ socio.rating_nacional }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if socio.categoria %}
+                        <div class="col-md-4">
+                            <div class="info-item mb-3">
+                                <label class="info-label">Categoria</label>
+                                <div class="info-value">
+                                    <span class="badge bg-info fs-6">{{ socio.get_categoria_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Observações -->
+            {% if socio.observacoes %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        Observações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="observacoes-content">
+                        {{ socio.observacoes|linebreaksbr }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Histórico de Pagamentos -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Histórico de Pagamentos
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="adicionarPagamento()">
+                        <i class="fas fa-plus me-1"></i>
+                        Novo Pagamento
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if pagamentos %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Valor</th>
+                                        <th>Referência</th>
+                                        <th>Status</th>
+                                        <th>Observações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pagamento in pagamentos %}
+                                    <tr>
+                                        <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <span class="fw-bold text-success">
+                                                R$ {{ pagamento.valor|floatformat:2 }}
+                                            </span>
+                                        </td>
+                                        <td>{{ pagamento.mes_referencia|date:"m/Y" }}</td>
+                                        <td>
+                                            <span class="status-badge status-{{ pagamento.status }}">
+                                                {{ pagamento.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if pagamento.observacoes %}
+                                                {{ pagamento.observacoes|truncatechars:50 }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-4">
+                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                            <h6>Nenhum pagamento registrado</h6>
+                            <p class="text-muted">Adicione o primeiro pagamento para este sócio.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Documentos -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-folder-open me-2"></i>
+                        Documentos
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="adicionarDocumento()">
+                        <i class="fas fa-upload me-1"></i>
+                        Adicionar Documento
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if documentos %}
+                        <div class="documentos-list">
+                            {% for documento in documentos %}
+                            <div class="documento-item d-flex align-items-center justify-content-between p-3 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <div class="documento-icon me-3">
+                                        <i class="fas fa-file-alt fa-2x text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ documento.nome }}</h6>
+                                        <small class="text-muted">
+                                            {{ documento.get_tipo_display }} • 
+                                            Enviado em {{ documento.data_upload|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="documento-actions">
+                                    <a href="{{ documento.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="removerDocumento({{ documento.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-4">
+                            <i class="fas fa-folder fa-3x text-muted mb-3"></i>
+                            <h6>Nenhum documento anexado</h6>
+                            <p class="text-muted">Adicione documentos importantes deste sócio.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Card de Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informações da Associação
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item mb-3">
+                        <label class="info-label">Plano de Assinatura</label>
+                        <div class="info-value">
+                            <span class="badge badge-plano fs-6" style="background-color: {{ socio.tipo_assinatura.cor }}20; color: {{ socio.tipo_assinatura.cor }};">
+                                {{ socio.tipo_assinatura.nome }}
+                            </span>
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    R$ {{ socio.tipo_assinatura.valor|floatformat:2 }} / {{ socio.tipo_assinatura.get_periodicidade_display }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <label class="info-label">Data de Associação</label>
+                        <div class="info-value">{{ socio.data_associacao|date:"d/m/Y" }}</div>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <label class="info-label">Próximo Vencimento</label>
+                        <div class="info-value">
+                            <div class="{% if socio.dias_para_vencimento < 0 %}text-danger{% elif socio.dias_para_vencimento <= 3 %}text-warning{% endif %}">
+                                {{ socio.data_vencimento|date:"d/m/Y" }}
+                            </div>
+                            <small class="text-muted">
+                                {% if socio.dias_para_vencimento < 0 %}
+                                    {{ socio.dias_para_vencimento|add:"-1" }} dias em atraso
+                                {% elif socio.dias_para_vencimento == 0 %}
+                                    Vence hoje
+                                {% else %}
+                                    {{ socio.dias_para_vencimento }} dias
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label class="info-label">Tempo de Associação</label>
+                        <div class="info-value">
+                            {% now "Y-m-d" as hoje %}
+                            {{ socio.data_associacao|timesince }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if socio.email %}
+                        <a href="mailto:{{ socio.email }}" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>
+                            Enviar E-mail
+                        </a>
+                        {% endif %}
+                        
+                        {% if socio.telefone %}
+                        <a href="https://wa.me/55{{ socio.telefone|cut:'(' |cut:')' |cut:' ' |cut:'-' }}" target="_blank" class="btn btn-outline-success">
+                            <i class="fab fa-whatsapp me-2"></i>
+                            WhatsApp
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-info" onclick="gerarCarteirinha()">
+                            <i class="fas fa-id-card me-2"></i>
+                            Gerar Carteirinha
+                        </button>
+                        
+                        <button class="btn btn-outline-warning" onclick="adicionarPagamento()">
+                            <i class="fas fa-plus me-2"></i>
+                            Registrar Pagamento
+                        </button>
+                        
+                        <hr>
+                        
+                        <a href="{% url 'socios:editar' socio.id %}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>
+                            Editar Dados
+                        </a>
+                        
+                        <button class="btn btn-outline-danger" onclick="confirmarExclusao()">
+                            <i class="fas fa-trash me-2"></i>
+                            Excluir Sócio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Estatísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Total Pago</span>
+                            <strong class="text-success">R$ {{ total_pago|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Pagamentos</span>
+                            <strong>{{ total_pagamentos }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="d-flex justify-content-between">
+                            <span>Documentos</span>
+                            <strong>{{ total_documentos }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExclusao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o sócio <strong>{{ socio.nome_exibicao }}</strong>?</p>
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Esta ação não pode ser desfeita e removerá todos os dados associados.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="{% url 'socios:excluir' socio.id %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-1"></i>
+                    Confirmar Exclusão
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Socio Details Styles */
+    .socio-details {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .socio-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .socio-avatar img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+
+    .page-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    .page-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    /* Status badges */
+    .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-ativo { 
+        background: rgba(39, 174, 96, 0.15); 
+        color: #27ae60; 
+        border: 1px solid rgba(39, 174, 96, 0.3);
+    }
+    
+    .status-inadimplente { 
+        background: rgba(231, 76, 60, 0.15); 
+        color: #e74c3c; 
+        border: 1px solid rgba(231, 76, 60, 0.3);
+    }
+    
+    .status-suspenso { 
+        background: rgba(243, 156, 18, 0.15); 
+        color: #f39c12; 
+        border: 1px solid rgba(243, 156, 18, 0.3);
+    }
+    
+    .status-inativo { 
+        background: rgba(108, 117, 125, 0.15); 
+        color: #6c757d; 
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+
+    /* Info items */
+    .info-item {
+        margin-bottom: 1rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .info-value {
+        color: var(--gray-800);
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .badge-plano {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+    }
+
+    /* Card headers */
+    .card-header {
+        background: var(--light-gray);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .card-header h5 {
+        color: var(--gray-800);
+        font-weight: 600;
+    }
+
+    /* Observações */
+    .observacoes-content {
+        background: var(--light-gray);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-color);
+    }
+
+    /* Documentos */
+    .documento-item:last-child {
+        border-bottom: none !important;
+    }
+
+    .documento-icon {
+        width: 50px;
+        text-align: center;
+    }
+
+    /* Empty state */
+    .empty-state {
+        color: var(--gray-600);
+    }
+
+    .empty-state i {
+        opacity: 0.6;
+    }
+
+    /* Stats */
+    .stat-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .socio-avatar,
+        .socio-avatar img,
+        .avatar-placeholder {
+            width: 60px;
+            height: 60px;
+        }
+
+        .avatar-placeholder {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    function confirmarExclusao() {
+        new bootstrap.Modal(document.getElementById('modalExclusao')).show();
+    }
+
+    function adicionarPagamento() {
+        // Implementar modal ou redirecionar para página de pagamento
+        alert('Funcionalidade de pagamento em desenvolvimento');
+    }
+
+    function adicionarDocumento() {
+        // Implementar upload de documento
+        alert('Funcionalidade de upload em desenvolvimento');
+    }
+
+    function removerDocumento(documentoId) {
+        if (confirm('Tem certeza que deseja remover este documento?')) {
+            // Implementar remoção de documento
+            console.log('Remover documento:', documentoId);
+        }
+    }
+
+    function gerarCarteirinha() {
+        // Implementar geração de carteirinha
+        alert('Funcionalidade de carteirinha em desenvolvimento');
+    }
+</script>
+{% endblock %}

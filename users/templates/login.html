@@ -1,13 +1,306 @@
 {% extends 'base.html' %}
 
+{% block title %}Entrar - ClubPro{% endblock %}
+
 {% block content %}
-<div class="login-container">
-    <h2>Login</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Login</button>
-    </form>
-    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+<div class="auth-page fade-in-up">
+    <div class="container">
+        <div class="row justify-content-center min-vh-75 align-items-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <i class="fas fa-chess-queen"></i>
+                        </div>
+                        <h2 class="auth-title">Bem-vindo de volta!</h2>
+                        <p class="auth-subtitle">Entre em sua conta para continuar</p>
+                    </div>
+                    
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="id_username" class="form-label">
+                                <i class="fas fa-user me-2"></i>Usuário
+                            </label>
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control" 
+                                   id="id_username"
+                                   placeholder="Digite seu nome de usuário"
+                                   required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Senha
+                            </label>
+                            <div class="password-input">
+                                <input type="password" 
+                                       name="password" 
+                                       class="form-control" 
+                                       id="id_password"
+                                       placeholder="Digite sua senha"
+                                       required>
+                                <button type="button" class="password-toggle" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="passwordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">
+                                    Lembrar de mim
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Entrar
+                        </button>
+                    </form>
+                    
+                    <div class="auth-divider">
+                        <span>ou</span>
+                    </div>
+                    
+                    <div class="auth-links">
+                        <p class="text-center mb-3">
+                            Não tem uma conta?
+                            <a href="{% url 'register' %}" class="auth-link">
+                                Cadastre-se aqui
+                            </a>
+                        </p>
+                        
+                        <p class="text-center">
+                            <a href="#" class="auth-link-small">
+                                Esqueceu sua senha?
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="auth-footer">
+                    <p class="text-center text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Seus dados estão seguros conosco
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    /* Auth Pages Styles */
+    .auth-page {
+        min-height: calc(100vh - 140px);
+        background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%);
+        padding: 2rem 0;
+    }
+
+    .auth-card {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 3rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-logo {
+        width: 80px;
+        height: 80px;
+        background: var(--gradient-gold);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: var(--white);
+        box-shadow: var(--shadow-md);
+    }
+
+    .auth-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-subtitle {
+        color: var(--gray-600);
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+
+    .auth-form {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        transition: all var(--transition-fast);
+        background: var(--white);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(26, 26, 46, 0.1);
+        outline: none;
+    }
+
+    .password-input {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--gray-600);
+        cursor: pointer;
+        padding: 0;
+        font-size: 1rem;
+    }
+
+    .password-toggle:hover {
+        color: var(--primary-color);
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-check-input {
+        margin: 0;
+    }
+
+    .btn-block {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    .auth-divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+    }
+
+    .auth-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--gray-300);
+    }
+
+    .auth-divider span {
+        background: var(--white);
+        padding: 0 1rem;
+        color: var(--gray-600);
+        position: relative;
+    }
+
+    .auth-links {
+        text-align: center;
+    }
+
+    .auth-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color var(--transition-fast);
+    }
+
+    .auth-link:hover {
+        color: var(--accent-color);
+        text-decoration: underline;
+    }
+
+    .auth-link-small {
+        color: var(--gray-600);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .auth-link-small:hover {
+        color: var(--primary-color);
+        text-decoration: underline;
+    }
+
+    .auth-footer {
+        margin-top: 2rem;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .auth-card {
+            padding: 2rem 1.5rem;
+        }
+        
+        .auth-title {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('id_password');
+        const passwordIcon = document.getElementById('passwordIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            passwordIcon.className = 'fas fa-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            passwordIcon.className = 'fas fa-eye';
+        }
+    }
+</script>
 {% endblock %} 

@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard de Sócios - ClubPro{% endblock %}
+
+{% block content %}
+<div class="socios-dashboard fade-in-up">
+    <!-- Header do Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="welcome-title mb-2">
+                            <i class="fas fa-users text-gold"></i>
+                            Dashboard de Sócios
+                        </h1>
+                        <p class="welcome-subtitle mb-0">
+                            Gerencie membros, pagamentos e mantenha seu clube organizado
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'socios:cadastrar' %}" class="btn btn-gold btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Novo Sócio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card total">
+                <div class="stats-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ total_socios }}</h3>
+                    <p>Total de Sócios</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card active">
+                <div class="stats-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ socios_ativos }}</h3>
+                    <p>Sócios Ativos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card warning">
+                <div class="stats-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ socios_inadimplentes }}</h3>
+                    <p>Inadimplentes</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card revenue">
+                <div class="stats-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>R$ {{ receita_mensal|floatformat:2 }}</h3>
+                    <p>Receita Mensal</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas de Vencimentos -->
+    {% if vencem_em_breve > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center">
+                <i class="fas fa-clock me-3 fa-2x"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Atenção: {{ vencem_em_breve }} sócio{{ vencem_em_breve|pluralize }} vence{{ vencem_em_breve|pluralize:"m," }} nos próximos 7 dias!</h5>
+                    <p class="mb-0">Verifique os próximos vencimentos e entre em contato para renovação.</p>
+                </div>
+                <div class="ms-auto">
+                    <a href="{% url 'socios:listar' %}?status=ativo" class="btn btn-warning">
+                        <i class="fas fa-eye me-1"></i>Ver Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Conteúdo Principal -->
+    <div class="row">
+        <!-- Próximos Vencimentos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Próximos Vencimentos
+                    </h5>
+                    <a href="{% url 'socios:relatorio_inadimplentes' %}" class="btn btn-sm btn-outline">
+                        <i class="fas fa-file-alt me-1"></i>Relatório
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if proximos_vencimentos %}
+                        <div class="vencimentos-list">
+                            {% for socio in proximos_vencimentos %}
+                            <div class="vencimento-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-3">
+                                        {% if socio.foto %}
+                                            <img src="{{ socio.foto.url }}" alt="{{ socio.nome_completo }}" class="rounded-circle">
+                                        {% else %}
+                                            <div class="avatar-placeholder">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ socio.nome_exibicao }}</h6>
+                                        <small class="text-muted">{{ socio.numero_socio }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="vencimento-date {% if socio.dias_para_vencimento < 0 %}text-danger{% elif socio.dias_para_vencimento <= 3 %}text-warning{% endif %}">
+                                            {{ socio.data_vencimento|date:"d/m/Y" }}
+                                        </div>
+                                        <small class="text-muted">
+                                            {% if socio.dias_para_vencimento < 0 %}
+                                                {{ socio.dias_para_vencimento|add:"-1" }} dias em atraso
+                                            {% elif socio.dias_para_vencimento == 0 %}
+                                                Vence hoje
+                                            {% else %}
+                                                {{ socio.dias_para_vencimento }} dias
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-4">
+                            <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                            <h6>Nenhum vencimento próximo</h6>
+                            <p class="text-muted">Todos os pagamentos estão em dia!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Novos Sócios -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Novos Sócios
+                    </h5>
+                    <a href="{% url 'socios:listar' %}" class="btn btn-sm btn-outline">
+                        <i class="fas fa-list me-1"></i>Ver Todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if novos_socios %}
+                        <div class="novos-socios-list">
+                            {% for socio in novos_socios %}
+                            <div class="novo-socio-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-3">
+                                        {% if socio.foto %}
+                                            <img src="{{ socio.foto.url }}" alt="{{ socio.nome_completo }}" class="rounded-circle">
+                                        {% else %}
+                                            <div class="avatar-placeholder">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ socio.nome_exibicao }}</h6>
+                                        <small class="text-muted">{{ socio.numero_socio }} • {{ socio.tipo_assinatura.nome }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="associacao-date">
+                                            {{ socio.data_associacao|date:"d/m/Y" }}
+                                        </div>
+                                        <small class="status-badge status-{{ socio.status }}">
+                                            {{ socio.get_status_display }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-4">
+                            <i class="fas fa-user-friends fa-3x text-info mb-3"></i>
+                            <h6>Nenhum sócio cadastrado recentemente</h6>
+                            <p class="text-muted">Cadastre novos membros para começar!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Distribuição por Planos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Distribuição por Tipo de Assinatura
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if distribuicao_planos %}
+                        <div class="planos-grid">
+                            {% for plano in distribuicao_planos %}
+                            <div class="plano-card" style="border-left: 4px solid {{ plano.cor }};">
+                                <div class="plano-info">
+                                    <h6 class="plano-nome">{{ plano.nome }}</h6>
+                                    <div class="plano-count">{{ plano.total_socios }} sócio{{ plano.total_socios|pluralize }}</div>
+                                </div>
+                                <div class="plano-progress">
+                                    {% widthratio plano.total_socios total_socios 100 as percentage %}
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: {{ percentage }}%; background-color: {{ plano.cor }};"></div>
+                                    </div>
+                                    <small class="text-muted">{{ percentage }}%</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-4">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h6>Nenhum dado para exibir</h6>
+                            <p class="text-muted">Cadastre sócios para ver a distribuição por planos.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Sócios Dashboard Styles */
+    .socios-dashboard {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Welcome Card */
+    .welcome-card {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .welcome-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    /* Stats Cards */
+    .stats-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+        border-left: 4px solid;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stats-card.total { border-left-color: #3498db; }
+    .stats-card.active { border-left-color: #27ae60; }
+    .stats-card.warning { border-left-color: #f39c12; }
+    .stats-card.revenue { border-left-color: #9b59b6; }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--white);
+    }
+
+    .stats-card.total .stats-icon { background: #3498db; }
+    .stats-card.active .stats-icon { background: #27ae60; }
+    .stats-card.warning .stats-icon { background: #f39c12; }
+    .stats-card.revenue .stats-icon { background: #9b59b6; }
+
+    .stats-content h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--primary-color);
+    }
+
+    .stats-content p {
+        margin: 0;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    /* Lists */
+    .vencimentos-list, .novos-socios-list {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .vencimento-item, .novo-socio-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .vencimento-item:last-child, .novo-socio-item:last-child {
+        border-bottom: none;
+    }
+
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+    }
+
+    .avatar-sm img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+    }
+
+    .vencimento-date {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-ativo { background: rgba(39, 174, 96, 0.1); color: #27ae60; }
+    .status-inadimplente { background: rgba(231, 76, 60, 0.1); color: #e74c3c; }
+    .status-suspenso { background: rgba(243, 156, 18, 0.1); color: #f39c12; }
+    .status-inativo { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
+
+    /* Planos Grid */
+    .planos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .plano-card {
+        background: var(--light-gray);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .plano-nome {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+    }
+
+    .plano-count {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+    }
+
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background: var(--gray-200);
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+
+    /* Empty State */
+    .empty-state {
+        color: var(--gray-600);
+    }
+
+    .empty-state i {
+        opacity: 0.5;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .welcome-title {
+            font-size: 1.75rem;
+        }
+
+        .stats-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .planos-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
