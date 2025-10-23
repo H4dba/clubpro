@@ -15,7 +15,34 @@ from .forms import SocioForm, TipoAssinaturaForm, DocumentoSocioForm, HistoricoP
 
 def is_admin_or_manager(user):
     """Verifica se o usuário é admin ou tem permissões de gestão"""
-    return True
+    
+    if not getattr(user, 'is_authenticated', False):
+        return False
+
+    # Superuser ou staff têm acesso
+    if getattr(user, 'is_superuser', False) or getattr(user, 'is_staff', False):
+        return True
+
+    # Grupos comuns de gestão (ajuste nomes conforme sua aplicação)
+    manager_groups = [
+        'admin',
+        'management'
+    ]
+    if user.groups.filter(name__in=manager_groups).exists():
+        return True
+
+    # Permissões específicas que indiquem capacidade de gerenciar sócios
+    gerente_perms = [
+        'socios.add_socio',
+        'socios.change_socio',
+        'socios.delete_socio',
+        'socios.manage_socios',
+    ]
+    for perm in gerente_perms:
+        if user.has_perm(perm):
+            return True
+
+    return False
 
 
 @login_required
