@@ -142,6 +142,22 @@ def create_demo_data(num_tipos=5, num_socios=15, num_pagamentos_per_socio=4, cle
         admin_user.save()
         print("✅ Admin user created (admin/admin123)")
     
+    #criar usuario demo_viewer
+    demo_user, created = User.objects.get_or_create(
+        username="demo_viewer",
+        defaults={
+            'email': 'demoviewer@clubpro.com',
+            'first_name': 'Demo',
+            'last_name': 'Viewer',
+            'is_staff': True,
+            'is_superuser': False
+        }
+    )
+    if created:
+        demo_user.set_password('viewer123')
+        demo_user.save()
+        print("✅ Demo viewer user created (demo_viewer/viewer123)")
+    
     print(f"📋 Creating predefined membership types...")
     
     # Create specific membership types
@@ -203,7 +219,35 @@ def create_demo_data(num_tipos=5, num_socios=15, num_pagamentos_per_socio=4, cle
     return tipos, socios
 
 
+def delete_fake_data():
+    """Delete all fake data in the correct order to avoid integrity errors"""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    
+    print("🗑️ Cleaning existing data...")
+    
+    # Delete in proper order to handle foreign key dependencies
+    print("   - Deleting payment history...")
+    HistoricoPagamento.objects.all().delete()
+    
+    print("   - Deleting members...")
+    Socio.objects.all().delete()
+    
+    print("   - Deleting membership types...")
+    TipoAssinatura.objects.all().delete()
+    
+    print("   - Deleting users...")
+    # Delete test users, demo viewer, and admin (they will be recreated)
+    User.objects.filter(username__in=['admin', 'demo_viewer']).delete()
+    User.objects.filter(username__startswith='user_').delete()
+    
+    print("✅ All fake data has been deleted!")
+    
+    # Create new demo data
+    return create_demo_data(clean_first=False)  # Don't clean again since we just did
+
 # Quick usage:
 # python manage.py shell
-# >>> from socios.utils.fake_data import create_demo_data
-# >>> create_demo_data()
+# >>> from socios.utils.fake_data import create_demo_data, delete_fake_data
+# >>> delete_fake_data()  # This will delete all fake data and create new demo data
+# >>> create_demo_data()  # Or use this if you just want to create new data
