@@ -5,15 +5,19 @@
 {% block content %}
 <div class="landing-page fade-in-up">
     <!-- Hero Section -->
-    <section class="hero-section">
+    <section class="hero-section ">
         <div class="hero-content">
             <div class="row align-items-center min-vh-75">
                 <div class="col-lg-6">
                     <div class="hero-text">
                         <h1 class="hero-title">
-                            <span class="gradient-text">ClubPro</span>
+                            <span class="gradient-text" style="background: linear-gradient(90deg,#00fff7,#0077ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 4px 18px rgba(0,0,0,0.45); display:inline-block;">
+                                ClubPro
+                            </span>
                             <br>
-                            <small>Sistema de Gestão para Clubes de Xadrez</small>
+                            <small style="color: rgba(255,255,255,0.95); font-weight:500;">
+                                Sistema de Gestão para Clubes de Xadrez
+                            </small>
                         </h1>
                         <p class="hero-description">
                             A plataforma completa para gerenciar seu clube de xadrez. 
@@ -188,9 +192,10 @@
     .hero-section {
         background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
         color: var(--white);
-        padding: 4rem 0;
+        padding: 4rem 1rem;
         position: relative;
         overflow: hidden;
+        border-radius: var(--radius-xl);
     }
 
     .hero-section::before {
