@@ -41,6 +41,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '.ngrok-free.app',  # Allow all subdomains of ngrok-free.app
+    'clubpro.onrender.com'
 ]
 
 
