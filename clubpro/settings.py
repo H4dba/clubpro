@@ -28,11 +28,13 @@ DEBUG = True
 # CSRF & Security Settings
 CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.app',  # Trust all ngrok-free.app subdomains
+    'https://clubpro.onrender.com',
 ]
 
 # If you're using CORS headers, also add:
 CORS_ALLOWED_ORIGINS = [
     'https://*.ngrok-free.app',
+    'https://clubpro.onrender.com',
 ]
 CORS_ALLOW_CREDENTIALS = True
 
