@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c8(wy72pbfxzm$*nlzywiiwyy4#nca_0uzi&rn!#2+fgzs=6#*'
-
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 # CSRF & Security Settings
 CSRF_TRUSTED_ORIGINS = [
@@ -39,12 +44,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # For development only - adjust your allowed hosts
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '.ngrok-free.app',  # Allow all subdomains of ngrok-free.app
-    'clubpro.onrender.com'
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 
 # Application definition
@@ -156,5 +156,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = '/users/login/'
 LICHESS_CLIENT_SECRET = 'lichess-api-demo'
-LICHESS_REDIRECT_URI = 'https://bf1be7eada05.ngrok-free.app/users/lichess-callback/'
-LICHESS_CLIENT_ID = 'https://bf1be7eada05.ngrok-free.app'
+HOST = os.getenv('HOST', 'localhost')
+LICHESS_REDIRECT_URI = f'https://{HOST}/users/lichess-callback/'
+LICHESS_CLIENT_ID = f'https://{HOST}'
