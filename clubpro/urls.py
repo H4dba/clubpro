@@ -17,16 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from users.views.UserView import landing_page
-from users.views.UserView import CustomLoginView
-from main import views as main_views
-
 
 urlpatterns = [
     path('', landing_page, name='landing-page'),
     path('admin/', admin.site.urls),
     path("users/", include("users.urls")),
     path('socios/', include('socios.urls')),
-    path('tournament-manager/', main_views.tournament_dashboard, name='tournament_dashboard'),
-    path('tournament-manager/create/', main_views.tournament_create, name='tournament_create'),
-    path('tournament-manager/<int:pk>/edit/', main_views.tournament_edit, name='tournament_edit'),
+    path('tournaments/', include('main.urls')),
 ]

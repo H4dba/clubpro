@@ -4,7 +4,7 @@
 <div class="tournament-form-container">
     <div class="header">
         <h1>{{ title }}</h1>
-        <a href="{% url 'tournament_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        <a href="{% url 'main:tournament_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 
     <form method="post" class="tournament-form">
@@ -81,7 +81,7 @@
                 <div class="form-group">
                     <label for="{{ form.minutes.id_for_label }}">Duration (minutes)*</label>
                     {{ form.minutes }}
-                    {% if form.minutes.errors %}
+                {% if form.minutes.errors %}
                         <div class="error-message">{{ form.minutes.errors.0 }}</div>
                     {% endif %}
                 </div>

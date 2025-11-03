@@ -4,7 +4,7 @@
 <div class="tournament-manager">
     <div class="header">
         <h1>Tournament Manager</h1>
-        <a href="{% url 'tournament_create' %}" class="btn btn-primary">Create New Tournament</a>
+        <a href="{% url 'main:tournament_create' %}" class="btn btn-primary">Create New Tournament</a>
     </div>
 
     <div class="tournament-filters">
@@ -45,8 +45,9 @@
                         </span>
                     </td>
                     <td class="actions">
+                        <a href="{% url 'main:tournament_detail' tournament.pk %}" class="btn btn-sm btn-primary">View</a>
                         {% if tournament.status == 'pending' %}
-                            <a href="{% url 'tournament_edit' tournament.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="{% url 'main:tournament_edit' tournament.pk %}" class="btn btn-sm btn-secondary">Edit</a>
                         {% endif %}
                         {% if tournament.lichess_id %}
                             <a href="https://lichess.org/tournament/{{ tournament.lichess_id }}" 

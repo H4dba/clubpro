@@ -4,7 +4,6 @@ register = template.Library()
 
 @register.simple_tag
 def can_see_socios_dropdown(user):
-    print('Estou aqui')
     """Verifica se o usuário é admin ou tem permissões de gestão"""
     
     if not getattr(user, 'is_authenticated', False):

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Record Match Result</h4>
+                </div>
+                <div class="card-body">
+                    <h5>{{ match.white_player.get_display_name }} vs {{ match.black_player.get_display_name }}</h5>
+                    <p class="text-muted">Board {{ match.board_number }} - Round {{ match.round_number }}</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            {{ form.result.label_tag }}
+                            {{ form.result }}
+                            {% if form.result.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.result.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Save Result</button>
+                            <a href="{% url 'main:tournament_detail' tournament.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
