@@ -94,11 +94,12 @@ class Match(models.Model):
         ('draw', 'Empate'),
         ('forfeit_white', 'WO Brancas'),
         ('forfeit_black', 'WO Pretas'),
+        ('bye', 'Bye'),
     ]
 
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='matches')
     white_player = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name='white_matches')
-    black_player = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name='black_matches')
+    black_player = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name='black_matches', null=True, blank=True)  # Allow null for byes
     round_number = models.IntegerField()
     result = models.CharField(max_length=15, choices=RESULT_CHOICES, default='pending')
     board_number = models.IntegerField(default=0)
@@ -116,7 +117,9 @@ class Match(models.Model):
         verbose_name_plural = "Partidas"
 
     def __str__(self):
-        return f"Round {self.round_number}: {self.white_player.get_display_name()} vs {self.black_player.get_display_name()}"
+        if self.black_player:
+            return f"Round {self.round_number}: {self.white_player.get_display_name()} vs {self.black_player.get_display_name()}"
+        return f"Round {self.round_number}: {self.white_player.get_display_name()} (Bye)"
 
     def save(self, *args, **kwargs):
         if self.result != 'pending':
@@ -135,6 +138,9 @@ class Match(models.Model):
             self.black_player.score += 1
         elif self.result == 'forfeit_black':
             self.white_player.score += 1
+        elif self.result == 'bye':
+            self.white_player.score += 1
         
         self.white_player.save()
-        self.black_player.save()
+        if self.black_player:
+            self.black_player.save()

@@ -44,5 +44,21 @@ class MatchResultForm(forms.ModelForm):
         model = Match
         fields = ['result']
         widgets = {
-            'result': forms.Select(attrs={'class': 'form-control'})
+            'result': forms.Select(
+                attrs={'class': 'form-select'},
+                choices=[
+                    ('pending', 'Pendente'),
+                    ('white_win', 'Vitória Brancas'),
+                    ('black_win', 'Vitória Pretas'),
+                    ('draw', 'Empate'),
+                    ('forfeit_white', 'WO Brancas'),
+                    ('forfeit_black', 'WO Pretas'),
+                ]
+            )
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # If this is a bye match, only show bye as option
+        if self.instance and self.instance.black_player is None:
+            self.fields['result'].widget.choices = [('bye', 'Bye')]

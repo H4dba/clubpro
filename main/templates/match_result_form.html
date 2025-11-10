@@ -9,7 +9,14 @@
                     <h4 class="mb-0">Record Match Result</h4>
                 </div>
                 <div class="card-body">
-                    <h5>{{ match.white_player.get_display_name }} vs {{ match.black_player.get_display_name }}</h5>
+                    {% if match.black_player %}
+                        <h5>{{ match.white_player.get_display_name }} vs {{ match.black_player.get_display_name }}</h5>
+                    {% else %}
+                        <h5>{{ match.white_player.get_display_name }} - Bye</h5>
+                        <div class="alert alert-info">
+                            This player received a bye for this round.
+                        </div>
+                    {% endif %}
                     <p class="text-muted">Board {{ match.board_number }} - Round {{ match.round_number }}</p>
                     
                     <form method="post">
