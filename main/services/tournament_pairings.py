@@ -30,7 +30,91 @@ def assign_colors(player1, player2, tournament):
     print(f"Assigning white to {player1.get_display_name()} because of color balance")
     return player1, player2  # player1 gets white
 
+import random
+
 def generate_next_round(tournament):
+    print("\n=== Generating Next Round (Round Robin) ===")
+
+    participants = list(tournament.participants.filter(active=True).order_by('id'))
+    num_players = len(participants)
+
+    if num_players < 2:
+        print("Not enough players to create pairings")
+        return False
+
+    # Add a dummy player for bye if odd number
+    has_bye = False
+    if num_players % 2 == 1:
+        participants.append(None)
+        has_bye = True
+        num_players += 1
+        print("Odd number of players, adding BYE placeholder")
+
+    rounds = num_players - 1
+    current_round = tournament.current_round + 1
+
+    # Check for end of tournament
+    if current_round > rounds:
+        print("Tournament has reached all rounds")
+        tournament.status = 'finished'
+        tournament.save()
+        return False
+
+    half = num_players // 2
+
+    # Rotate players according to round number
+    players = participants[:]
+    for _ in range(current_round - 1):
+        # Proper circle rotation (keep first fixed)
+        players = [players[0]] + [players[-1]] + players[1:-1]
+
+    print(f"Round {current_round} pairings:")
+    board_number = 1
+    for i in range(half):
+        p1 = players[i]
+        p2 = players[num_players - 1 - i]
+
+        # Handle bye
+        if p1 is None or p2 is None:
+            bye_player = p1 if p1 else p2
+            if bye_player:
+                print(f"{bye_player.get_display_name()} gets a bye this round")
+                tournament.matches.create(
+                    white_player=bye_player,
+                    black_player=None,
+                    result='bye',
+                    round_number=current_round,
+                    board_number=board_number
+                )
+                bye_player.has_bye = True
+                bye_player.save()
+            board_number += 1
+            continue
+
+        # Alternate colors by round number and board number for fairness
+        if (current_round + board_number) % 2 == 0:
+            white, black = p1, p2
+        else:
+            white, black = p2, p1
+
+        print(f"Board {board_number}: {white.get_display_name()} (White) vs {black.get_display_name()} (Black)")
+        tournament.matches.create(
+            white_player=white,
+            black_player=black,
+            round_number=current_round,
+            board_number=board_number,
+            result='pending'
+        )
+        board_number += 1
+
+    tournament.current_round = current_round
+    tournament.save()
+    print(f"Round {current_round} generation complete!")
+    return True
+
+
+
+def generate_next_round_old(tournament):
     print("\n=== Starting Next Round Generation ===")
     # Get active participants
     participants = list(tournament.participants.filter(active=True))
@@ -174,6 +258,8 @@ def generate_next_round(tournament):
             matches_to_create.append(match_data)
             last_player.has_bye = True  # Mark player as having received a bye
             last_player.save()
+        else:
+            print("Skipping bye assignment to avoid repetition")
 
     # Create all matches
     print("\nCreating matches:")
