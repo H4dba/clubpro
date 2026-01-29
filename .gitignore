@@ -44,3 +44,33 @@ staticfiles/
 # Windows system files
 Thumbs.db
 ehthumbs.db
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+*.dockerignore
+docker-compose.prod.yml
+.env.production
+ssl/
+*.pem
+*.key
+*.crt
+
+# Temporary files
+requirements_clean.txt
+*.old
+*.bak
+*.swp
+*.tmp
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+.idea/
+*.iml

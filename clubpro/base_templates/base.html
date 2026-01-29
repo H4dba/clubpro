@@ -1,17 +1,18 @@
 {% load permissions %}
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ClubPro - Sistema de Gestão de Clubes de Xadrez{% endblock %}</title>
-    
+    <title>{% block title %}AXM - Academia de Xadrez de Maricá{% endblock %}</title>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -26,7 +27,7 @@
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
             --info-color: #3498db;
-            
+
             /* Cores Neutras */
             --white: #ffffff;
             --light-gray: #f8f9fa;
@@ -36,24 +37,24 @@
             --gray-600: #6c757d;
             --gray-800: #343a40;
             --gray-900: #212529;
-            
+
             /* Gradientes */
             --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             --gradient-gold: linear-gradient(135deg, #f39c12, #e67e22);
             --gradient-success: linear-gradient(135deg, #27ae60, #2ecc71);
-            
+
             /* Sombras */
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.06);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
-            --shadow-xl: 0 20px 40px rgba(0,0,0,0.1);
-            
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1);
+
             /* Border Radius */
             --radius-sm: 6px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 24px;
-            
+
             /* Transições */
             --transition-fast: 0.15s ease;
             --transition-normal: 0.3s ease;
@@ -66,7 +67,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--light-gray);
@@ -77,14 +79,15 @@
             display: flex;
             flex-direction: column;
             line-height: 1.6;
-            padding-top: 80px; /* Compensar altura do navbar fixo */
+            padding-top: 80px;
+            /* Compensar altura do navbar fixo */
         }
 
         /* Navbar Moderna */
         .navbar-custom {
             background: var(--gradient-primary);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1rem 0;
             box-shadow: var(--shadow-md);
         }
@@ -106,7 +109,7 @@
         }
 
         .nav-link {
-            color: rgba(255,255,255,0.9) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
             font-weight: 500;
             padding: 0.5rem 1rem !important;
             margin: 0 0.25rem;
@@ -117,7 +120,7 @@
 
         .nav-link:hover {
             color: var(--white) !important;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             transform: translateY(-1px);
         }
 
@@ -232,6 +235,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -245,17 +249,18 @@
         /* Responsividade */
         @media (max-width: 768px) {
             body {
-                padding-top: 70px; /* Navbar menor em mobile */
+                padding-top: 70px;
+                /* Navbar menor em mobile */
             }
-            
+
             .navbar-brand {
                 font-size: 1.25rem;
             }
-            
+
             .main-container {
                 padding: 1rem 0;
             }
-            
+
             .btn {
                 padding: 0.6rem 1.2rem;
                 font-size: 0.9rem;
@@ -290,125 +295,133 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Navbar Moderno -->
     <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'landing-page' %}">
-                ClubPro
+                AXM
             </a>
-            
+
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <i class="fas fa-bars text-white"></i>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'main:tournament_dashboard' %}">
-                                <i class="fas fa-trophy"></i>
-                                Torneios
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'shop:product_list' %}">
-                                <i class="fas fa-store"></i>
-                                Loja
-                            </a>
-                        </li>
-                        {% if user.is_staff or user.is_superuser %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'shop:admin_dashboard' %}">
-                                <i class="fas fa-cog"></i>
-                                Admin Loja
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% can_see_socios_dropdown user as show_socios %}
-                        {% if show_socios %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-users"></i>
-                                    Sócios
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{% url 'socios:dashboard' %}">
-                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{% url 'socios:listar' %}">
-                                        <i class="fas fa-list me-2"></i>Listar Sócios
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{% url 'socios:cadastrar' %}">
-                                        <i class="fas fa-user-plus me-2"></i>Cadastrar Sócio
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{% url 'socios:pendencias' %}">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>Pendências
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{% url 'socios:relatorio_financeiro' %}">
-                                        <i class="fas fa-chart-line me-2"></i>Relatório Financeiro
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{% url 'socios:tipos_assinatura' %}">
-                                        <i class="fas fa-tags me-2"></i>Tipos de Assinatura
-                                    </a></li>
-                                </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    {% if user.is_staff or user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'main:tournament_dashboard' %}">
+                            <i class="fas fa-trophy"></i>
+                            Torneios
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:product_list' %}">
+                            <i class="fas fa-store"></i>
+                            Loja
+                        </a>
+                    </li>
+                    {% if user.is_staff or user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:admin_dashboard' %}">
+                            <i class="fas fa-cog"></i>
+                            Admin Loja
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% can_see_socios_dropdown user as show_socios %}
+                    {% if show_socios %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-users"></i>
+                            Sócios
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'socios:dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'socios:listar' %}">
+                                    <i class="fas fa-list me-2"></i>Listar Sócios
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'socios:cadastrar' %}">
+                                    <i class="fas fa-user-plus me-2"></i>Cadastrar Sócio
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
                             </li>
-                        {% endif %}
+                            <li><a class="dropdown-item" href="{% url 'socios:pendencias' %}">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Pendências
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'socios:relatorio_financeiro' %}">
+                                    <i class="fas fa-chart-line me-2"></i>Relatório Financeiro
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'socios:tipos_assinatura' %}">
+                                    <i class="fas fa-tags me-2"></i>Tipos de Assinatura
+                                </a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                     {% endif %}
                 </ul>
-                
+
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link position-relative" href="{% url 'shop:cart' %}">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span class="visually-hidden">Carrinho</span>
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                                <div class="me-2">
-                                    <div class="avatar-sm bg-gradient rounded-circle d-flex align-items-center justify-content-center" 
-                                         style="background: var(--gradient-gold); width: 32px; height: 32px;">
-                                        <i class="fas fa-user text-white"></i>
-                                    </div>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="{% url 'shop:cart' %}">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="visually-hidden">Carrinho</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            <div class="me-2">
+                                <div class="avatar-sm bg-gradient rounded-circle d-flex align-items-center justify-content-center"
+                                    style="background: var(--gradient-gold); width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-white"></i>
                                 </div>
-                                {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{% url 'dashboard' %}">
+                            </div>
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}">
                                     <i class="fas fa-user me-2"></i>Perfil
                                 </a></li>
-                                <li><a class="dropdown-item" href="#">
+                            <li><a class="dropdown-item" href="#">
                                     <i class="fas fa-cog me-2"></i>Configurações
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">
                                     <i class="fas fa-sign-out-alt me-2"></i>Sair
                                 </a></li>
-                            </ul>
-                        </li>
+                        </ul>
+                    </li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt"></i>
-                                Entrar
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-gold ms-2" href="{% url 'register' %}">
-                                <i class="fas fa-user-plus"></i>
-                                Cadastrar
-                            </a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Entrar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-gold ms-2" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus"></i>
+                            Cadastrar
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
             </div>
@@ -417,25 +430,25 @@
 
     <!-- Sistema de Alertas -->
     {% if messages %}
-        <div class="alerts-container">
-            <div class="container">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {% if message.tags == 'error' %}
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                    {% elif message.tags == 'success' %}
-                        <i class="fas fa-check-circle me-2"></i>
-                    {% elif message.tags == 'info' %}
-                        <i class="fas fa-info-circle me-2"></i>
-                    {% elif message.tags == 'warning' %}
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                    {% endif %}
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+    <div class="alerts-container">
+        <div class="container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {% if message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle me-2"></i>
+                {% elif message.tags == 'success' %}
+                <i class="fas fa-check-circle me-2"></i>
+                {% elif message.tags == 'info' %}
+                <i class="fas fa-info-circle me-2"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+            {% endfor %}
         </div>
+    </div>
     {% endif %}
 
     <!-- Conteúdo Principal -->
@@ -452,13 +465,13 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="d-flex align-items-center">
-                        <span class="navbar-brand mb-0">ClubPro</span>
-                        <small class="ms-3 opacity-75">Sistema de Gestão de Clubes de Xadrez</small>
+                        <span class="navbar-brand mb-0">AXM</span>
+                        <small class="ms-3 opacity-75">Academia de Xadrez de Maricá</small>
                     </div>
                 </div>
                 <div class="col-md-6 text-md-end text-center mt-3 mt-md-0">
                     <small class="opacity-75">
-                        Desenvolvido com <i class="fas fa-heart text-danger"></i> por 
+                        Desenvolvido com <i class="fas fa-heart text-danger"></i> por
                         <strong>Guilherme Hadba</strong> &copy; 2025
                     </small>
                 </div>
@@ -476,10 +489,10 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
         // Animações suaves para elementos
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Fade in para cards
             const cards = document.querySelectorAll('.card');
             cards.forEach((card, index) => {
@@ -516,4 +529,5 @@
     {% block extra_js %}{% endblock %}
 
 </body>
+
 </html>

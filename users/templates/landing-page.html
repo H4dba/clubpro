@@ -1,43 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}Bem-vindo ao ClubPro{% endblock %}
+{% block title %}AXM - Academia de Xadrez de Maricá{% endblock %}
 
 {% block content %}
 <div class="landing-page fade-in-up">
     <!-- Hero Section -->
-    <section class="hero-section ">
+    <section class="hero-section">
         <div class="hero-content">
             <div class="row align-items-center min-vh-75">
-                <div class="col-lg-6">
+                <div class="col-lg-7">
                     <div class="hero-text">
+                        <div class="club-badge mb-3">
+                            <i class="fas fa-chess-king"></i>
+                            <span>Academia de Xadrez</span>
+                        </div>
                         <h1 class="hero-title">
-                            <span class="gradient-text" style="background: linear-gradient(90deg,#00fff7,#0077ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 4px 18px rgba(0,0,0,0.45); display:inline-block;">
-                                ClubPro
+                            <span class="gradient-text">
+                                AXM
                             </span>
                             <br>
-                            <small style="color: rgba(255,255,255,0.95); font-weight:500;">
-                                Sistema de Gestão para Clubes de Xadrez
+                            <small>
+                                Academia de Xadrez de Maricá
                             </small>
                         </h1>
                         <p class="hero-description">
-                            A plataforma completa para gerenciar seu clube de xadrez. 
-                            Organize torneios, gerencie membros, integre com Lichess e 
-                            construa uma comunidade forte de jogadores.
+                            Desenvolva sua paixão pelo xadrez em um ambiente acolhedor e profissional. 
+                            Oferecemos aulas, torneios e uma comunidade apaixonada pelo jogo.
                         </p>
                         <div class="hero-actions">
                             {% if not user.is_authenticated %}
                                 <a href="{% url 'register' %}" class="btn btn-gold btn-lg me-3">
-                                    <i class="fas fa-rocket me-2"></i>
-                                    Começar Agora
+                                    <i class="fas fa-user-plus me-2"></i>
+                                    Tornar-se Sócio
                                 </a>
-                                <a href="{% url 'login' %}" class="btn btn-outline btn-lg">
+                                <a href="#atividades" class="btn btn-outline-light btn-lg me-3">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Ver Atividades
+                                </a>
+                                <a href="{% url 'login' %}" class="btn btn-link-light btn-lg">
                                     <i class="fas fa-sign-in-alt me-2"></i>
                                     Fazer Login
                                 </a>
                             {% else %}
-                                <a href="{% url 'dashboard' %}" class="btn btn-gold btn-lg">
+                                <a href="{% url 'dashboard' %}" class="btn btn-gold btn-lg me-3">
                                     <i class="fas fa-tachometer-alt me-2"></i>
                                     Ir ao Dashboard
+                                </a>
+                                <a href="#atividades" class="btn btn-outline-light btn-lg">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Ver Atividades
                                 </a>
                             {% endif %}
                         </div>
@@ -52,12 +63,12 @@
                             </div>
                             <div class="stat-item">
                                 <div class="stat-number">{{ total_users|default:0 }}+</div>
-                                <div class="stat-label">Usuários Cadastrados</div>
+                                <div class="stat-label">Jogadores Cadastrados</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-5">
                     <div class="hero-image">
                         <div class="hero-chess-board">
                             <div class="chess-piece king">♛</div>
@@ -73,83 +84,134 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features-section">
+    <!-- Sobre o Clube -->
+    <section class="about-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="section-header mb-4">
+                        <h2 class="section-title">
+                            <i class="fas fa-chess-king text-gold me-2"></i>
+                            Sobre a AXM
+                        </h2>
+                        <p class="section-subtitle">
+                            A Academia de Xadrez de Maricá é um espaço dedicado ao ensino, prática e desenvolvimento do xadrez.
+                        </p>
+                    </div>
+                    <div class="about-content">
+                        <p class="lead">
+                            Nossa missão é promover o xadrez como ferramenta de desenvolvimento intelectual, 
+                            social e esportivo, oferecendo um ambiente acolhedor para jogadores de todos os níveis.
+                        </p>
+                        <div class="about-features">
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>Aulas para iniciantes e avançados</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>Torneios regulares e competições</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>Comunidade ativa e engajada</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>Infraestrutura completa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-chess-board fa-5x text-muted"></i>
+                            <p class="mt-3 text-muted">Espaço da Academia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Atividades Section -->
+    <section id="atividades" class="activities-section">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="section-title">
-                    <i class="fas fa-star text-gold me-2"></i>
-                    Por que escolher o ClubPro?
+                    <i class="fas fa-calendar-check text-gold me-2"></i>
+                    Nossas Atividades
                 </h2>
                 <p class="section-subtitle">
-                    Tudo que você precisa para gerenciar seu clube de xadrez em uma única plataforma
+                    Participe das atividades e desenvolva seu jogo
                 </p>
             </div>
             
             <div class="row g-4">
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon lichess">
-                            <i class="fab fa-lichess"></i>
+                    <div class="activity-card">
+                        <div class="activity-icon aulas">
+                            <i class="fas fa-chalkboard-teacher"></i>
                         </div>
-                        <h4>Integração Lichess</h4>
-                        <p>Conecte-se automaticamente com o Lichess. Sincronize ratings, 
-                           crie torneios e acompanhe estatísticas em tempo real.</p>
+                        <h4>Aulas Regulares</h4>
+                        <p>Aulas estruturadas para todos os níveis, do iniciante ao avançado. 
+                           Desenvolva técnicas, estratégias e táticas com nossos instrutores experientes.</p>
+                        {% if not user.is_authenticated %}
+                        <a href="{% url 'register' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Tornar-se Sócio
+                        </a>
+                        {% else %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Mais Informações
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
                 
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon tournaments">
+                    <div class="activity-card">
+                        <div class="activity-icon torneios">
                             <i class="fas fa-trophy"></i>
                         </div>
-                        <h4>Gestão de Torneios</h4>
-                        <p>Organize torneios online e presenciais. Sistema completo de 
-                           inscrições, pareamento e acompanhamento de resultados.</p>
+                        <h4>Torneios e Competições</h4>
+                        <p>Participe de torneios internos e represente a AXM em competições regionais e nacionais. 
+                           Teste suas habilidades e melhore seu rating.</p>
+                        {% if not user.is_authenticated %}
+                        <a href="{% url 'register' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Tornar-se Sócio
+                        </a>
+                        {% else %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Ver Torneios
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
                 
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon members">
-                            <i class="fas fa-users"></i>
+                    <div class="activity-card">
+                        <div class="activity-icon pratica">
+                            <i class="fas fa-chess"></i>
                         </div>
-                        <h4>Controle de Membros</h4>
-                        <p>Gerencie associados, mensalidades e diferentes níveis de acesso. 
-                           Mantenha sua comunidade organizada e engajada.</p>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon analytics">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h4>Analytics Avançado</h4>
-                        <p>Relatórios detalhados de performance, ranking de jogadores 
-                           e estatísticas completas para melhor gestão.</p>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon notifications">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        <h4>Notificações Smart</h4>
-                        <p>Sistema inteligente de notificações por email e push. 
-                           Mantenha todos informados sobre eventos importantes.</p>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon security">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h4>Segurança Total</h4>
-                        <p>Dados protegidos com criptografia de ponta. OAuth seguro 
-                           e backups automáticos para tranquilidade total.</p>
+                        <h4>Sessões de Prática</h4>
+                        <p>Espaço livre para prática e jogos casuais. Encontre parceiros de treino, 
+                           analise partidas e compartilhe conhecimento com outros membros.</p>
+                        {% if not user.is_authenticated %}
+                        <a href="{% url 'register' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Tornar-se Sócio
+                        </a>
+                        {% else %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Participar
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -203,20 +265,86 @@
             <div class="cta-card">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
-                        <h3 class="cta-title">Pronto para revolucionar seu clube?</h3>
+                        <h3 class="cta-title">Junte-se à Academia de Xadrez de Maricá</h3>
                         <p class="cta-description">
-                            Junte-se a centenas de clubes que já transformaram sua gestão com o ClubPro. 
-                            Comece gratuitamente hoje mesmo!
+                            Torne-se sócio e faça parte de uma comunidade apaixonada pelo xadrez. 
+                            Desenvolva suas habilidades, participe de atividades e construa amizades duradouras.
                         </p>
+                        <div class="cta-benefits">
+                            <div class="benefit-item">
+                                <i class="fas fa-check"></i>
+                                <span>Acesso a todas as atividades</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-check"></i>
+                                <span>Descontos em produtos da loja</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-check"></i>
+                                <span>Participação em torneios</span>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-check"></i>
+                                <span>Comunidade ativa e acolhedora</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-lg-4 text-lg-end">
                         {% if not user.is_authenticated %}
                             <a href="{% url 'register' %}" class="btn btn-white btn-lg">
-                                <i class="fas fa-rocket me-2"></i>
-                                Começar Gratuitamente
+                                <i class="fas fa-user-plus me-2"></i>
+                                Tornar-se Sócio Agora
+                            </a>
+                        {% else %}
+                            <a href="{% url 'dashboard' %}" class="btn btn-white btn-lg">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Acessar Dashboard
                             </a>
                         {% endif %}
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contato Section -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-map-marker-alt text-gold me-2"></i>
+                        Localização
+                    </h3>
+                    <p class="mb-3">
+                        <strong>Academia de Xadrez de Maricá</strong><br>
+                        Maricá, Rio de Janeiro
+                    </p>
+                    <p class="text-muted">
+                        Entre em contato conosco para mais informações sobre localização, 
+                        horários de funcionamento e como se tornar sócio.
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-envelope text-gold me-2"></i>
+                        Entre em Contato
+                    </h3>
+                    <p class="mb-3">
+                        Para informações sobre se tornar sócio, atividades e horários, 
+                        entre em contato através do sistema ou visite nossa página de contato.
+                    </p>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'register' %}" class="btn btn-gold">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Cadastre-se e Entre em Contato
+                    </a>
+                    {% else %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-gold">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Ver Informações no Dashboard
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -227,6 +355,23 @@
     /* Landing Page Styles */
     .landing-page {
         overflow-x: hidden;
+    }
+
+    /* Club Badge */
+    .club-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--white);
+    }
+
+    .club-badge i {
+        color: var(--gold-color);
     }
 
     /* Hero Section */
@@ -262,12 +407,21 @@
         margin-bottom: 1.5rem;
     }
 
+    .hero-title .gradient-text {
+        background: linear-gradient(90deg, #f39c12, #e67e22);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 4px 18px rgba(0,0,0,0.45);
+        display: inline-block;
+    }
+
     .hero-title small {
         font-size: 1.5rem;
         font-weight: 500;
         opacity: 0.9;
         display: block;
         margin-top: 0.5rem;
+        color: rgba(255,255,255,0.95);
     }
 
     .hero-description {
@@ -279,6 +433,29 @@
 
     .hero-actions {
         margin-bottom: 3rem;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 2px solid rgba(255,255,255,0.3);
+        color: var(--white);
+    }
+
+    .btn-outline-light:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.5);
+        color: var(--white);
+    }
+
+    .btn-link-light {
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-link-light:hover {
+        color: var(--white);
+        text-decoration: underline;
     }
 
     .hero-stats {
@@ -295,12 +472,6 @@
         font-weight: 700;
         color: var(--gold-color);
         line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 0.9rem;
-        opacity: 0.8;
-        margin-top: 0.25rem;
     }
 
     /* Hero Chess Board */
@@ -336,8 +507,37 @@
         66% { transform: translateY(-5px) rotate(-1deg); }
     }
 
-    /* Features Section */
-    .features-section {
+    /* About Section */
+    .about-section {
+        padding: 5rem 0;
+        background: var(--white);
+    }
+
+    .about-features {
+        margin-top: 2rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .about-image {
+        text-align: center;
+    }
+
+    .image-placeholder {
+        background: var(--light-gray);
+        border-radius: var(--radius-lg);
+        padding: 4rem 2rem;
+        border: 2px dashed var(--gray-300);
+    }
+
+    /* Activities Section */
+    .activities-section {
         padding: 5rem 0;
         background: var(--light-gray);
     }
@@ -356,7 +556,7 @@
         margin: 0 auto;
     }
 
-    .feature-card {
+    .activity-card {
         background: var(--white);
         padding: 2.5rem 2rem;
         border-radius: var(--radius-lg);
@@ -367,12 +567,12 @@
         border: 1px solid var(--gray-200);
     }
 
-    .feature-card:hover {
+    .activity-card:hover {
         transform: translateY(-10px);
         box-shadow: var(--shadow-lg);
     }
 
-    .feature-icon {
+    .activity-icon {
         width: 80px;
         height: 80px;
         border-radius: 50%;
@@ -382,30 +582,31 @@
         margin: 0 auto 1.5rem;
         font-size: 2rem;
         color: var(--white);
+        position: relative;
     }
 
-    .feature-icon.lichess { background: linear-gradient(135deg, #f39c12, #e67e22); }
-    .feature-icon.tournaments { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-    .feature-icon.members { background: linear-gradient(135deg, #3498db, #2980b9); }
-    .feature-icon.analytics { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-    .feature-icon.notifications { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-    .feature-icon.security { background: linear-gradient(135deg, #34495e, #2c3e50); }
+    .activity-icon.aulas { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .activity-icon.torneios { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .activity-icon.pratica { background: linear-gradient(135deg, #2ecc71, #27ae60); }
 
-    .feature-card h4 {
+
+    .activity-card h4 {
         font-size: 1.5rem;
         font-weight: 600;
         color: var(--primary-color);
         margin-bottom: 1rem;
     }
 
-    .feature-card p {
+    .activity-card p {
         color: var(--gray-600);
         line-height: 1.6;
+        margin-bottom: 1.5rem;
     }
 
     /* CTA Section */
     .cta-section {
         padding: 5rem 0;
+        background: var(--white);
     }
 
     .cta-card {
@@ -425,7 +626,25 @@
     .cta-description {
         font-size: 1.1rem;
         opacity: 0.9;
-        margin-bottom: 0;
+        margin-bottom: 2rem;
+    }
+
+    .cta-benefits {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .benefit-item i {
+        color: var(--gold-color);
     }
 
     /* Shop Preview Section */
@@ -485,6 +704,12 @@
         box-shadow: var(--shadow-lg);
     }
 
+    /* Contact Section */
+    .contact-section {
+        padding: 4rem 0;
+        background: var(--light-gray);
+    }
+
     /* Mobile-First Responsive Styles */
     @media (max-width: 576px) {
         .hero-section {
@@ -531,7 +756,11 @@
             font-size: 2rem;
         }
         
-        .features-section {
+        .about-section,
+        .activities-section,
+        .shop-preview-section,
+        .cta-section,
+        .contact-section {
             padding: 3rem 0;
         }
         
@@ -543,23 +772,19 @@
             font-size: 1rem;
         }
         
-        .feature-card {
+        .activity-card {
             padding: 1.5rem 1rem;
             margin-bottom: 1rem;
         }
         
-        .feature-icon {
+        .activity-icon {
             width: 60px;
             height: 60px;
             font-size: 1.5rem;
         }
         
-        .feature-card h4 {
+        .activity-card h4 {
             font-size: 1.25rem;
-        }
-        
-        .cta-section {
-            padding: 3rem 0;
         }
         
         .cta-card {
@@ -576,9 +801,9 @@
             font-size: 1rem;
             margin-bottom: 1.5rem;
         }
-        
-        .shop-preview-section {
-            padding: 3rem 0;
+
+        .cta-benefits {
+            grid-template-columns: 1fr;
         }
         
         .product-card {
@@ -630,6 +855,10 @@
         
         .cta-title {
             font-size: 1.75rem;
+        }
+
+        .cta-benefits {
+            grid-template-columns: 1fr;
         }
     }
 </style>

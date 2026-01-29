@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - ClubPro{% endblock %}
+{% block title %}Dashboard - AXM{% endblock %}
 
 {% block content %}
 <div class="dashboard-modern fade-in-up">
@@ -16,7 +16,7 @@
                         </h1>
                         <p class="welcome-subtitle mb-0">
                             {% if user.is_lichess_connected %}
-                                Bem-vindo de volta ao ClubPro. Aqui está um resumo da sua atividade.
+                                Bem-vindo de volta à AXM - Academia de Xadrez de Maricá. Aqui está um resumo da sua atividade.
                             {% else %}
                                 Conecte sua conta Lichess para desbloquear todas as funcionalidades!
                             {% endif %}
@@ -266,54 +266,77 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <a href="{% url 'socios:dashboard' %}" class="system-card-link">
-                                <div class="system-card">
-                                    <div class="system-icon bg-primary">
-                                        <i class="fas fa-users"></i>
-                                    </div>
-                                    <div class="system-content">
-                                        <h6>Sistema de Sócios</h6>
-                                        <p>Gerencie membros, pagamentos e assinaturas do clube</p>
-                                        <div class="system-stats">
-                                            <small><i class="fas fa-user-check me-1"></i>Gestão Completa</small>
+                        {% if user.is_staff or user.is_superuser %}
+                            <!-- Admin: Mostra todos os sistemas -->
+                            <div class="col-md-4 mb-3">
+                                <a href="{% url 'socios:dashboard' %}" class="system-card-link">
+                                    <div class="system-card">
+                                        <div class="system-icon bg-primary">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="system-content">
+                                            <h6>Sistema de Sócios</h6>
+                                            <p>Gerencie membros, pagamentos e assinaturas do clube</p>
+                                            <div class="system-stats">
+                                                <small><i class="fas fa-user-check me-1"></i>Gestão Completa</small>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <a href="{% url 'main:tournament_dashboard' %}" class="system-card-link">
-                                <div class="system-card">
-                                    <div class="system-icon bg-warning">
-                                        <i class="fas fa-trophy"></i>
-                                    </div>
-                                    <div class="system-content">
-                                        <h6>Sistema de Torneios</h6>
-                                        <p>Organize competições e acompanhe resultados</p>
-                                        <div class="system-stats">
-                                            <small><i class="fas fa-chess me-1"></i>Competições</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <div class="system-card disabled">
-                                <div class="system-icon bg-secondary">
-                                    <i class="fas fa-cogs"></i>
-                                </div>
-                                <div class="system-content">
-                                    <h6>Configurações</h6>
-                                    <p>Personalize seu clube e preferências</p>
-                                    <div class="system-stats">
-                                        <small><i class="fas fa-wrench me-1"></i>Em Breve</small>
-                                    </div>
-                                </div>
+                                </a>
                             </div>
-                        </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <a href="{% url 'main:tournament_dashboard' %}" class="system-card-link">
+                                    <div class="system-card">
+                                        <div class="system-icon bg-warning">
+                                            <i class="fas fa-trophy"></i>
+                                        </div>
+                                        <div class="system-content">
+                                            <h6>Sistema de Torneios</h6>
+                                            <p>Organize competições e acompanhe resultados</p>
+                                            <div class="system-stats">
+                                                <small><i class="fas fa-chess me-1"></i>Competições</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <a href="{% url 'shop:product_list' %}" class="system-card-link">
+                                    <div class="system-card">
+                                        <div class="system-icon bg-success">
+                                            <i class="fas fa-store"></i>
+                                        </div>
+                                        <div class="system-content">
+                                            <h6>Loja</h6>
+                                            <p>Compre produtos e acessórios do clube</p>
+                                            <div class="system-stats">
+                                                <small><i class="fas fa-shopping-cart me-1"></i>Compras</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% else %}
+                            <!-- Usuário comum: Mostra apenas a loja -->
+                            <div class="col-md-4 mb-3">
+                                <a href="{% url 'shop:product_list' %}" class="system-card-link">
+                                    <div class="system-card">
+                                        <div class="system-icon bg-success">
+                                            <i class="fas fa-store"></i>
+                                        </div>
+                                        <div class="system-content">
+                                            <h6>Loja</h6>
+                                            <p>Compre produtos e acessórios do clube</p>
+                                            <div class="system-stats">
+                                                <small><i class="fas fa-shopping-cart me-1"></i>Compras</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

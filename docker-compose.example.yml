@@ -1,3 +1,5 @@
+# Example docker-compose.yml for development
+# Copy this to docker-compose.yml and update with your values
 
 services:
   db:
