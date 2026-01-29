@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Pedido {{ order.order_number }} - Loja ClubPro{% endblock %}
+
+{% block content %}
+<div class="container my-3 my-md-5">
+    <div class="alert alert-success">
+        <h4 class="h5 h-md-4"><i class="fas fa-check-circle me-2"></i>Pedido Criado com Sucesso!</h4>
+        <p class="mb-0 small small-md-normal">Número do pedido: <strong>{{ order.order_number }}</strong></p>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 col-lg-8 mb-4 mb-lg-0">
+            <div class="card shadow-sm mb-3 mb-md-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 h6 h-md-5">Itens do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="d-none d-md-table-header-group">
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Quantidade</th>
+                                    <th>Preço</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr class="d-md-table-row">
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Produto: </strong></span>
+                                        {{ item.product.name }}
+                                    </td>
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Qtd: </strong></span>
+                                        {{ item.quantity }}
+                                    </td>
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Preço: </strong></span>
+                                        R$ {{ item.price }}
+                                    </td>
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Total: </strong></span>
+                                        <strong>R$ {{ item.total }}</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end d-none d-md-table-cell"><strong>Total:</strong></td>
+                                    <td class="d-md-table-cell">
+                                        <div class="d-flex justify-content-between d-md-block">
+                                            <strong class="d-md-none">Total:</strong>
+                                            <strong class="text-primary h6 h-md-5">R$ {{ order.total }}</strong>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 h6 h-md-5">Informações de Entrega</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small small-md-normal mb-2"><strong>Nome:</strong> {{ order.customer_name }}</p>
+                    <p class="small small-md-normal mb-2"><strong>E-mail:</strong> {{ order.customer_email }}</p>
+                    <p class="small small-md-normal mb-2"><strong>Telefone:</strong> {{ order.customer_phone }}</p>
+                    <p class="small small-md-normal mb-2"><strong>Endereço:</strong> {{ order.shipping_address }}</p>
+                    <p class="small small-md-normal mb-2"><strong>Cidade:</strong> {{ order.shipping_city }}/{{ order.shipping_state }}</p>
+                    <p class="small small-md-normal mb-0"><strong>CEP:</strong> {{ order.shipping_zip }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 h6 h-md-5">Status do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small small-md-normal mb-2"><strong>Status:</strong> 
+                        <span class="badge bg-info small">{{ order.get_status_display }}</span>
+                    </p>
+                    <p class="small small-md-normal mb-2"><strong>Pagamento:</strong> 
+                        <span class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %} small">
+                            {{ order.get_payment_status_display }}
+                        </span>
+                    </p>
+                    <p class="small small-md-normal mb-2"><strong>Método:</strong> {{ order.get_payment_method_display }}</p>
+                    <p class="small small-md-normal mb-0"><strong>Data:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                    
+                    {% if order.payment_method == 'pix' and order.payment_status == 'pending' %}
+                    <div class="alert alert-info mt-3 small">
+                        <h6 class="small">Pagamento via PIX</h6>
+                        <p class="small mb-0">O QR Code será gerado em breve. Verifique seu e-mail.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <a href="{% url 'shop:order_list' %}" class="btn btn-outline-primary btn-sm btn-md-normal">
+                    <i class="fas fa-list me-2"></i>Meus Pedidos
+                </a>
+                <a href="{% url 'shop:product_list' %}" class="btn btn-outline-secondary btn-sm btn-md-normal">
+                    <i class="fas fa-store me-2"></i>Continuar Comprando
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .h-md-4 { font-size: 1.5rem !important; }
+    .h-md-5 { font-size: 1.25rem !important; }
+    .h-md-6 { font-size: 1rem !important; }
+    .small-md-normal { font-size: 1rem !important; }
+    .btn-md-normal { font-size: 1rem; padding: 0.375rem 0.75rem; }
+    
+    @media (max-width: 767px) {
+        .h-md-4 { font-size: 1.25rem !important; }
+        .h-md-5 { font-size: 1rem !important; }
+        .h-md-6 { font-size: 0.875rem !important; }
+        .small-md-normal { font-size: 0.875rem !important; }
+        .btn-md-normal { font-size: 0.875rem; padding: 0.25rem 0.5rem; }
+        
+        .table tbody tr {
+            display: block;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+        }
+        
+        .table tbody td {
+            display: block;
+            border: none;
+            padding: 0.5rem 0;
+            text-align: left !important;
+        }
+        
+        .table tfoot tr {
+            display: block;
+            border-top: 2px solid #dee2e6;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

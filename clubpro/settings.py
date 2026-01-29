@@ -44,7 +44,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # For development only - adjust your allowed hosts
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+# Note: Django doesn't support wildcards in ALLOWED_HOSTS, so we'll handle ngrok dynamically
+allowed_hosts_str = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '2fca1148951e.ngrok-free.app']
 
 
 # Application definition
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
     'lichess',
     'main',
     'socios',
+    'shop',
     'widget_tweaks',
     'corsheaders',
 ]
@@ -151,6 +154,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files (User uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Administrativo - Loja{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-store me-2 text-gold"></i>
+            Painel Administrativo da Loja
+        </h2>
+        <a href="{% url 'shop:product_list' %}" class="btn btn-outline-primary" target="_blank">
+            <i class="fas fa-external-link-alt me-2"></i>Ver Loja
+        </a>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-3 g-md-4 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1 mb-md-2 small">Total de Produtos</h6>
+                            <h3 class="mb-0 h4 h-md-3">{{ total_products }}</h3>
+                            <small class="text-success d-none d-md-inline">{{ active_products }} ativos</small>
+                        </div>
+                        <div class="text-primary">
+                            <i class="fas fa-box fa-lg fa-md-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card shadow-sm border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total de Pedidos</h6>
+                            <h3 class="mb-0">{{ total_orders }}</h3>
+                            <small class="text-warning">{{ pending_orders }} pendentes</small>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-shopping-bag fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Receita Total</h6>
+                            <h3 class="mb-0">R$ {{ total_revenue|floatformat:2 }}</h3>
+                            <small class="text-muted">Pagamentos confirmados</small>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Fora de Estoque</h6>
+                            <h3 class="mb-0">{{ out_of_stock }}</h3>
+                            <small class="text-danger">Produtos sem estoque</small>
+                        </div>
+                        <div class="text-danger">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row g-3 g-md-4 mb-4">
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'shop:admin_product_create' %}" class="btn btn-primary btn-sm btn-md-normal">
+                            <i class="fas fa-plus me-2"></i>Criar Novo Produto
+                        </a>
+                        <a href="{% url 'shop:admin_category_create' %}" class="btn btn-outline-primary btn-sm btn-md-normal">
+                            <i class="fas fa-tag me-2"></i>Criar Nova Categoria
+                        </a>
+                        <a href="{% url 'shop:admin_product_list' %}" class="btn btn-outline-secondary btn-sm btn-md-normal">
+                            <i class="fas fa-list me-2"></i>Gerenciar Produtos
+                        </a>
+                        <a href="{% url 'shop:admin_order_list' %}" class="btn btn-outline-secondary btn-sm btn-md-normal">
+                            <i class="fas fa-shopping-bag me-2"></i>Gerenciar Pedidos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Estoque Baixo</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_products %}
+                    <div class="list-group">
+                        {% for product in low_stock_products %}
+                        <a href="{% url 'shop:admin_product_edit' product_id=product.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ product.name }}</span>
+                                <span class="badge bg-warning">{{ product.stock }} unidades</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">Nenhum produto com estoque baixo.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Pedidos Recentes</h5>
+            <a href="{% url 'shop:admin_order_list' %}" class="btn btn-sm btn-light">Ver Todos</a>
+        </div>
+        <div class="card-body">
+            {% if recent_orders %}
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead class="d-none d-md-table-header-group">
+                        <tr>
+                            <th>Número</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Pagamento</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>
+                                <strong class="d-md-none">Pedido: </strong>
+                                <strong>{{ order.order_number }}</strong>
+                            </td>
+                            <td>
+                                <span class="d-md-none"><strong>Cliente: </strong></span>
+                                {{ order.customer_name }}
+                            </td>
+                            <td>
+                                <span class="d-md-none"><strong>Total: </strong></span>
+                                <strong class="text-primary">R$ {{ order.total }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info small">{{ order.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %} small">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </td>
+                            <td class="small">
+                                <span class="d-md-none"><strong>Data: </strong></span>
+                                {{ order.created_at|date:"d/m/Y H:i" }}
+                            </td>
+                            <td>
+                                <a href="{% url 'shop:admin_order_detail' order_number=order.order_number %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> <span class="d-md-none">Ver</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center mb-0">Nenhum pedido ainda.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .h-md-3 { font-size: 1.75rem !important; }
+    .fa-md-2x { font-size: 2em !important; }
+    .btn-md-normal { font-size: 1rem; padding: 0.375rem 0.75rem; }
+    
+    @media (max-width: 767px) {
+        .h-md-3 { font-size: 1.25rem !important; }
+        .fa-md-2x { font-size: 1.5em !important; }
+        .btn-md-normal { font-size: 0.875rem; padding: 0.25rem 0.5rem; }
+        
+        .table tbody tr {
+            display: block;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+        }
+        
+        .table tbody td {
+            display: block;
+            border: none;
+            padding: 0.25rem 0;
+        }
+        
+        .table tbody td:before {
+            content: attr(data-label);
+            font-weight: bold;
+            display: inline-block;
+            width: 100px;
+        }
+    }
+</style>
+{% endblock %}

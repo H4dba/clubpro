@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Pedidos - Loja ClubPro{% endblock %}
+
+{% block content %}
+<div class="container my-3 my-md-5">
+    <h2 class="mb-3 mb-md-4 h3 h-md-2">
+        <i class="fas fa-shopping-bag me-2"></i>
+        Meus Pedidos
+    </h2>
+    
+    {% if orders %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead class="d-none d-md-table-header-group">
+                        <tr>
+                            <th>Número do Pedido</th>
+                            <th>Data</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Pagamento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr class="d-md-table-row">
+                            <td class="d-md-table-cell">
+                                <span class="d-md-none"><strong>Pedido: </strong></span>
+                                <strong>{{ order.order_number }}</strong>
+                            </td>
+                            <td class="d-md-table-cell small">
+                                <span class="d-md-none"><strong>Data: </strong></span>
+                                {{ order.created_at|date:"d/m/Y H:i" }}
+                            </td>
+                            <td class="d-md-table-cell">
+                                <span class="d-md-none"><strong>Total: </strong></span>
+                                <strong class="text-primary">R$ {{ order.total }}</strong>
+                            </td>
+                            <td class="d-md-table-cell">
+                                <span class="d-md-none"><strong>Status: </strong></span>
+                                <span class="badge bg-info small">{{ order.get_status_display }}</span>
+                            </td>
+                            <td class="d-md-table-cell">
+                                <span class="d-md-none"><strong>Pagamento: </strong></span>
+                                <span class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %} small">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </td>
+                            <td class="d-md-table-cell">
+                                <a href="{% url 'shop:order_detail' order_number=order.order_number %}" class="btn btn-sm btn-primary w-100 w-md-auto">
+                                    <i class="fas fa-eye me-1"></i>Ver Detalhes
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-shopping-bag fa-2x fa-md-3x mb-3"></i>
+        <h4 class="h5 h-md-4">Nenhum pedido encontrado</h4>
+        <p class="small small-md-normal">Você ainda não realizou nenhum pedido.</p>
+        <a href="{% url 'shop:product_list' %}" class="btn btn-primary btn-sm btn-md-normal">
+            <i class="fas fa-store me-2"></i>Ir para Loja
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .h-md-2 { font-size: 2rem !important; }
+    .h-md-4 { font-size: 1.5rem !important; }
+    .h-md-5 { font-size: 1.25rem !important; }
+    .small-md-normal { font-size: 1rem !important; }
+    .fa-md-3x { font-size: 3em !important; }
+    .btn-md-normal { font-size: 1rem; padding: 0.375rem 0.75rem; }
+    
+    @media (max-width: 767px) {
+        .h-md-2 { font-size: 1.5rem !important; }
+        .h-md-4 { font-size: 1.25rem !important; }
+        .h-md-5 { font-size: 1rem !important; }
+        .small-md-normal { font-size: 0.875rem !important; }
+        .fa-md-3x { font-size: 2em !important; }
+        .btn-md-normal { font-size: 0.875rem; padding: 0.25rem 0.5rem; }
+        
+        .table tbody tr {
+            display: block;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+        }
+        
+        .table tbody td {
+            display: block;
+            border: none;
+            padding: 0.5rem 0;
+            text-align: left !important;
+        }
+    }
+</style>
+{% endblock %}

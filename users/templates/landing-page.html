@@ -43,16 +43,16 @@
                         </div>
                         <div class="hero-stats">
                             <div class="stat-item">
-                                <div class="stat-number">1000+</div>
-                                <div class="stat-label">Jogadores Ativos</div>
+                                <div class="stat-number">{{ total_members|default:0 }}+</div>
+                                <div class="stat-label">Sócios Ativos</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-number">500+</div>
+                                <div class="stat-number">{{ total_tournaments|default:0 }}+</div>
                                 <div class="stat-label">Torneios Realizados</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-number">50+</div>
-                                <div class="stat-label">Clubes Parceiros</div>
+                                <div class="stat-number">{{ total_users|default:0 }}+</div>
+                                <div class="stat-label">Usuários Cadastrados</div>
                             </div>
                         </div>
                     </div>
@@ -155,6 +155,47 @@
             </div>
         </div>
     </section>
+
+    <!-- Shop Preview Section -->
+    {% if featured_products %}
+    <section class="shop-preview-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">
+                    <i class="fas fa-shopping-bag text-gold me-2"></i>
+                    Loja do Clube
+                </h2>
+                <p class="section-subtitle">
+                    Produtos exclusivos para membros e entusiastas do xadrez
+                </p>
+            </div>
+            <div class="row g-4">
+                {% for product in featured_products %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card">
+                        {% if product.main_image %}
+                        <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="product-image">
+                        {% endif %}
+                        <div class="product-info">
+                            <h4>{{ product.name }}</h4>
+                            <p class="product-price">R$ {{ product.price }}</p>
+                            <a href="{% url 'shop:product_detail' slug=product.slug %}" class="btn btn-sm btn-primary">
+                                Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'shop:product_list' %}" class="btn btn-gold btn-lg">
+                    <i class="fas fa-store me-2"></i>
+                    Ver Todos os Produtos
+                </a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
 
     <!-- CTA Section -->
     <section class="cta-section">
@@ -387,6 +428,50 @@
         margin-bottom: 0;
     }
 
+    /* Shop Preview Section */
+    .shop-preview-section {
+        padding: 5rem 0;
+        background: var(--white);
+    }
+
+    .product-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: all var(--transition-normal);
+        border: 1px solid var(--gray-200);
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+
+    .product-info {
+        padding: 1.5rem;
+    }
+
+    .product-info h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gold-color);
+        margin-bottom: 1rem;
+    }
+
     .btn-white {
         background: var(--white);
         color: var(--primary-color);
@@ -400,8 +485,124 @@
         box-shadow: var(--shadow-lg);
     }
 
-    /* Responsividade */
-    @media (max-width: 768px) {
+    /* Mobile-First Responsive Styles */
+    @media (max-width: 576px) {
+        .hero-section {
+            padding: 2rem 1rem;
+        }
+        
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-title small {
+            font-size: 1rem;
+        }
+        
+        .hero-description {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-actions {
+            margin-bottom: 2rem;
+        }
+        
+        .hero-actions .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero-actions .btn:last-child {
+            margin-bottom: 0;
+        }
+        
+        .hero-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .hero-chess-board {
+            height: 250px;
+            margin-top: 2rem;
+        }
+        
+        .chess-piece {
+            font-size: 2rem;
+        }
+        
+        .features-section {
+            padding: 3rem 0;
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+        }
+        
+        .section-subtitle {
+            font-size: 1rem;
+        }
+        
+        .feature-card {
+            padding: 1.5rem 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .feature-card h4 {
+            font-size: 1.25rem;
+        }
+        
+        .cta-section {
+            padding: 3rem 0;
+        }
+        
+        .cta-card {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-description {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .shop-preview-section {
+            padding: 3rem 0;
+        }
+        
+        .product-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        .product-image {
+            height: 200px;
+        }
+        
+        .product-info {
+            padding: 1rem;
+        }
+        
+        .product-info h4 {
+            font-size: 1.1rem;
+        }
+        
+        .product-price {
+            font-size: 1.25rem;
+        }
+    }
+    
+    @media (min-width: 577px) and (max-width: 768px) {
         .hero-title {
             font-size: 2.5rem;
         }
@@ -410,13 +611,9 @@
             font-size: 1.2rem;
         }
         
-        .hero-description {
-            font-size: 1.1rem;
-        }
-        
         .hero-stats {
-            flex-direction: column;
-            gap: 1.5rem;
+            flex-wrap: wrap;
+            gap: 2rem;
         }
         
         .chess-piece {
@@ -429,7 +626,6 @@
         
         .cta-card {
             padding: 2.5rem 2rem;
-            text-align: center;
         }
         
         .cta-title {

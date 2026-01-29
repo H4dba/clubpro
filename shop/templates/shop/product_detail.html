@@ -1,0 +1,215 @@
+{% extends "base.html" %} {% block title %}{{ product.name }} - Loja
+ClubPro {%endblock %} {% block content %}
+<div class="container my-3 my-md-5">
+  <div class="row">
+    <div class="col-12 col-md-6 mb-4 mb-md-0">
+      {% if product.main_image %}
+      <img
+        src="{{ product.main_image.url }}"
+        class="img-fluid rounded shadow w-100"
+        alt="{{ product.name }}"
+        style="max-height: 400px; object-fit: cover"
+      />
+      {% else %}
+      <div
+        class="bg-light rounded shadow d-flex align-items-center justify-content-center w-100"
+        style="height: 300px; min-height: 300px"
+      >
+        <i class="fas fa-image fa-3x fa-md-5x text-muted"></i>
+      </div>
+      {% endif %} {% if product.images.all %}
+      <div class="row g-2 mt-3">
+        {% for image in product.images.all %}
+        <div class="col-4 col-sm-3">
+          <img
+            src="{{ image.image.url }}"
+            class="img-fluid rounded border w-100"
+            alt="{{ image.alt_text }}"
+            style="height: 80px; object-fit: cover"
+          />
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-12 col-md-6">
+      <h1 class="mb-3 h2 h-md-1">{{ product.name }}</h1>
+
+      {% if product.category %}
+      <p class="text-muted">
+        <i class="fas fa-tag me-2"></i>
+        <a
+          href="{% url 'shop:product_list' %}?category={{ product.category.slug }}"
+          class="text-decoration-none"
+        >
+          {{ product.category.name }}
+        </a>
+      </p>
+      {% endif %}
+
+      <div class="mb-4">
+        <h3 class="text-primary mb-2 h4 h-md-3">R$ {{ product.price }}</h3>
+        {% if user.is_authenticated and product.member_discount_percent > 0 %}
+        <div class="alert alert-success alert-sm">
+          <i class="fas fa-tag me-2"></i>
+          <strong>Desconto para Sócios:</strong> R$ {{ member_price }}
+          <span class="badge bg-success ms-2"
+            >{{ product.member_discount_percent }}% OFF</span
+          >
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="mb-4">
+        <h5 class="h6 h-md-5">Descrição</h5>
+        <p class="small small-md-normal">
+          {{ product.description|linebreaks }}
+        </p>
+      </div>
+
+      <div class="mb-4">
+        {% if product.in_stock %}
+        <span class="badge bg-success fs-6 mb-3 d-inline-block">
+          <i class="fas fa-check-circle me-2"></i>Em Estoque ({{ product.stock
+          }} unidades)
+        </span>
+        {% else %}
+        <span class="badge bg-danger fs-6 mb-3 d-inline-block">
+          <i class="fas fa-times-circle me-2"></i>Fora de Estoque
+        </span>
+        {% endif %}
+      </div>
+
+      {% if product.in_stock %}
+      <form
+        method="post"
+        action="{% url 'shop:add_to_cart' product_id=product.id %}"
+        class="mb-4"
+      >
+        {% csrf_token %}
+        <div class="row g-2 align-items-end">
+          <div class="col-4 col-sm-3">
+            <label class="form-label small">Quantidade</label>
+            <input
+              type="number"
+              name="quantity"
+              class="form-control form-control-sm"
+              value="1"
+              min="1"
+              max="{{ product.stock }}"
+            />
+          </div>
+          <div class="col-8 col-sm-9">
+            <button type="submit" class="btn btn-gold w-100 btn-sm btn-md-lg">
+              <i class="fas fa-cart-plus me-2"></i
+              ><span class="d-none d-sm-inline">Adicionar ao </span>Carrinho
+            </button>
+          </div>
+        </div>
+      </form>
+      {% endif %}
+
+      <div class="d-grid gap-2">
+        <a
+          href="{% url 'shop:product_list' %}"
+          class="btn btn-outline-secondary btn-sm btn-md-normal"
+        >
+          <i class="fas fa-arrow-left me-2"></i>Voltar para Loja
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if related_products %}
+  <div class="row mt-4 mt-md-5">
+    <div class="col-12">
+      <h3 class="mb-3 mb-md-4 h4 h-md-3">Produtos Relacionados</h3>
+      <div class="row g-3 g-md-4">
+        {% for related in related_products %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card product-card h-100 shadow-sm">
+            {% if related.main_image %}
+            <img
+              src="{{ related.main_image.url }}"
+              class="card-img-top product-image"
+              alt="{{ related.name }}"
+            />
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title small">{{ related.name }}</h6>
+              <p class="text-primary fw-bold mb-2 small">
+                R$ {{ related.price }}
+              </p>
+              <a
+                href="{% url 'shop:product_detail' slug=related.slug %}"
+                class="btn btn-sm btn-primary w-100 mt-auto"
+              >
+                Ver Detalhes
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .product-image {
+    height: 150px;
+    object-fit: cover;
+  }
+
+  @media (min-width: 576px) {
+    .product-image {
+      height: 200px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .product-image {
+      height: 250px;
+    }
+  }
+
+  .h-md-1 {
+    font-size: 2.5rem !important;
+  }
+  .h-md-3 {
+    font-size: 1.75rem !important;
+  }
+  .h-md-5 {
+    font-size: 1.25rem !important;
+  }
+  .small-md-normal {
+    font-size: 1rem !important;
+  }
+  .btn-md-lg {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+  }
+  .btn-md-normal {
+    font-size: 1rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  @media (max-width: 767px) {
+    .h-md-1,
+    .h-md-3,
+    .h-md-5 {
+      font-size: inherit !important;
+    }
+    .small-md-normal {
+      font-size: 0.875rem !important;
+    }
+    .btn-md-lg,
+    .btn-md-normal {
+      font-size: 0.875rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+</style>
+{% endblock %}

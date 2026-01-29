@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Pedido {{ order.order_number }} - Loja{% endblock %}
+
+{% block content %}
+<div class="container my-3 my-md-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 mb-md-4">
+        <h2 class="mb-3 mb-md-0 h3 h-md-2">
+            <i class="fas fa-shopping-bag me-2 text-gold"></i>
+            Pedido {{ order.order_number }}
+        </h2>
+        <a href="{% url 'shop:admin_order_list' %}" class="btn btn-secondary btn-sm btn-md-normal w-100 w-md-auto">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 col-lg-8 mb-4 mb-lg-0">
+            <!-- Order Items -->
+            <div class="card shadow-sm mb-3 mb-md-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 h6 h-md-5">Itens do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="d-none d-md-table-header-group">
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Quantidade</th>
+                                    <th>Preço Unitário</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr class="d-md-table-row">
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Produto: </strong></span>
+                                        <strong>{{ item.product.name }}</strong>
+                                        {% if item.product.main_image %}
+                                        <br><img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded mt-1">
+                                        {% endif %}
+                                    </td>
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Qtd: </strong></span>
+                                        {{ item.quantity }}
+                                    </td>
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Preço: </strong></span>
+                                        R$ {{ item.price }}
+                                    </td>
+                                    <td class="d-md-table-cell">
+                                        <span class="d-md-none"><strong>Total: </strong></span>
+                                        <strong>R$ {{ item.total }}</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end d-none d-md-table-cell"><strong>Total:</strong></td>
+                                    <td class="d-md-table-cell">
+                                        <div class="d-flex justify-content-between d-md-block">
+                                            <strong class="d-md-none">Total:</strong>
+                                            <strong class="text-primary h6 h-md-5">R$ {{ order.total }}</strong>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customer Info -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 h6 h-md-5">Informações do Cliente</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-12 col-md-6">
+                            <p class="small small-md-normal mb-2"><strong>Nome:</strong> {{ order.customer_name }}</p>
+                            <p class="small small-md-normal mb-2"><strong>E-mail:</strong> {{ order.customer_email }}</p>
+                            <p class="small small-md-normal mb-2"><strong>Telefone:</strong> {{ order.customer_phone }}</p>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <p class="small small-md-normal mb-2"><strong>Endereço:</strong> {{ order.shipping_address }}</p>
+                            <p class="small small-md-normal mb-2"><strong>Cidade:</strong> {{ order.shipping_city }}/{{ order.shipping_state }}</p>
+                            <p class="small small-md-normal mb-2"><strong>CEP:</strong> {{ order.shipping_zip }}</p>
+                        </div>
+                    </div>
+                    {% if order.notes %}
+                    <hr>
+                    <p class="small small-md-normal"><strong>Observações:</strong> {{ order.notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-lg-4">
+            <!-- Order Status -->
+            <div class="card shadow-sm mb-3 mb-md-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 h6 h-md-5">Status do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label small small-md-normal">Status</label>
+                            {{ form.status|add_class:"form-select form-select-sm form-select-md-normal" }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small small-md-normal">Status do Pagamento</label>
+                            {{ form.payment_status|add_class:"form-select form-select-sm form-select-md-normal" }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 btn-sm btn-md-normal">
+                            <i class="fas fa-save me-2"></i>Atualizar Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Order Info -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0 h6 h-md-5">Informações do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small small-md-normal mb-2"><strong>Número:</strong> {{ order.order_number }}</p>
+                    <p class="small small-md-normal mb-2"><strong>Data:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                    <p class="small small-md-normal mb-2"><strong>Método de Pagamento:</strong> {{ order.get_payment_method_display }}</p>
+                    {% if order.user %}
+                    <p class="small small-md-normal mb-0"><strong>Usuário:</strong> {{ order.user.username }}</p>
+                    {% else %}
+                    <p class="small small-md-normal mb-0"><strong>Usuário:</strong> <span class="text-muted">Compra como visitante</span></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .h-md-2 { font-size: 2rem !important; }
+    .h-md-5 { font-size: 1.25rem !important; }
+    .h-md-6 { font-size: 1rem !important; }
+    .small-md-normal { font-size: 1rem !important; }
+    .form-select-md-normal { font-size: 1rem; padding: 0.375rem 2.25rem 0.375rem 0.75rem; }
+    .btn-md-normal { font-size: 1rem; padding: 0.375rem 0.75rem; }
+    
+    @media (max-width: 767px) {
+        .h-md-2 { font-size: 1.5rem !important; }
+        .h-md-5 { font-size: 1rem !important; }
+        .h-md-6 { font-size: 0.875rem !important; }
+        .small-md-normal { font-size: 0.875rem !important; }
+        .form-select-md-normal { font-size: 0.875rem; padding: 0.25rem 1.75rem 0.25rem 0.5rem; }
+        .btn-md-normal { font-size: 0.875rem; padding: 0.25rem 0.5rem; }
+        
+        .table tbody tr {
+            display: block;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+        }
+        
+        .table tbody td {
+            display: block;
+            border: none;
+            padding: 0.5rem 0;
+            text-align: left !important;
+        }
+        
+        .table tfoot tr {
+            display: block;
+            border-top: 2px solid #dee2e6;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

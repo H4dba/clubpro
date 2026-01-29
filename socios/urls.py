@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_enhanced
 
 app_name = 'socios'
 
@@ -30,4 +31,13 @@ urlpatterns = [
     path('pendencias/', views.pagina_pendencias, name='pendencias'),
     path('relatorios/financeiro/', views.relatorio_financeiro, name='relatorio_financeiro'),
     path('relatorios/inadimplentes/', views.relatorio_inadimplentes, name='relatorio_inadimplentes'),
+    
+    # Enhanced Features
+    path('bulk-status/', views_enhanced.bulk_status_update, name='bulk_status_update'),
+    path('exportar-csv/', views_enhanced.export_socios_csv, name='export_csv'),
+    path('busca-avancada/', views_enhanced.advanced_search, name='advanced_search'),
+    
+    # Member Portal (Self-Service)
+    path('meu-perfil/', views_enhanced.member_portal, name='member_portal'),
+    path('meu-perfil/atualizar/', views_enhanced.member_update_info, name='member_update_info'),
 ]

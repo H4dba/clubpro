@@ -18,6 +18,99 @@ def get_color_counts(tournament, player):
     print(f"Color counts for {player.get_display_name()}: White={white_count}, Black={black_count}")
     return white_count, black_count
 
+def get_recent_color_history(tournament, player, rounds_to_check=2):
+    """Get the color history for a player in the most recent rounds.
+    Returns a list of colors ('white', 'black', or None for bye) from most recent to oldest.
+    """
+    # Get all matches where player participated, ordered by round (most recent first)
+    matches = tournament.matches.filter(
+        round_number__lte=tournament.current_round
+    ).filter(
+        white_player=player
+    ) | tournament.matches.filter(
+        round_number__lte=tournament.current_round
+    ).filter(
+        black_player=player
+    )
+    
+    matches = matches.order_by('-round_number')[:rounds_to_check]
+    
+    colors = []
+    for match in matches:
+        if match.black_player is None:
+            colors.append(None)  # Bye
+        elif match.white_player == player:
+            colors.append('white')
+        else:
+            colors.append('black')
+    
+    return colors
+
+def assign_colors_round_robin(player1, player2, tournament):
+    """Assign colors ensuring no player plays the same color more than twice consecutively.
+    This follows the official rule: no more than 2 consecutive rounds with the same color.
+    """
+    p1_history = get_recent_color_history(tournament, player1, rounds_to_check=2)
+    p2_history = get_recent_color_history(tournament, player2, rounds_to_check=2)
+    
+    # Check if player1 has played the same color twice in a row
+    p1_needs_switch = False
+    if len(p1_history) >= 2 and p1_history[0] == p1_history[1] and p1_history[0] is not None:
+        p1_needs_switch = True
+        required_color_p1 = 'black' if p1_history[0] == 'white' else 'white'
+    elif len(p1_history) >= 1 and p1_history[0] is not None:
+        # Prefer switching color if possible
+        preferred_color_p1 = 'black' if p1_history[0] == 'white' else 'white'
+    else:
+        preferred_color_p1 = None
+    
+    # Check if player2 has played the same color twice in a row
+    p2_needs_switch = False
+    if len(p2_history) >= 2 and p2_history[0] == p2_history[1] and p2_history[0] is not None:
+        p2_needs_switch = True
+        required_color_p2 = 'black' if p2_history[0] == 'white' else 'white'
+    elif len(p2_history) >= 1 and p2_history[0] is not None:
+        # Prefer switching color if possible
+        preferred_color_p2 = 'black' if p2_history[0] == 'white' else 'white'
+    else:
+        preferred_color_p2 = None
+    
+    # Priority 1: If one player MUST switch (has played same color twice), assign accordingly
+    if p1_needs_switch:
+        if required_color_p1 == 'white':
+            print(f"Assigning white to {player1.get_display_name()} (must switch from {p1_history[0]})")
+            return player1, player2
+        else:
+            print(f"Assigning white to {player2.get_display_name()} (player1 must switch from {p1_history[0]})")
+            return player2, player1
+    
+    if p2_needs_switch:
+        if required_color_p2 == 'white':
+            print(f"Assigning white to {player2.get_display_name()} (must switch from {p2_history[0]})")
+            return player2, player1
+        else:
+            print(f"Assigning white to {player1.get_display_name()} (player2 must switch from {p2_history[0]})")
+            return player1, player2
+    
+    # Priority 2: If both have preferences, try to satisfy both
+    if preferred_color_p1 == 'white' and preferred_color_p2 == 'black':
+        print(f"Assigning white to {player1.get_display_name()} (both players prefer different colors)")
+        return player1, player2
+    elif preferred_color_p1 == 'black' and preferred_color_p2 == 'white':
+        print(f"Assigning white to {player2.get_display_name()} (both players prefer different colors)")
+        return player2, player1
+    
+    # Priority 3: Balance overall color counts
+    p1_white, p1_black = get_color_counts(tournament, player1)
+    p2_white, p2_black = get_color_counts(tournament, player2)
+    
+    if p1_white - p1_black > p2_white - p2_black:
+        print(f"Assigning white to {player2.get_display_name()} (color balance)")
+        return player2, player1
+    else:
+        print(f"Assigning white to {player1.get_display_name()} (color balance)")
+        return player1, player2
+
 def assign_colors(player1, player2, tournament):
     """Determine who gets white based on previous color balance"""
     p1_white, p1_black = get_color_counts(tournament, player1)
@@ -91,11 +184,8 @@ def generate_next_round(tournament):
             board_number += 1
             continue
 
-        # Alternate colors by round number and board number for fairness
-        if (current_round + board_number) % 2 == 0:
-            white, black = p1, p2
-        else:
-            white, black = p2, p1
+        # Assign colors ensuring no player plays same color more than twice consecutively
+        white, black = assign_colors_round_robin(p1, p2, tournament)
 
         print(f"Board {board_number}: {white.get_display_name()} (White) vs {black.get_display_name()} (Black)")
         tournament.matches.create(

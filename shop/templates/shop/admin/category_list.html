@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Categorias - Loja{% endblock %}
+
+{% block content %}
+<div class="container my-3 my-md-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 mb-md-4">
+        <h2 class="mb-3 mb-md-0 h3 h-md-2">
+            <i class="fas fa-tags me-2 text-gold"></i>
+            Gerenciar Categorias
+        </h2>
+        <a href="{% url 'shop:admin_category_create' %}" class="btn btn-primary btn-sm btn-md-normal w-100 w-md-auto">
+            <i class="fas fa-plus me-2"></i>Nova Categoria
+        </a>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if categories %}
+            <div class="row g-3 g-md-4">
+                {% for category in categories %}
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="card h-100">
+                        {% if category.image %}
+                        <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title h6 h-md-5">{{ category.name }}</h5>
+                            <p class="card-text text-muted small flex-grow-1">{{ category.description|truncatewords:15 }}</p>
+                            <p class="mb-2">
+                                <span class="badge bg-info small">{{ category.product_count }} produto(s)</span>
+                                {% if category.is_active %}
+                                <span class="badge bg-success small">Ativa</span>
+                                {% else %}
+                                <span class="badge bg-secondary small">Inativa</span>
+                                {% endif %}
+                            </p>
+                            <div class="btn-group w-100 d-grid d-md-inline-flex gap-2">
+                                <a href="{% url 'shop:admin_category_edit' category_id=category.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </a>
+                                <a href="{% url 'shop:product_list' %}?category={{ category.slug }}" class="btn btn-sm btn-outline-info" target="_blank">
+                                    <i class="fas fa-external-link-alt me-1"></i>Ver na Loja
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h4>Nenhuma categoria encontrada</h4>
+                <p>Crie sua primeira categoria para organizar os produtos!</p>
+                <a href="{% url 'shop:admin_category_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Criar Categoria
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .h-md-2 { font-size: 2rem !important; }
+    .h-md-5 { font-size: 1.25rem !important; }
+    .btn-md-normal { font-size: 1rem; padding: 0.375rem 0.75rem; }
+    
+    @media (max-width: 767px) {
+        .h-md-2 { font-size: 1.5rem !important; }
+        .h-md-5 { font-size: 1rem !important; }
+        .btn-md-normal { font-size: 0.875rem; padding: 0.25rem 0.5rem; }
+        
+        .card img {
+            height: 150px;
+            object-fit: cover;
+        }
+    }
+</style>
+{% endblock %}
