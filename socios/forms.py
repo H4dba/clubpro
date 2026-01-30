@@ -102,7 +102,7 @@ class SocioForm(forms.ModelForm):
     class Meta:
         model = Socio
         fields = [
-            'numero_socio', 'nome_completo', 'nome_social', 'cpf', 'rg',
+            'nome_completo', 'nome_social', 'cpf', 'rg',
             'data_nascimento', 'genero', 'telefone', 'celular', 'email',
             'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
             'nivel_aluno', 'rating_fide', 'rating_cbx', 'categoria_cbx',

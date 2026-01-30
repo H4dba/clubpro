@@ -474,20 +474,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        {% if not socio.id %}
-                            <div class="mb-3">
-                                <label for="{{ form.numero_socio.id_for_label }}" class="form-label">
-                                    Número do Sócio
-                                </label>
-                                {{ form.numero_socio }}
-                                {% if form.numero_socio.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.numero_socio.errors.0 }}
-                                    </div>
-                                {% endif %}
-                                <div class="form-text">Deixe em branco para gerar automaticamente</div>
-                            </div>
-                        {% else %}
+                        {% if socio.id %}
                             <div class="info-display mb-3">
                                 <label class="form-label">Número do Sócio</label>
                                 <div class="info-value">{{ socio.numero_socio }}</div>
