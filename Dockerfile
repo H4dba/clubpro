@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     build-essential \
     libpq-dev \
-    netcat-traditional \
     dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,11 +19,11 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy wait script to a location that won't be overwritten by volumes
+# Copy wait script
 COPY wait-for-db.py /usr/local/bin/wait-for-db.py
 RUN chmod +x /usr/local/bin/wait-for-db.py
 
-# Create entrypoint script in a location that won't be overwritten
+# Create entrypoint script
 RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'cd /app' >> /usr/local/bin/docker-entrypoint.sh && \
@@ -42,7 +41,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
 COPY . /app/
 
 # Create directory for media files
-RUN mkdir -p /app/media /app/static
+RUN mkdir -p /app/media /app/staticfiles
 
 # Expose port
 EXPOSE 8000
