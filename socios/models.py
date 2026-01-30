@@ -157,7 +157,7 @@ class Socio(models.Model):
     
     # Endereço
     cep = models.CharField(max_length=10, verbose_name="CEP")
-    endereco = models.CharField(max_length=255, verbose_name="Endereço")
+    endereco = models.CharField(max_length=255, verbose_name="Rua")
     numero = models.CharField(max_length=10, verbose_name="Número")
     complemento = models.CharField(max_length=100, blank=True, verbose_name="Complemento")
     bairro = models.CharField(max_length=100, verbose_name="Bairro")
@@ -165,6 +165,19 @@ class Socio(models.Model):
     estado = models.CharField(max_length=2, verbose_name="Estado (UF)")
     
     # Dados do xadrez
+    nivel_aluno_choices = [
+        ('iniciante', 'Iniciante'),
+        ('intermediario', 'Intermediário'),
+        ('avancado', 'Avançado'),
+        ('mestre', 'Mestre'),
+    ]
+    nivel_aluno = models.CharField(
+        max_length=20,
+        choices=nivel_aluno_choices,
+        blank=True,
+        verbose_name="Nível do Aluno"
+    )
+    
     rating_fide = models.IntegerField(
         null=True, 
         blank=True, 
@@ -179,6 +192,23 @@ class Socio(models.Model):
         max_length=50, 
         blank=True, 
         verbose_name="Categoria CBX"
+    )
+    
+    # Plataformas de xadrez
+    possui_lichess = models.BooleanField(default=False, verbose_name="Possui conta Lichess")
+    rating_lichess_rapid = models.IntegerField(null=True, blank=True, verbose_name="Rating Lichess Rapid")
+    rating_lichess_blitz = models.IntegerField(null=True, blank=True, verbose_name="Rating Lichess Blitz")
+    rating_lichess_bullet = models.IntegerField(null=True, blank=True, verbose_name="Rating Lichess Bullet")
+    rating_lichess_classical = models.IntegerField(null=True, blank=True, verbose_name="Rating Lichess Classical")
+    
+    possui_chesscom = models.BooleanField(default=False, verbose_name="Possui conta Chess.com")
+    rating_chesscom_rapid = models.IntegerField(null=True, blank=True, verbose_name="Rating Chess.com Rapid")
+    rating_chesscom_blitz = models.IntegerField(null=True, blank=True, verbose_name="Rating Chess.com Blitz")
+    rating_chesscom_bullet = models.IntegerField(null=True, blank=True, verbose_name="Rating Chess.com Bullet")
+    
+    ja_participou_torneios = models.BooleanField(
+        default=False,
+        verbose_name="Já Participou de Torneios"
     )
     
     # Dados da associação
@@ -205,6 +235,44 @@ class Socio(models.Model):
         choices=status_choices, 
         default='ativo',
         verbose_name="Status"
+    )
+    
+    # Dados do responsável (para menores de idade)
+    nome_responsavel = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Nome do Responsável"
+    )
+    grau_parentesco_choices = [
+        ('pai', 'Pai'),
+        ('mae', 'Mãe'),
+        ('avo', 'Avô/Avó'),
+        ('tio', 'Tio/Tia'),
+        ('irmao', 'Irmão/Irmã'),
+        ('tutor', 'Tutor Legal'),
+        ('outro', 'Outro'),
+    ]
+    grau_parentesco = models.CharField(
+        max_length=20,
+        choices=grau_parentesco_choices,
+        blank=True,
+        verbose_name="Grau de Parentesco"
+    )
+    cpf_responsavel = models.CharField(
+        max_length=14,
+        validators=[cpf_validator],
+        blank=True,
+        verbose_name="CPF do Responsável"
+    )
+    telefone_responsavel = models.CharField(
+        max_length=20,
+        validators=[telefone_validator],
+        blank=True,
+        verbose_name="Telefone do Responsável"
+    )
+    email_responsavel = models.EmailField(
+        blank=True,
+        verbose_name="E-mail do Responsável"
     )
     
     # Dados adicionais

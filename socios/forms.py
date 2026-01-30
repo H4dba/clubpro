@@ -83,9 +83,18 @@ class SocioForm(forms.ModelForm):
         self.fields['rg'].required = False
         self.fields['genero'].required = False
         self.fields['telefone'].required = False
+        self.fields['nivel_aluno'].required = False
         self.fields['rating_fide'].required = False
         self.fields['rating_cbx'].required = False
         self.fields['categoria_cbx'].required = False
+        self.fields['possui_lichess'].required = False
+        self.fields['possui_chesscom'].required = False
+        self.fields['ja_participou_torneios'].required = False
+        self.fields['nome_responsavel'].required = False
+        self.fields['grau_parentesco'].required = False
+        self.fields['cpf_responsavel'].required = False
+        self.fields['telefone_responsavel'].required = False
+        self.fields['email_responsavel'].required = False
         self.fields['profissao'].required = False
         self.fields['aceita_emails'].required = False
         self.fields['aceita_whatsapp'].required = False
@@ -96,7 +105,11 @@ class SocioForm(forms.ModelForm):
             'numero_socio', 'nome_completo', 'nome_social', 'cpf', 'rg',
             'data_nascimento', 'genero', 'telefone', 'celular', 'email',
             'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
-            'rating_fide', 'rating_cbx', 'categoria_cbx',
+            'nivel_aluno', 'rating_fide', 'rating_cbx', 'categoria_cbx',
+            'possui_lichess', 'rating_lichess_rapid', 'rating_lichess_blitz', 'rating_lichess_bullet', 'rating_lichess_classical',
+            'possui_chesscom', 'rating_chesscom_rapid', 'rating_chesscom_blitz', 'rating_chesscom_bullet',
+            'ja_participou_torneios',
+            'nome_responsavel', 'grau_parentesco', 'cpf_responsavel', 'telefone_responsavel', 'email_responsavel',
             'tipo_assinatura', 'data_associacao', 'data_vencimento', 'status',
             'profissao', 'observacoes', 'foto',
             'aceita_emails', 'aceita_whatsapp'
@@ -186,6 +199,67 @@ class SocioForm(forms.ModelForm):
             'categoria_cbx': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Categoria CBX (opcional)'
+            }),
+            'nivel_aluno': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'possui_lichess': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'rating_lichess_rapid': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rating Lichess Rapid'
+            }),
+            'rating_lichess_blitz': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rating Lichess Blitz'
+            }),
+            'rating_lichess_bullet': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rating Lichess Bullet'
+            }),
+            'rating_lichess_classical': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rating Lichess Classical'
+            }),
+            'possui_chesscom': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'rating_chesscom_rapid': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rating Chess.com Rapid'
+            }),
+            'rating_chesscom_blitz': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rating Chess.com Blitz'
+            }),
+            'rating_chesscom_bullet': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rating Chess.com Bullet'
+            }),
+            'ja_participou_torneios': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'nome_responsavel': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nome do responsável (se menor de idade)'
+            }),
+            'grau_parentesco': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'cpf_responsavel': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'XXX.XXX.XXX-XX',
+                'data-mask': '000.000.000-00'
+            }),
+            'telefone_responsavel': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '(XX) XXXXX-XXXX',
+                'data-mask': '(00) 00000-0000'
+            }),
+            'email_responsavel': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'email@exemplo.com'
             }),
             'tipo_assinatura': forms.Select(attrs={
                 'class': 'form-select'
