@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-clubpro_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-clubpro_user} -d ${DB_NAME:-clubpro_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,8 +25,11 @@ services:
       - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+    # Only expose port 8000 if not using nginx (for development)
     ports:
       - "${WEB_PORT:-8000}:8000"
+    expose:
+      - "8000"
     env_file:
       - .env
     environment:
@@ -56,8 +59,6 @@ services:
     restart: unless-stopped
     networks:
       - app-network
-    profiles:
-      - nginx
 
 volumes:
   postgres_data:
