@@ -171,12 +171,16 @@
                                     </td>
                                     <td>
                                         <div class="plano-info">
-                                            <span class="badge badge-plano" style="background-color: {{ socio.tipo_assinatura.cor }}20; color: {{ socio.tipo_assinatura.cor }};">
-                                                {{ socio.tipo_assinatura.nome }}
-                                            </span>
-                                            <small class="d-block text-muted mt-1">
-                                                R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}
-                                            </small>
+                                            {% if socio.tipo_assinatura %}
+                                                <span class="badge badge-plano" style="background-color: {{ socio.tipo_assinatura.cor }}20; color: {{ socio.tipo_assinatura.cor }};">
+                                                    {{ socio.tipo_assinatura.nome }}
+                                                </span>
+                                                <small class="d-block text-muted mt-1">
+                                                    R$ {{ socio.tipo_assinatura.valor_mensal|floatformat:2 }}
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">Não informado</span>
+                                            {% endif %}
                                         </div>
                                     </td>
                                     <td>
@@ -197,26 +201,36 @@
                                     </td>
                                     <td>
                                         <div class="data-info">
-                                            <div class="fw-bold">{{ socio.data_associacao|date:"d/m/Y" }}</div>
-                                            <small class="text-muted">
-                                                há {{ socio.data_associacao|timesince }}
-                                            </small>
+                                            {% if socio.data_associacao %}
+                                                <div class="fw-bold">{{ socio.data_associacao|date:"d/m/Y" }}</div>
+                                                <small class="text-muted">
+                                                    há {{ socio.data_associacao|timesince }}
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">Não informado</span>
+                                            {% endif %}
                                         </div>
                                     </td>
                                     <td>
                                         <div class="vencimento-info">
-                                            <div class="fw-bold {% if socio.dias_para_vencimento < 0 %}text-danger{% elif socio.dias_para_vencimento <= 3 %}text-warning{% endif %}">
-                                                {{ socio.data_vencimento|date:"d/m/Y" }}
-                                            </div>
-                                            <small class="text-muted">
-                                                {% if socio.dias_para_vencimento < 0 %}
-                                                    {{ socio.dias_para_vencimento|add:"-1" }} dias em atraso
-                                                {% elif socio.dias_para_vencimento == 0 %}
-                                                    Vence hoje
-                                                {% else %}
-                                                    {{ socio.dias_para_vencimento }} dias
-                                                {% endif %}
-                                            </small>
+                                            {% if socio.data_vencimento %}
+                                                <div class="fw-bold {% if socio.dias_para_vencimento and socio.dias_para_vencimento < 0 %}text-danger{% elif socio.dias_para_vencimento and socio.dias_para_vencimento <= 3 %}text-warning{% endif %}">
+                                                    {{ socio.data_vencimento|date:"d/m/Y" }}
+                                                </div>
+                                                <small class="text-muted">
+                                                    {% if socio.dias_para_vencimento is None %}
+                                                        Data não informada
+                                                    {% elif socio.dias_para_vencimento < 0 %}
+                                                        {{ socio.dias_para_vencimento|add:"-1" }} dias em atraso
+                                                    {% elif socio.dias_para_vencimento == 0 %}
+                                                        Vence hoje
+                                                    {% else %}
+                                                        {{ socio.dias_para_vencimento }} dias
+                                                    {% endif %}
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">Não informado</span>
+                                            {% endif %}
                                         </div>
                                     </td>
                                     <td>

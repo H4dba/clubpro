@@ -192,8 +192,8 @@ class SocioAdmin(admin.ModelAdmin):
                 socio.email or '',
                 socio.telefone or '',
                 socio.get_status_display(),
-                socio.tipo_assinatura.nome,
-                socio.data_associacao.strftime('%d/%m/%Y'),
+                socio.tipo_assinatura.nome if socio.tipo_assinatura else '',
+                socio.data_associacao.strftime('%d/%m/%Y') if socio.data_associacao else '',
                 socio.data_vencimento.strftime('%d/%m/%Y') if socio.data_vencimento else ''
             ])
         

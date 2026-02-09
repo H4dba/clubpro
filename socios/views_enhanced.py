@@ -90,8 +90,8 @@ def export_socios_csv(request):
             socio.telefone or socio.celular or '',
             socio.get_status_display(),
             socio.tipo_assinatura.nome if socio.tipo_assinatura else '',
-            socio.data_associacao.strftime('%d/%m/%Y'),
-            socio.data_vencimento.strftime('%d/%m/%Y'),
+            socio.data_associacao.strftime('%d/%m/%Y') if socio.data_associacao else '',
+            socio.data_vencimento.strftime('%d/%m/%Y') if socio.data_vencimento else '',
             socio.rating_fide or '',
             socio.rating_cbx or '',
             socio.cidade,
@@ -134,16 +134,16 @@ def advanced_search(request):
     data_associacao_inicio = request.GET.get('data_associacao_inicio')
     data_associacao_fim = request.GET.get('data_associacao_fim')
     if data_associacao_inicio:
-        socios = socios.filter(data_associacao__gte=data_associacao_inicio)
+        socios = socios.filter(data_associacao__isnull=False, data_associacao__gte=data_associacao_inicio)
     if data_associacao_fim:
-        socios = socios.filter(data_associacao__lte=data_associacao_fim)
+        socios = socios.filter(data_associacao__isnull=False, data_associacao__lte=data_associacao_fim)
     
     data_vencimento_inicio = request.GET.get('data_vencimento_inicio')
     data_vencimento_fim = request.GET.get('data_vencimento_fim')
     if data_vencimento_inicio:
-        socios = socios.filter(data_vencimento__gte=data_vencimento_inicio)
+        socios = socios.filter(data_vencimento__isnull=False, data_vencimento__gte=data_vencimento_inicio)
     if data_vencimento_fim:
-        socios = socios.filter(data_vencimento__lte=data_vencimento_fim)
+        socios = socios.filter(data_vencimento__isnull=False, data_vencimento__lte=data_vencimento_fim)
     
     # Location filters
     cidade = request.GET.get('cidade')
@@ -166,14 +166,15 @@ def advanced_search(request):
     pagamento_status = request.GET.get('pagamento_status')
     if pagamento_status == 'em_dia':
         hoje = timezone.now().date()
-        socios = socios.filter(data_vencimento__gte=hoje, status='ativo')
+        socios = socios.filter(data_vencimento__isnull=False, data_vencimento__gte=hoje, status='ativo')
     elif pagamento_status == 'vencido':
         hoje = timezone.now().date()
-        socios = socios.filter(data_vencimento__lt=hoje)
+        socios = socios.filter(data_vencimento__isnull=False, data_vencimento__lt=hoje)
     elif pagamento_status == 'vence_em_breve':
         hoje = timezone.now().date()
         data_limite = hoje + timedelta(days=7)
         socios = socios.filter(
+            data_vencimento__isnull=False,
             data_vencimento__gte=hoje,
             data_vencimento__lte=data_limite,
             status='ativo'
@@ -230,7 +231,7 @@ def member_portal(request):
     
     # Payment status
     hoje = timezone.now().date()
-    dias_para_vencimento = (socio.data_vencimento - hoje).days
+    dias_para_vencimento = (socio.data_vencimento - hoje).days if socio.data_vencimento else None
     
     context = {
         'socio': socio,

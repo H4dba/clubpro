@@ -58,6 +58,7 @@ def dashboard_socios(request):
     # Sócios que vencem nos próximos 7 dias
     data_limite = timezone.now().date() + timedelta(days=7)
     vencem_em_breve = Socio.objects.filter(
+        data_vencimento__isnull=False,
         data_vencimento__lte=data_limite,
         status='ativo'
     ).count()
@@ -75,7 +76,10 @@ def dashboard_socios(request):
     evolucao_socios = []
     for i in range(12):
         data = timezone.now().date().replace(day=1) - timedelta(days=30*i)
-        total = Socio.objects.filter(data_associacao__lte=data).count()
+        total = Socio.objects.filter(
+            data_associacao__isnull=False,
+            data_associacao__lte=data
+        ).count()
         evolucao_socios.append({
             'mes': data.strftime('%m/%Y'),
             'total': total
@@ -89,11 +93,14 @@ def dashboard_socios(request):
     
     # Próximos vencimentos (5 mais próximos)
     proximos_vencimentos = Socio.objects.filter(
-        status='ativo'
+        status='ativo',
+        data_vencimento__isnull=False
     ).order_by('data_vencimento')[:5]
     
     # Novos sócios (últimos 5)
-    novos_socios = Socio.objects.order_by('-data_associacao')[:5]
+    novos_socios = Socio.objects.filter(
+        data_associacao__isnull=False
+    ).order_by('-data_associacao')[:5]
     
     context = {
         'total_socios': total_socios,
@@ -184,7 +191,11 @@ def detalhe_socio(request, socio_id):
     
     # Verificar se há pagamento em atraso
     hoje = timezone.now().date()
-    tem_atraso = socio.data_vencimento < hoje and socio.status in ['ativo', 'inadimplente']
+    tem_atraso = (
+        socio.data_vencimento is not None and 
+        socio.data_vencimento < hoje and 
+        socio.status in ['ativo', 'inadimplente']
+    )
     
     # Próximas ações sugeridas
     acoes_sugeridas = []
@@ -198,7 +209,7 @@ def detalhe_socio(request, socio_id):
             'acao': 'registrar_pagamento'
         })
     
-    if socio.dias_para_vencimento <= 7 and socio.dias_para_vencimento >= 0:
+    if socio.dias_para_vencimento is not None and socio.dias_para_vencimento <= 7 and socio.dias_para_vencimento >= 0:
         acoes_sugeridas.append({
             'tipo': 'aviso',
             'icone': 'fas fa-clock',
@@ -443,7 +454,7 @@ def registrar_pagamento(request, socio_id):
             pagamento.save()
             
             # Atualiza data de vencimento do sócio se pagamento confirmado
-            if pagamento.status == 'confirmado':
+            if pagamento.status == 'confirmado' and socio.tipo_assinatura:
                 # Calcula nova data de vencimento baseada no tipo de assinatura
                 dias_duracao = socio.tipo_assinatura.duracao_dias
                 nova_data = pagamento.data_pagamento + timedelta(days=dias_duracao)
@@ -457,8 +468,8 @@ def registrar_pagamento(request, socio_id):
         # Valores padrão para o formulário
         inicial = {
             'data_pagamento': timezone.now().date(),
-            'data_vencimento': socio.data_vencimento,
-            'valor': socio.tipo_assinatura.valor_mensal,
+            'data_vencimento': socio.data_vencimento if socio.data_vencimento else None,
+            'valor': socio.tipo_assinatura.valor_mensal if socio.tipo_assinatura else None,
             'mes_referencia': timezone.now().date().replace(day=1),
         }
         form = HistoricoPagamentoForm(initial=inicial)
@@ -554,12 +565,13 @@ def relatorio_financeiro(request):
     
     # Sócios inadimplentes
     inadimplentes = Socio.objects.filter(
+        data_vencimento__isnull=False,
         data_vencimento__lt=hoje,
         status__in=['ativo', 'inadimplente']
     ).select_related('tipo_assinatura')
     
     valor_inadimplencia = sum(
-        s.tipo_assinatura.valor_mensal for s in inadimplentes
+        s.tipo_assinatura.valor_mensal for s in inadimplentes if s.tipo_assinatura
     )
     
     taxa_inadimplencia = (inadimplentes.count() / total_socios * 100) if total_socios > 0 else 0
@@ -568,6 +580,7 @@ def relatorio_financeiro(request):
     
     # Novos sócios no período
     novos_socios = Socio.objects.filter(
+        data_associacao__isnull=False,
         data_associacao__gte=data_inicio
     ).count()
     
@@ -619,6 +632,7 @@ def relatorio_financeiro(request):
     
     # Vencimentos nos próximos 30 dias
     vencimentos_proximos = Socio.objects.filter(
+        data_vencimento__isnull=False,
         data_vencimento__gte=hoje,
         data_vencimento__lte=hoje + timedelta(days=30),
         status='ativo'
@@ -688,6 +702,7 @@ def relatorio_inadimplentes(request):
     # Sócios com vencimento atrasado
     hoje = timezone.now().date()
     inadimplentes = Socio.objects.filter(
+        data_vencimento__isnull=False,
         data_vencimento__lt=hoje,
         status__in=['ativo', 'inadimplente']
     ).select_related('tipo_assinatura').order_by('data_vencimento')
@@ -695,7 +710,7 @@ def relatorio_inadimplentes(request):
     # Estatísticas
     total_inadimplentes = inadimplentes.count()
     valor_total_em_atraso = sum(
-        s.tipo_assinatura.valor_mensal for s in inadimplentes
+        s.tipo_assinatura.valor_mensal for s in inadimplentes if s.tipo_assinatura
     )
     
     context = {
@@ -716,12 +731,14 @@ def pagina_pendencias(request):
     
     # Sócios com pagamento em atraso
     inadimplentes = Socio.objects.filter(
+        data_vencimento__isnull=False,
         data_vencimento__lt=hoje,
         status__in=['ativo', 'inadimplente']
     ).select_related('tipo_assinatura').order_by('data_vencimento')
     
     # Sócios que vencem nos próximos 7 dias
     vencem_em_breve = Socio.objects.filter(
+        data_vencimento__isnull=False,
         data_vencimento__gte=hoje,
         data_vencimento__lte=hoje + timedelta(days=7),
         status='ativo'
@@ -729,6 +746,7 @@ def pagina_pendencias(request):
     
     # Sócios que vencem nos próximos 30 dias
     vencem_no_mes = Socio.objects.filter(
+        data_vencimento__isnull=False,
         data_vencimento__gte=hoje,
         data_vencimento__lte=hoje + timedelta(days=30),
         status='ativo'
