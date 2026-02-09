@@ -49,19 +49,19 @@ class SocioForm(forms.ModelForm):
     )
     
     data_associacao = BrazilianDateField(
-        required=True,
+        required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'dd/mm/aaaa',
+            'placeholder': 'dd/mm/aaaa (opcional)',
             'data-mask': '00/00/0000'
         })
     )
     
     data_vencimento = BrazilianDateField(
-        required=True,
+        required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'dd/mm/aaaa',
+            'placeholder': 'dd/mm/aaaa (opcional)',
             'data-mask': '00/00/0000'
         })
     )
@@ -78,6 +78,12 @@ class SocioForm(forms.ModelForm):
         
         # Status é obrigatório apenas na edição, não no cadastro
         self.fields['status'].required = False
+        
+        # Campos de associação opcionais no cadastro
+        self.fields['tipo_assinatura'].required = False
+        self.fields['tipo_assinatura'].empty_label = "Selecione um tipo (opcional)"
+        self.fields['data_associacao'].required = False
+        self.fields['data_vencimento'].required = False
         
         # Outros campos opcionais
         self.fields['rg'].required = False

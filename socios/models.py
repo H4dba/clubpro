@@ -215,13 +215,20 @@ class Socio(models.Model):
     tipo_assinatura = models.ForeignKey(
         TipoAssinatura, 
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         verbose_name="Tipo de Assinatura"
     )
     data_associacao = models.DateField(
-        default=timezone.now,
+        null=True,
+        blank=True,
         verbose_name="Data de Associação"
     )
-    data_vencimento = models.DateField(verbose_name="Data de Vencimento")
+    data_vencimento = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Data de Vencimento"
+    )
     
     # Status
     status_choices = [
@@ -332,6 +339,10 @@ class Socio(models.Model):
         # Define status padrão se não foi definido
         if not self.status:
             self.status = 'ativo'
+        
+        # Define data de associação padrão se não foi fornecida
+        if not self.data_associacao:
+            self.data_associacao = timezone.now().date()
             
         # Define valores padrão para campos obrigatórios mas vazios
         if not self.cep:
@@ -365,6 +376,8 @@ class Socio(models.Model):
     @property
     def dias_para_vencimento(self):
         """Dias restantes até o vencimento"""
+        if not self.data_vencimento:
+            return None
         hoje = timezone.now().date()
         return (self.data_vencimento - hoje).days
 
@@ -372,6 +385,8 @@ class Socio(models.Model):
     def situacao_pagamento(self):
         """Status da situação de pagamento"""
         dias = self.dias_para_vencimento
+        if dias is None:
+            return 'sem_vencimento'
         if dias < 0:
             return 'vencido'
         elif dias <= 7:

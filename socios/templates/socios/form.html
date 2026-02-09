@@ -482,8 +482,8 @@
                         {% endif %}
 
                         <div class="mb-3">
-                            <label for="{{ form.tipo_assinatura.id_for_label }}" class="form-label required">
-                                Tipo de Assinatura
+                            <label for="{{ form.tipo_assinatura.id_for_label }}" class="form-label">
+                                Tipo de Assinatura <span class="text-muted small">(opcional)</span>
                             </label>
                             {{ form.tipo_assinatura }}
                             {% if form.tipo_assinatura.errors %}
@@ -494,8 +494,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="{{ form.data_associacao.id_for_label }}" class="form-label required">
-                                Data de Associação
+                            <label for="{{ form.data_associacao.id_for_label }}" class="form-label">
+                                Data de Associação <span class="text-muted small">(opcional)</span>
                             </label>
                             {{ form.data_associacao }}
                             {% if form.data_associacao.errors %}
@@ -503,11 +503,12 @@
                                     {{ form.data_associacao.errors.0 }}
                                 </div>
                             {% endif %}
+                            <div class="form-text">Se não informada, será usada a data atual</div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="{{ form.data_vencimento.id_for_label }}" class="form-label required">
-                                Próximo Vencimento
+                            <label for="{{ form.data_vencimento.id_for_label }}" class="form-label">
+                                Próximo Vencimento <span class="text-muted small">(opcional)</span>
                             </label>
                             {{ form.data_vencimento }}
                             {% if form.data_vencimento.errors %}
