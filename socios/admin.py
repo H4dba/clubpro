@@ -63,11 +63,11 @@ class SocioAdmin(admin.ModelAdmin):
         'tipo_assinatura', 'status_badge', 'data_vencimento', 'dias_vencimento'
     ]
     list_filter = [
-        'status', 'tipo_assinatura', 'genero', 'categoria_cbx',
+        'status', 'tipo_assinatura', 'genero',
         'data_associacao', 'data_vencimento'
     ]
     search_fields = [
-        'nome', 'nome_preferencia', 'cpf', 'email', 
+        'nome_completo', 'nome_social', 'cpf', 'email', 
         'telefone', 'numero_socio'
     ]
     list_editable = []
@@ -80,7 +80,7 @@ class SocioAdmin(admin.ModelAdmin):
         }),
         ('Dados Pessoais', {
             'fields': (
-                ('nome', 'nome_preferencia'),
+                ('nome_completo', 'nome_social'),
                 ('cpf', 'data_nascimento', 'genero'),
             )
         }),
@@ -92,7 +92,7 @@ class SocioAdmin(admin.ModelAdmin):
         }),
         ('Xadrez', {
             'fields': (
-                ('rating_fide', 'rating_nacional', 'categoria_cbx'),
+                ('rating_fide', 'rating_cbx', 'rating_fexerj'),
             ),
             'classes': ('collapse',)
         }),
@@ -187,7 +187,7 @@ class SocioAdmin(admin.ModelAdmin):
         for socio in queryset:
             writer.writerow([
                 socio.numero_socio,
-                socio.nome,
+                socio.nome_completo,
                 socio.cpf,
                 socio.email or '',
                 socio.telefone or '',

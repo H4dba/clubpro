@@ -92,7 +92,7 @@ class SocioForm(forms.ModelForm):
         self.fields['nivel_aluno'].required = False
         self.fields['rating_fide'].required = False
         self.fields['rating_cbx'].required = False
-        self.fields['categoria_cbx'].required = False
+        self.fields['rating_fexerj'].required = False
         self.fields['possui_lichess'].required = False
         self.fields['possui_chesscom'].required = False
         self.fields['ja_participou_torneios'].required = False
@@ -111,8 +111,8 @@ class SocioForm(forms.ModelForm):
             'nome_completo', 'nome_social', 'cpf', 'rg',
             'data_nascimento', 'genero', 'telefone', 'celular', 'email',
             'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
-            'nivel_aluno', 'rating_fide', 'rating_cbx', 'categoria_cbx',
-            'possui_lichess', 'rating_lichess_rapid', 'rating_lichess_blitz', 'rating_lichess_bullet', 'rating_lichess_classical',
+            'nivel_aluno', 'rating_fide', 'rating_cbx', 'rating_fexerj',
+            'possui_lichess', 'rating_lichess_rapid', 'rating_lichess_blitz',
             'possui_chesscom', 'rating_chesscom_rapid', 'rating_chesscom_blitz', 'rating_chesscom_bullet',
             'ja_participou_torneios',
             'nome_responsavel', 'grau_parentesco', 'cpf_responsavel', 'telefone_responsavel', 'email_responsavel',
@@ -202,9 +202,9 @@ class SocioForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Rating CBX (opcional)'
             }),
-            'categoria_cbx': forms.TextInput(attrs={
+            'rating_fexerj': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Categoria CBX (opcional)'
+                'placeholder': 'Rating FEXERJ (opcional)'
             }),
             'nivel_aluno': forms.Select(attrs={
                 'class': 'form-select'
@@ -219,14 +219,6 @@ class SocioForm(forms.ModelForm):
             'rating_lichess_blitz': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Rating Lichess Blitz'
-            }),
-            'rating_lichess_bullet': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Rating Lichess Bullet'
-            }),
-            'rating_lichess_classical': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Rating Lichess Classical'
             }),
             'possui_chesscom': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'

@@ -235,13 +235,13 @@
                             </div>
                             
                             <div class="col-md-4 mb-3">
-                                <label for="{{ form.categoria_cbx.id_for_label }}" class="form-label">
-                                    Categoria CBX
+                                <label for="{{ form.rating_fexerj.id_for_label }}" class="form-label">
+                                    Rating FEXERJ
                                 </label>
-                                {{ form.categoria_cbx }}
-                                {% if form.categoria_cbx.errors %}
+                                {{ form.rating_fexerj }}
+                                {% if form.rating_fexerj.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ form.categoria_cbx.errors.0 }}
+                                        {{ form.rating_fexerj.errors.0 }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -267,21 +267,13 @@
                             
                             <div id="lichess-ratings" class="ms-4" style="display: none;">
                                 <div class="row">
-                                    <div class="col-md-3 mb-2">
+                                    <div class="col-md-6 mb-2">
                                         <label for="{{ form.rating_lichess_rapid.id_for_label }}" class="form-label small">Rapid</label>
                                         {{ form.rating_lichess_rapid }}
                                     </div>
-                                    <div class="col-md-3 mb-2">
+                                    <div class="col-md-6 mb-2">
                                         <label for="{{ form.rating_lichess_blitz.id_for_label }}" class="form-label small">Blitz</label>
                                         {{ form.rating_lichess_blitz }}
-                                    </div>
-                                    <div class="col-md-3 mb-2">
-                                        <label for="{{ form.rating_lichess_bullet.id_for_label }}" class="form-label small">Bullet</label>
-                                        {{ form.rating_lichess_bullet }}
-                                    </div>
-                                    <div class="col-md-3 mb-2">
-                                        <label for="{{ form.rating_lichess_classical.id_for_label }}" class="form-label small">Classical</label>
-                                        {{ form.rating_lichess_classical }}
                                     </div>
                                 </div>
                             </div>

@@ -188,10 +188,10 @@ class Socio(models.Model):
         blank=True, 
         verbose_name="Rating CBX"
     )
-    categoria_cbx = models.CharField(
-        max_length=50, 
-        blank=True, 
-        verbose_name="Categoria CBX"
+    rating_fexerj = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Rating FEXERJ"
     )
     
     # Plataformas de xadrez
