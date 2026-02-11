@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu perfil de sócio - AXM{% endblock %}
+
+{% block content %}
+<div class="member-portal fade-in-up">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-id-card text-gold me-3"></i>
+                    Meu perfil de sócio
+                </h1>
+                <p class="page-subtitle">Olá, {{ socio.nome_exibicao }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if socio.foto %}
+                        <img src="{{ socio.foto.url }}" alt="{{ socio.nome_completo }}" class="rounded-circle img-fluid mb-3" style="max-width: 150px;">
+                    {% else %}
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-4x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <h5 class="mb-1">{{ socio.nome_exibicao }}</h5>
+                    <p class="text-muted mb-0">Sócio Nº {{ socio.numero_socio }}</p>
+                    <span class="badge bg-success mt-2">{{ socio.get_status_display }}</span>
+                    {% if socio.bolsista %}<span class="badge bg-info mt-2">Bolsista</span>{% endif %}
+                    <hr>
+                    <a href="{% url 'socios:member_update_info' %}" class="btn btn-gold">
+                        <i class="fas fa-edit me-2"></i>Atualizar meus dados
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Situação de pagamento</h5>
+                </div>
+                <div class="card-body">
+                    {% if socio.bolsista %}
+                        <p class="mb-0 text-muted">Você é bolsista e não possui cobranças de mensalidade.</p>
+                    {% elif dias_para_vencimento is not None %}
+                        <p class="mb-0">
+                            {% if situacao_pagamento == 'vencido' %}
+                                <span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Pagamento em atraso</span>
+                            {% elif situacao_pagamento == 'vence_em_breve' %}
+                                <span class="text-warning">Próximo vencimento em {{ dias_para_vencimento }} dias</span>
+                            {% else %}
+                                <span class="text-success">Em dia (vence em {{ dias_para_vencimento }} dias)</span>
+                            {% endif %}
+                        </p>
+                        {% if socio.data_vencimento %}
+                            <small class="text-muted">Data de vencimento: {{ socio.data_vencimento|date:"d/m/Y" }}</small>
+                        {% endif %}
+                    {% else %}
+                        <p class="mb-0 text-muted">Nenhuma data de vencimento cadastrada.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Últimos pagamentos</h5>
+                </div>
+                <div class="card-body">
+                    {% if pagamentos %}
+                        <ul class="list-group list-group-flush">
+                            {% for p in pagamentos %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>{{ p.mes_referencia|date:"m/Y" }}{% if p.forma_pagamento %} - {{ p.get_forma_pagamento_display }}{% endif %}</span>
+                                <span>R$ {{ p.valor }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="mb-0 text-muted">Nenhum pagamento registrado.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -55,12 +55,13 @@ def dashboard_socios(request):
     socios_ativos = Socio.objects.filter(status='ativo').count()
     socios_inadimplentes = Socio.objects.filter(status='inadimplente').count()
     
-    # Sócios que vencem nos próximos 7 dias
+    # Sócios que vencem nos próximos 7 dias (exclui bolsistas)
     data_limite = timezone.now().date() + timedelta(days=7)
     vencem_em_breve = Socio.objects.filter(
         data_vencimento__isnull=False,
         data_vencimento__lte=data_limite,
-        status='ativo'
+        status='ativo',
+        bolsista=False
     ).count()
     
     # Receita mensal (pagamentos confirmados no mês atual)
@@ -91,10 +92,11 @@ def dashboard_socios(request):
         total_socios=Count('socio')
     ).values('nome', 'total_socios', 'cor')
     
-    # Próximos vencimentos (5 mais próximos)
+    # Próximos vencimentos (5 mais próximos, exclui bolsistas)
     proximos_vencimentos = Socio.objects.filter(
         status='ativo',
-        data_vencimento__isnull=False
+        data_vencimento__isnull=False,
+        bolsista=False
     ).order_by('data_vencimento')[:5]
     
     # Novos sócios (últimos 5)
@@ -283,8 +285,11 @@ def cadastrar_socio(request):
     else:
         form = SocioForm()
     
+    from types import SimpleNamespace
+    socio_mock = SimpleNamespace(id=None, foto=None, nome_exibicao='')
     context = {
         'form': form,
+        'socio': socio_mock,
         'titulo': 'Cadastrar Novo Sócio',
         'action_url': reverse('socios:cadastrar'),
     }
@@ -317,6 +322,24 @@ def editar_socio(request, socio_id):
     }
     
     return render(request, 'socios/form.html', context)
+
+
+@login_required
+@user_passes_test(is_admin_or_manager)
+def excluir_socio(request, socio_id):
+    """Soft delete: marca o sócio como excluído (requer POST)."""
+    socio = get_object_or_404(Socio, id=socio_id)
+    if request.method == 'POST':
+        nome = socio.nome_exibicao
+        socio.deleted_at = timezone.now()
+        socio.status = 'inativo'
+        socio.usuario = None  # libera a conta para se associar novamente no futuro
+        socio.save()
+        messages.success(request, f'Sócio {nome} foi excluído e não aparecerá mais nas listas.')
+        return redirect('socios:listar')
+    # GET: redireciona para a lista (evita exclusão acidental por link)
+    messages.info(request, 'Use o botão "Excluir" na edição do sócio para confirmar a exclusão.')
+    return redirect('socios:editar', socio_id=socio_id)
 
 
 @login_required
@@ -553,7 +576,8 @@ def relatorio_financeiro(request):
     
     # Receita mensal atual (estimativa baseada nos planos ativos)
     receita_mensal_estimada = Socio.objects.filter(
-        status='ativo'
+        status='ativo',
+        bolsista=False
     ).aggregate(
         total=Sum('tipo_assinatura__valor_mensal')
     )['total'] or Decimal('0.00')
@@ -563,11 +587,12 @@ def relatorio_financeiro(request):
     
     # ============ INADIMPLÊNCIA ============
     
-    # Sócios inadimplentes
+    # Sócios inadimplentes (exclui bolsistas)
     inadimplentes = Socio.objects.filter(
         data_vencimento__isnull=False,
         data_vencimento__lt=hoje,
-        status__in=['ativo', 'inadimplente']
+        status__in=['ativo', 'inadimplente'],
+        bolsista=False
     ).select_related('tipo_assinatura')
     
     valor_inadimplencia = sum(
@@ -592,12 +617,12 @@ def relatorio_financeiro(request):
     
     crescimento_liquido = novos_socios - socios_perdidos
     
-    # ============ ANÁLISE POR PLANO ============
+    # ============ ANÁLISE POR PLANO (exclui bolsistas) ============
     
     analise_por_plano = TipoAssinatura.objects.annotate(
-        total_socios=Count('socio', filter=Q(socio__status='ativo')),
-        receita_mensal=F('valor_mensal') * Count('socio', filter=Q(socio__status='ativo')),
-        receita_anual=F('valor_mensal') * Count('socio', filter=Q(socio__status='ativo')) * 12
+        total_socios=Count('socio', filter=Q(socio__status='ativo', socio__bolsista=False)),
+        receita_mensal=F('valor_mensal') * Count('socio', filter=Q(socio__status='ativo', socio__bolsista=False)),
+        receita_anual=F('valor_mensal') * Count('socio', filter=Q(socio__status='ativo', socio__bolsista=False)) * 12
     ).filter(ativo=True).order_by('-receita_mensal')
     
     # ============ EVOLUÇÃO TEMPORAL ============
@@ -630,20 +655,22 @@ def relatorio_financeiro(request):
     
     # ============ PREVISÕES ============
     
-    # Vencimentos nos próximos 30 dias
+    # Vencimentos nos próximos 30 dias (exclui bolsistas)
     vencimentos_proximos = Socio.objects.filter(
         data_vencimento__isnull=False,
         data_vencimento__gte=hoje,
         data_vencimento__lte=hoje + timedelta(days=30),
-        status='ativo'
+        status='ativo',
+        bolsista=False
     ).aggregate(
         total=Sum('tipo_assinatura__valor_mensal')
     )['total'] or Decimal('0.00')
     
     # ============ MÉTRICAS DE PERFORMANCE ============
     
-    # Ticket médio
-    ticket_medio = receita_mensal_estimada / socios_ativos if socios_ativos > 0 else 0
+    # Ticket médio (baseado apenas em sócios que pagam)
+    socios_que_pagam = Socio.objects.filter(status='ativo', bolsista=False).count()
+    ticket_medio = receita_mensal_estimada / socios_que_pagam if socios_que_pagam > 0 else 0
     
     # Lifetime Value estimado (baseado em 2 anos de permanência média)
     ltv_estimado = ticket_medio * 24
@@ -697,14 +724,15 @@ def relatorio_financeiro(request):
 @login_required
 @user_passes_test(is_admin_or_manager)
 def relatorio_inadimplentes(request):
-    """Relatório de sócios inadimplentes"""
+    """Relatório de sócios inadimplentes (exclui bolsistas)"""
     
     # Sócios com vencimento atrasado
     hoje = timezone.now().date()
     inadimplentes = Socio.objects.filter(
         data_vencimento__isnull=False,
         data_vencimento__lt=hoje,
-        status__in=['ativo', 'inadimplente']
+        status__in=['ativo', 'inadimplente'],
+        bolsista=False
     ).select_related('tipo_assinatura').order_by('data_vencimento')
     
     # Estatísticas
@@ -729,27 +757,30 @@ def pagina_pendencias(request):
     
     hoje = timezone.now().date()
     
-    # Sócios com pagamento em atraso
+    # Sócios com pagamento em atraso (exclui bolsistas)
     inadimplentes = Socio.objects.filter(
         data_vencimento__isnull=False,
         data_vencimento__lt=hoje,
-        status__in=['ativo', 'inadimplente']
+        status__in=['ativo', 'inadimplente'],
+        bolsista=False
     ).select_related('tipo_assinatura').order_by('data_vencimento')
     
-    # Sócios que vencem nos próximos 7 dias
+    # Sócios que vencem nos próximos 7 dias (exclui bolsistas)
     vencem_em_breve = Socio.objects.filter(
         data_vencimento__isnull=False,
         data_vencimento__gte=hoje,
         data_vencimento__lte=hoje + timedelta(days=7),
-        status='ativo'
+        status='ativo',
+        bolsista=False
     ).select_related('tipo_assinatura').order_by('data_vencimento')
     
-    # Sócios que vencem nos próximos 30 dias
+    # Sócios que vencem nos próximos 30 dias (exclui bolsistas)
     vencem_no_mes = Socio.objects.filter(
         data_vencimento__isnull=False,
         data_vencimento__gte=hoje,
         data_vencimento__lte=hoje + timedelta(days=30),
-        status='ativo'
+        status='ativo',
+        bolsista=False
     ).select_related('tipo_assinatura').order_by('data_vencimento')
     
     # Sócios sem documentos

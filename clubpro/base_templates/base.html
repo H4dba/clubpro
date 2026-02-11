@@ -400,6 +400,17 @@
                             <li><a class="dropdown-item" href="{% url 'dashboard' %}">
                                     <i class="fas fa-user me-2"></i>Perfil
                                 </a></li>
+                            {% load socios_tags %}
+                            {% get_socio_for_user user as user_socio %}
+                            {% if user_socio %}
+                            <li><a class="dropdown-item" href="{% url 'socios:member_portal' %}">
+                                    <i class="fas fa-id-card me-2"></i>Meu perfil de sócio
+                                </a></li>
+                            {% else %}
+                            <li><a class="dropdown-item" href="{% url 'socios:registro_socio' %}">
+                                    <i class="fas fa-user-plus me-2"></i>Associar-se ao clube
+                                </a></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="#">
                                     <i class="fas fa-cog me-2"></i>Configurações
                                 </a></li>

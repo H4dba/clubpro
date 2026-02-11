@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Atualizar meus dados - AXM{% endblock %}
+
+{% block content %}
+<div class="member-update fade-in-up">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <a href="{% url 'socios:member_portal' %}" class="btn btn-outline-light btn-sm mb-2">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar ao meu perfil
+                </a>
+                <h1 class="page-title">
+                    <i class="fas fa-user-edit text-gold me-3"></i>
+                    Atualizar meus dados
+                </h1>
+                <p class="page-subtitle">Altere suas informações de contato e endereço</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Telefone</label>
+                                <input type="text" name="telefone" class="form-control" value="{{ socio.telefone|default:'' }}" placeholder="(XX) XXXXX-XXXX">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Celular</label>
+                                <input type="text" name="celular" class="form-control" value="{{ socio.celular|default:'' }}" placeholder="(XX) XXXXX-XXXX">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">E-mail</label>
+                            <input type="email" name="email" class="form-control" value="{{ socio.email|default:'' }}">
+                        </div>
+                        <hr>
+                        <h6 class="mb-3">Endereço</h6>
+                        <div class="mb-3">
+                            <label class="form-label">CEP</label>
+                            <input type="text" name="cep" class="form-control" value="{{ socio.cep|default:'' }}" placeholder="XXXXX-XXX">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Rua</label>
+                                <input type="text" name="endereco" class="form-control" value="{{ socio.endereco|default:'' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Número</label>
+                                <input type="text" name="numero" class="form-control" value="{{ socio.numero|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Complemento</label>
+                                <input type="text" name="complemento" class="form-control" value="{{ socio.complemento|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Bairro</label>
+                                <input type="text" name="bairro" class="form-control" value="{{ socio.bairro|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Cidade</label>
+                                <input type="text" name="cidade" class="form-control" value="{{ socio.cidade|default:'' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Estado</label>
+                                <input type="text" name="estado" class="form-control" value="{{ socio.estado|default:'' }}" maxlength="2" placeholder="UF">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" name="aceita_emails" class="form-check-input" id="aceita_emails" {% if socio.aceita_emails %}checked{% endif %}>
+                            <label class="form-check-label" for="aceita_emails">Aceito receber e-mails promocionais</label>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input type="checkbox" name="aceita_whatsapp" class="form-check-input" id="aceita_whatsapp" {% if socio.aceita_whatsapp %}checked{% endif %}>
+                            <label class="form-check-label" for="aceita_whatsapp">Aceito receber mensagens no WhatsApp</label>
+                        </div>
+                        <button type="submit" class="btn btn-gold">
+                            <i class="fas fa-save me-2"></i>Salvar alterações
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

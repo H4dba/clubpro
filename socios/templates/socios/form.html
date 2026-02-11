@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    {% if socio.id %}Editar Sócio{% else %}Novo Sócio{% endif %} - AXM
+    {% if registro_socio %}Associar-se ao clube{% elif socio.id %}Editar Sócio{% else %}Novo Sócio{% endif %} - AXM
 {% endblock %}
 
 {% block content %}
@@ -13,11 +13,13 @@
                 <div class="row align-items-center">
                     <div class="col-md-8">
                         <h1 class="page-title">
-                            <i class="fas {% if socio.id %}fa-user-edit{% else %}fa-user-plus{% endif %} text-gold me-3"></i>
-                            {% if socio.id %}Editar Sócio{% else %}Novo Sócio{% endif %}
+                            <i class="fas {% if registro_socio %}fa-user-plus{% elif socio.id %}fa-user-edit{% else %}fa-user-plus{% endif %} text-gold me-3"></i>
+                            {% if registro_socio %}Associar-se ao clube{% elif socio.id %}Editar Sócio{% else %}Novo Sócio{% endif %}
                         </h1>
                         <p class="page-subtitle">
-                            {% if socio.id %}
+                            {% if registro_socio %}
+                                Preencha seus dados para se tornar um sócio. A data de associação será preenchida automaticamente.
+                            {% elif socio.id %}
                                 Atualize as informações do sócio {{ socio.nome_exibicao }}
                             {% else %}
                                 Preencha os dados para cadastrar um novo membro
@@ -25,9 +27,9 @@
                         </p>
                     </div>
                     <div class="col-md-4 text-end">
-                        <a href="{% url 'socios:listar' %}" class="btn btn-outline-light btn-lg">
+                        <a href="{% if registro_socio %}{% url 'dashboard' %}{% else %}{% url 'socios:listar' %}{% endif %}" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>
-                            Voltar à Lista
+                            {% if registro_socio %}Voltar{% else %}Voltar à Lista{% endif %}
                         </a>
                     </div>
                 </div>
@@ -485,6 +487,7 @@
                             {% endif %}
                         </div>
 
+                        {% if 'data_associacao' in form.fields %}
                         <div class="mb-3">
                             <label for="{{ form.data_associacao.id_for_label }}" class="form-label">
                                 Data de Associação <span class="text-muted small">(opcional)</span>
@@ -497,6 +500,7 @@
                             {% endif %}
                             <div class="form-text">Se não informada, será usada a data atual</div>
                         </div>
+                        {% endif %}
 
                         <div class="mb-3">
                             <label for="{{ form.data_vencimento.id_for_label }}" class="form-label">
@@ -510,7 +514,7 @@
                             {% endif %}
                         </div>
 
-                        {% if socio.id %}
+                        {% if 'status' in form.fields and socio.id %}
                             <div class="mb-3">
                                 <label for="{{ form.status.id_for_label }}" class="form-label">
                                     Status
@@ -523,6 +527,20 @@
                                 {% endif %}
                             </div>
                         {% endif %}
+
+                        {% if 'bolsista' in form.fields and user.is_staff %}
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.bolsista }}
+                                    <label class="form-check-label" for="{{ form.bolsista.id_for_label }}">
+                                        Bolsista (não paga mensalidade e não entra em relatórios financeiros)
+                                    </label>
+                                </div>
+                                {% if form.bolsista.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.bolsista.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -531,18 +549,18 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-gold btn-lg">
-                                <i class="fas {% if socio.id %}fa-save{% else %}fa-user-plus{% endif %} me-2"></i>
-                                {% if socio.id %}Salvar Alterações{% else %}Cadastrar Sócio{% endif %}
+                                <i class="fas {% if registro_socio %}fa-user-plus{% elif socio.id %}fa-save{% else %}fa-user-plus{% endif %} me-2"></i>
+                                {% if registro_socio %}Concluir cadastro{% elif socio.id %}Salvar Alterações{% else %}Cadastrar Sócio{% endif %}
                             </button>
                             
-                            <a href="{% url 'socios:listar' %}" class="btn btn-outline-secondary">
+                            <a href="{% if registro_socio %}{% url 'dashboard' %}{% else %}{% url 'socios:listar' %}{% endif %}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i>
                                 Cancelar
                             </a>
                             
-                            {% if socio.id %}
+                            {% if socio.id and not registro_socio %}
                                 <hr>
-                                <a href="{% url 'socios:visualizar' socio.id %}" class="btn btn-outline-info">
+                                <a href="{% url 'socios:detalhe' socio.id %}" class="btn btn-outline-info">
                                     <i class="fas fa-eye me-2"></i>
                                     Ver Detalhes
                                 </a>
@@ -578,10 +596,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <a href="{% url 'socios:excluir' socio.id %}" class="btn btn-danger">
-                    <i class="fas fa-trash me-1"></i>
-                    Confirmar Exclusão
-                </a>
+                <form method="post" action="{% url 'socios:excluir' socio.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>
+                        Confirmar Exclusão
+                    </button>
+                </form>
             </div>
         </div>
     </div>

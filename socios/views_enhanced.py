@@ -10,12 +10,13 @@ from django.db.models import Q, Count, Sum, F
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 from datetime import datetime, timedelta
 from decimal import Decimal
 import csv
 
 from .models import Socio, TipoAssinatura, DocumentoSocio, HistoricoPagamento
-from .forms import SocioForm
+from .forms import SocioForm, SocioRegistroForm
 from socios.views import is_admin_or_manager
 
 
@@ -210,6 +211,48 @@ def advanced_search(request):
     }
     
     return render(request, 'socios/advanced_search.html', context)
+
+
+@login_required
+def registro_socio(request):
+    """Permite que um usuário logado se registre como sócio (auto-cadastro)."""
+    if Socio.objects.filter(usuario=request.user).exists():
+        messages.info(request, 'Você já é um sócio cadastrado.')
+        return redirect('socios:member_portal')
+    
+    if request.method == 'POST':
+        form = SocioRegistroForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                socio = form.save(commit=False)
+                socio.usuario = request.user
+                socio.created_by = request.user
+                socio.status = 'ativo'
+                socio.data_associacao = timezone.now().date()
+                socio.save()
+                messages.success(request, f'Cadastro realizado com sucesso! Bem-vindo(a), {socio.nome_exibicao}.')
+                return redirect('socios:member_portal')
+            except Exception as e:
+                messages.error(request, f'Erro ao salvar: {str(e)}')
+        else:
+            for field, errors in form.errors.items():
+                field_name = form.fields.get(field)
+                label = field_name.label if field_name else field
+                for error in errors:
+                    messages.error(request, f'{label}: {error}')
+    else:
+        form = SocioRegistroForm()
+    
+    from types import SimpleNamespace
+    socio_mock = SimpleNamespace(id=None, foto=None, nome_exibicao='')
+    context = {
+        'form': form,
+        'socio': socio_mock,
+        'titulo': 'Associar-se ao clube',
+        'action_url': reverse('socios:registro_socio'),
+        'registro_socio': True,
+    }
+    return render(request, 'socios/form.html', context)
 
 
 @login_required

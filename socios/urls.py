@@ -13,6 +13,7 @@ urlpatterns = [
     path('cadastrar/', views.cadastrar_socio, name='cadastrar'),
     path('<int:socio_id>/', views.detalhe_socio, name='detalhe'),
     path('<int:socio_id>/editar/', views.editar_socio, name='editar'),
+    path('<int:socio_id>/excluir/', views.excluir_socio, name='excluir'),
     path('<int:socio_id>/status/', views.atualizar_status_socio, name='atualizar_status'),
     
     # Pagamentos
@@ -38,6 +39,7 @@ urlpatterns = [
     path('busca-avancada/', views_enhanced.advanced_search, name='advanced_search'),
     
     # Member Portal (Self-Service)
+    path('associar-se/', views_enhanced.registro_socio, name='registro_socio'),
     path('meu-perfil/', views_enhanced.member_portal, name='member_portal'),
     path('meu-perfil/atualizar/', views_enhanced.member_update_info, name='member_update_info'),
 ]

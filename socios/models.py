@@ -77,8 +77,17 @@ class TipoAssinatura(models.Model):
         return 0
 
 
+class SocioManager(models.Manager):
+    """Manager que exclui sócios com soft delete (deleted_at preenchido)."""
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
 class Socio(models.Model):
     """Modelo principal para sócios do clube"""
+    
+    objects = SocioManager()
+    all_objects = models.Manager()
     
     # Relacionamento com usuário do sistema
     usuario = models.OneToOneField(
@@ -193,6 +202,12 @@ class Socio(models.Model):
         blank=True,
         verbose_name="Rating FEXERJ"
     )
+    categoria_cbx = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Categoria CBX"
+    )
     
     # Plataformas de xadrez
     possui_lichess = models.BooleanField(default=False, verbose_name="Possui conta Lichess")
@@ -242,6 +257,11 @@ class Socio(models.Model):
         choices=status_choices, 
         default='ativo',
         verbose_name="Status"
+    )
+    bolsista = models.BooleanField(
+        default=False,
+        verbose_name="Bolsista",
+        help_text="Bolsistas não pagam mensalidade e não entram nos relatórios financeiros."
     )
     
     # Dados do responsável (para menores de idade)
@@ -304,6 +324,12 @@ class Socio(models.Model):
     # Controle
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Excluído em",
+        help_text="Preenchido quando o sócio é excluído (soft delete)."
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

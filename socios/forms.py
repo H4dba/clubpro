@@ -76,14 +76,18 @@ class SocioForm(forms.ModelForm):
         self.fields['cidade'].required = False
         self.fields['estado'].required = False
         
-        # Status é obrigatório apenas na edição, não no cadastro
-        self.fields['status'].required = False
+        # Status é obrigatório apenas na edição, não no cadastro (pode não existir em subformulários)
+        if 'status' in self.fields:
+            self.fields['status'].required = False
         
         # Campos de associação opcionais no cadastro
-        self.fields['tipo_assinatura'].required = False
-        self.fields['tipo_assinatura'].empty_label = "Selecione um tipo (opcional)"
-        self.fields['data_associacao'].required = False
-        self.fields['data_vencimento'].required = False
+        if 'tipo_assinatura' in self.fields:
+            self.fields['tipo_assinatura'].required = False
+            self.fields['tipo_assinatura'].empty_label = "Selecione um tipo (opcional)"
+        if 'data_associacao' in self.fields:
+            self.fields['data_associacao'].required = False
+        if 'data_vencimento' in self.fields:
+            self.fields['data_vencimento'].required = False
         
         # Outros campos opcionais
         self.fields['rg'].required = False
@@ -116,7 +120,7 @@ class SocioForm(forms.ModelForm):
             'possui_chesscom', 'rating_chesscom_rapid', 'rating_chesscom_blitz', 'rating_chesscom_bullet',
             'ja_participou_torneios',
             'nome_responsavel', 'grau_parentesco', 'cpf_responsavel', 'telefone_responsavel', 'email_responsavel',
-            'tipo_assinatura', 'data_associacao', 'data_vencimento', 'status',
+            'tipo_assinatura', 'data_associacao', 'data_vencimento', 'status', 'bolsista',
             'profissao', 'observacoes', 'foto',
             'aceita_emails', 'aceita_whatsapp'
         ]
@@ -294,7 +298,36 @@ class SocioForm(forms.ModelForm):
             'aceita_whatsapp': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
+            'bolsista': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
         }
+
+
+class SocioRegistroForm(SocioForm):
+    """Formulário para auto-registro de sócios (sem data_associacao, definida automaticamente)."""
+    
+    class Meta(SocioForm.Meta):
+        fields = [
+            'nome_completo', 'nome_social', 'cpf', 'rg',
+            'data_nascimento', 'genero', 'telefone', 'celular', 'email',
+            'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
+            'nivel_aluno', 'rating_fide', 'rating_cbx', 'rating_fexerj',
+            'possui_lichess', 'rating_lichess_rapid', 'rating_lichess_blitz',
+            'possui_chesscom', 'rating_chesscom_rapid', 'rating_chesscom_blitz', 'rating_chesscom_bullet',
+            'ja_participou_torneios',
+            'nome_responsavel', 'grau_parentesco', 'cpf_responsavel', 'telefone_responsavel', 'email_responsavel',
+            'tipo_assinatura', 'data_vencimento',
+            'profissao', 'observacoes', 'foto',
+            'aceita_emails', 'aceita_whatsapp'
+        ]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remover campos que não devem aparecer no auto-registro
+        for field_name in ['data_associacao', 'status', 'bolsista']:
+            if field_name in self.fields:
+                del self.fields[field_name]
 
 
 class TipoAssinaturaForm(forms.ModelForm):

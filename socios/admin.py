@@ -60,10 +60,10 @@ class HistoricoPagamentoInline(admin.TabularInline):
 class SocioAdmin(admin.ModelAdmin):
     list_display = [
         'numero_socio', 'nome_exibicao', 'email', 'telefone', 
-        'tipo_assinatura', 'status_badge', 'data_vencimento', 'dias_vencimento'
+        'tipo_assinatura', 'status_badge', 'bolsista', 'data_vencimento', 'dias_vencimento'
     ]
     list_filter = [
-        'status', 'tipo_assinatura', 'genero',
+        'status', 'bolsista', 'tipo_assinatura', 'genero',
         'data_associacao', 'data_vencimento'
     ]
     search_fields = [
@@ -100,7 +100,8 @@ class SocioAdmin(admin.ModelAdmin):
             'fields': (
                 'tipo_assinatura',
                 ('data_associacao', 'data_vencimento'),
-                'status'
+                'status',
+                'bolsista'
             )
         }),
         ('Observações', {
