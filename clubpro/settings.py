@@ -29,7 +29,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-
 # CSRF & Security Settings
 CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.app',  # Trust all ngrok-free.app subdomains
@@ -86,7 +85,7 @@ MIDDLEWARE = [
 # Security settings for production
 # Set USE_SSL=True in .env to enable SSL redirects and secure cookies
 USE_SSL = os.getenv('USE_SSL', 'False') == 'True'
-
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 if not DEBUG and USE_SSL:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
