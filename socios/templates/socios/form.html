@@ -27,7 +27,7 @@
                         </p>
                     </div>
                     <div class="col-md-4 text-end">
-                        <a href="{% if registro_socio %}{% url 'dashboard' %}{% else %}{% url 'socios:listar' %}{% endif %}" class="btn btn-outline-light btn-lg">
+                        <a href="{% if registro_socio_guest %}{% url 'landing-page' %}{% elif registro_socio %}{% url 'dashboard' %}{% else %}{% url 'socios:listar' %}{% endif %}" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>
                             {% if registro_socio %}Voltar{% else %}Voltar à Lista{% endif %}
                         </a>
@@ -41,6 +41,62 @@
     <form method="post" enctype="multipart/form-data" id="socioForm" novalidate>
         {% csrf_token %}
         
+        {% if form_user %}
+        <!-- Cadastro de conta (quando não está logado) -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-key me-2"></i>
+                    Criar sua conta
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Estes dados serão usados para acessar o sistema e para seu cadastro como sócio.</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form_user.first_name.id_for_label }}" class="form-label required">Nome completo</label>
+                        {{ form_user.first_name }}
+                        {% if form_user.first_name.errors %}<div class="invalid-feedback d-block">{{ form_user.first_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form_user.username.id_for_label }}" class="form-label required">Nome de usuário</label>
+                        {{ form_user.username }}
+                        {% if form_user.username.errors %}<div class="invalid-feedback d-block">{{ form_user.username.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form_user.email.id_for_label }}" class="form-label required">E-mail</label>
+                        {{ form_user.email }}
+                        {% if form_user.email.errors %}<div class="invalid-feedback d-block">{{ form_user.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form_user.data_nascimento.id_for_label }}" class="form-label required">Data de nascimento</label>
+                        {{ form_user.data_nascimento }}
+                        {% if form_user.data_nascimento.errors %}<div class="invalid-feedback d-block">{{ form_user.data_nascimento.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form_user.telefone.id_for_label }}" class="form-label required">Telefone</label>
+                        {{ form_user.telefone }}
+                        {% if form_user.telefone.errors %}<div class="invalid-feedback d-block">{{ form_user.telefone.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form_user.password1.id_for_label }}" class="form-label required">Senha</label>
+                        {{ form_user.password1 }}
+                        {% if form_user.password1.errors %}<div class="invalid-feedback d-block">{{ form_user.password1.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form_user.password2.id_for_label }}" class="form-label required">Confirmar senha</label>
+                        {{ form_user.password2 }}
+                        {% if form_user.password2.errors %}<div class="invalid-feedback d-block">{{ form_user.password2.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="row">
             <!-- Seção Principal -->
             <div class="col-lg-8">
@@ -49,11 +105,12 @@
                     <div class="card-header">
                         <h5 class="mb-0">
                             <i class="fas fa-user me-2"></i>
-                            Dados Pessoais
+                            {% if form_user %}Dados do sócio{% else %}Dados Pessoais{% endif %}
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
+                            {% if 'nome_completo' in form.fields %}
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.nome_completo.id_for_label }}" class="form-label required">
                                     Nome Completo
@@ -66,7 +123,7 @@
                                 {% endif %}
                                 <div class="form-text">Nome completo como no documento</div>
                             </div>
-                            
+                            {% endif %}
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.nome_social.id_for_label }}" class="form-label">
                                     Nome Social
@@ -93,7 +150,7 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
+                            {% if 'data_nascimento' in form.fields %}
                             <div class="col-md-4 mb-3">
                                 <label for="{{ form.data_nascimento.id_for_label }}" class="form-label required">
                                     Data de Nascimento
@@ -105,7 +162,7 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
+                            {% endif %}
                             <div class="col-md-4 mb-3">
                                 <label for="{{ form.genero.id_for_label }}" class="form-label">
                                     Gênero
@@ -130,7 +187,9 @@
                         </h5>
                     </div>
                     <div class="card-body">
+                        {% if 'email' in form.fields or 'telefone' in form.fields %}
                         <div class="row">
+                            {% if 'email' in form.fields %}
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.email.id_for_label }}" class="form-label required">
                                     E-mail
@@ -142,7 +201,8 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
+                            {% endif %}
+                            {% if 'telefone' in form.fields %}
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.telefone.id_for_label }}" class="form-label">
                                     Telefone
@@ -154,7 +214,9 @@
                                     </div>
                                 {% endif %}
                             </div>
+                            {% endif %}
                         </div>
+                        {% endif %}
 
                         <div class="mb-3">
                             <label for="{{ form.endereco.id_for_label }}" class="form-label">
@@ -913,38 +975,7 @@
             form.classList.add('was-validated');
         });
 
-        // Auto-calcular data de vencimento
-        const dataAssociacaoInput = document.getElementById('id_data_associacao');
-        const dataVencimentoInput = document.getElementById('id_data_vencimento');
-        
-        if (dataAssociacaoInput && dataVencimentoInput) {
-            dataAssociacaoInput.addEventListener('blur', function() {
-                if (this.value && this.value.length === 10) {
-                    // Converter dd/mm/aaaa para Date
-                    const parts = this.value.split('/');
-                    if (parts.length === 3) {
-                        const dia = parseInt(parts[0]);
-                        const mes = parseInt(parts[1]) - 1; // Mês é 0-based
-                        const ano = parseInt(parts[2]);
-                        
-                        if (dia >= 1 && dia <= 31 && mes >= 0 && mes <= 11 && ano >= 1900) {
-                            const dataAssociacao = new Date(ano, mes, dia);
-                            const dataVencimento = new Date(dataAssociacao);
-                            dataVencimento.setMonth(dataVencimento.getMonth() + 1);
-                            
-                            // Formatar para dd/mm/aaaa
-                            const diaVenc = String(dataVencimento.getDate()).padStart(2, '0');
-                            const mesVenc = String(dataVencimento.getMonth() + 1).padStart(2, '0');
-                            const anoVenc = dataVencimento.getFullYear();
-                            
-                            if (!dataVencimentoInput.value) {
-                                dataVencimentoInput.value = `${diaVenc}/${mesVenc}/${anoVenc}`;
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // data_vencimento é agora um select com dias 05, 15 ou 25 do próximo mês (sem auto-fill)
     });
 
     function removerFoto() {

@@ -13,14 +13,23 @@ from django.contrib.auth.forms import AuthenticationForm
 from django import forms
 from services.LichessService import LichessApi
 
-# Formulário customizado sem exigir email
+# Formulário de cadastro com nome, data de nascimento, email e telefone
 class SimpleUserCreationForm(forms.ModelForm):
-    password1 = forms.CharField(label='Senha', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirmação de senha', widget=forms.PasswordInput)
+    password1 = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    password2 = forms.CharField(label='Confirmação de senha', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    first_name = forms.CharField(label='Nome', max_length=150, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(label='E-mail', required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    data_nascimento = forms.DateField(
+        label='Data de Nascimento',
+        required=True,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    telefone = forms.CharField(label='Telefone', max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(label='Nome de usuário', max_length=150, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = get_user_model()
-        fields = ('username',)
+        fields = ('username', 'first_name', 'email', 'data_nascimento', 'telefone')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -28,6 +37,12 @@ class SimpleUserCreationForm(forms.ModelForm):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("As senhas não coincidem")
         return password2
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email and get_user_model().objects.filter(email=email).exists():
+            raise forms.ValidationError("Já existe uma conta com este e-mail.")
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)

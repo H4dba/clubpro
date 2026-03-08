@@ -17,11 +17,13 @@ User = get_user_model()
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
-    
+
     username = factory.Sequence(lambda n: f"user_{n}")
     email = factory.LazyAttribute(lambda obj: f"{obj.username}@email.com")
     first_name = factory.LazyAttribute(lambda _: fake.first_name())
     last_name = factory.LazyAttribute(lambda _: fake.last_name())
+    data_nascimento = factory.LazyAttribute(lambda _: fake.date_of_birth(minimum_age=10, maximum_age=80))
+    telefone = factory.LazyAttribute(lambda _: fake.phone_number()[:20])
 
 
 class TipoAssinaturaFactory(DjangoModelFactory):
@@ -151,7 +153,7 @@ def create_demo_data(num_tipos=5, num_socios=15, num_pagamentos_per_socio=4, cle
             'last_name': 'Viewer',
             'is_staff': True,
             'is_superuser': False
-        }
+        }   
     )
     if created:
         demo_user.set_password('viewer123')

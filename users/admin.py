@@ -5,6 +5,7 @@ from django.contrib.auth.admin import UserAdmin
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
+        ("Dados pessoais", {"fields": ("data_nascimento", "telefone")}),
         ("Plano", {"fields": ("tipo_plano",)}),
     )
     list_display = ("username", "email", "tipo_plano", "is_staff")

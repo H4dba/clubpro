@@ -346,30 +346,32 @@ class Socio(models.Model):
     def __str__(self):
         return f"{self.numero_socio} - {self.nome_completo}"
 
+    def _gerar_numero_socio(self):
+        """Gera o próximo número de sócio disponível."""
+        ultimo_numero = Socio.objects.aggregate(
+            models.Max('numero_socio')
+        )['numero_socio__max']
+        if ultimo_numero:
+            try:
+                proximo_numero = int(ultimo_numero) + 1
+                return str(proximo_numero).zfill(6)
+            except ValueError:
+                return str(uuid.uuid4())[:8].upper()
+        return "000001"
+
     def save(self, *args, **kwargs):
         # Gera número do sócio automaticamente se não foi fornecido
         if not self.numero_socio:
-            ultimo_numero = Socio.objects.aggregate(
-                models.Max('numero_socio')
-            )['numero_socio__max']
-            if ultimo_numero:
-                try:
-                    proximo_numero = int(ultimo_numero) + 1
-                    self.numero_socio = str(proximo_numero).zfill(6)
-                except ValueError:
-                    # Se não conseguir converter, gera um UUID curto
-                    self.numero_socio = str(uuid.uuid4())[:8].upper()
-            else:
-                self.numero_socio = "000001"
-        
+            self.numero_socio = self._gerar_numero_socio()
+
         # Define status padrão se não foi definido
         if not self.status:
             self.status = 'ativo'
-        
+
         # Define data de associação padrão se não foi fornecida
         if not self.data_associacao:
             self.data_associacao = timezone.now().date()
-            
+
         # Define valores padrão para campos obrigatórios mas vazios
         if not self.cep:
             self.cep = ''
@@ -383,7 +385,7 @@ class Socio(models.Model):
             self.cidade = ''
         if not self.estado:
             self.estado = ''
-        
+
         super().save(*args, **kwargs)
 
     @property

@@ -1,8 +1,31 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-from datetime import datetime
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
 from .models import Socio, TipoAssinatura, DocumentoSocio, HistoricoPagamento
+
+
+def get_data_vencimento_choices(include_date=None):
+    """Retorna opções de data de vencimento: dias 05, 15 ou 25 do próximo mês."""
+    hoje = date.today()
+    proximo_mes = hoje + relativedelta(months=1)
+    dias = [5, 15, 25]
+    choices = [('', 'Selecione o dia de vencimento (opcional)')]
+    seen = set()
+    for dia in dias:
+        try:
+            data = proximo_mes.replace(day=dia)
+            key = data.isoformat()
+            if key not in seen:
+                seen.add(key)
+                label = data.strftime('%d/%m/%Y')
+                choices.append((key, f'Dia {dia:02d} - {label}'))
+        except ValueError:
+            pass  # dia 31 em fevereiro, etc.
+    if include_date and include_date not in seen:
+        choices.append((include_date.isoformat(), f'Atual: {include_date.strftime("%d/%m/%Y")}'))
+    return choices
 
 
 class BrazilianDateField(forms.DateField):
@@ -57,17 +80,21 @@ class SocioForm(forms.ModelForm):
         })
     )
     
-    data_vencimento = BrazilianDateField(
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'dd/mm/aaaa (opcional)',
-            'data-mask': '00/00/0000'
-        })
-    )
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # data_vencimento: apenas dias 05, 15 ou 25 do próximo mês
+        include_date = None
+        if self.instance and self.instance.pk and self.instance.data_vencimento:
+            include_date = self.instance.data_vencimento
+        self.fields['data_vencimento'] = forms.TypedChoiceField(
+            choices=get_data_vencimento_choices(include_date=include_date),
+            coerce=lambda x: datetime.strptime(x, '%Y-%m-%d').date() if x else None,
+            required=False,
+            widget=forms.Select(attrs={'class': 'form-select'}),
+            empty_value=None
+        )
+        if include_date:
+            self.fields['data_vencimento'].initial = include_date.isoformat()
         # Tornar campos de endereço opcionais no formulário
         self.fields['cep'].required = False
         self.fields['endereco'].required = False
@@ -271,11 +298,6 @@ class SocioForm(forms.ModelForm):
                 'placeholder': 'dd/mm/aaaa',
                 'data-mask': '00/00/0000'
             }),
-            'data_vencimento': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'dd/mm/aaaa',
-                'data-mask': '00/00/0000'
-            }),
             'status': forms.Select(attrs={
                 'class': 'form-select'
             }),
@@ -326,6 +348,17 @@ class SocioRegistroForm(SocioForm):
         super().__init__(*args, **kwargs)
         # Remover campos que não devem aparecer no auto-registro
         for field_name in ['data_associacao', 'status', 'bolsista']:
+            if field_name in self.fields:
+                del self.fields[field_name]
+
+
+class SocioRegistroFormAnonymous(SocioRegistroForm):
+    """Formulário para associar-se sem estar logado: só dados de sócio (nome/email/telefone/data vêm do cadastro de usuário)."""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remover campos que serão preenchidos a partir do usuário criado no mesmo fluxo
+        for field_name in ['nome_completo', 'data_nascimento', 'telefone', 'email']:
             if field_name in self.fields:
                 del self.fields[field_name]
 
