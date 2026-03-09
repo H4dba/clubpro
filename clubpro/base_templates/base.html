@@ -313,7 +313,38 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
+                    {% if not user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'landing-page' %}">
+                            <i class="fas fa-home"></i>
+                            Início
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'landing-page' %}#sobre">
+                            <i class="fas fa-chess-king"></i>
+                            Sobre
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'landing-page' %}#planos">
+                            <i class="fas fa-chess-knight"></i>
+                            Planos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'landing-page' %}#atividades">
+                            <i class="fas fa-calendar-alt"></i>
+                            Atividades
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'landing-page' %}#contato">
+                            <i class="fas fa-envelope"></i>
+                            Contato
+                        </a>
+                    </li>
+                    {% elif user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">
                             <i class="fas fa-tachometer-alt"></i>

@@ -33,9 +33,9 @@
                                     <i class="fas fa-user-plus me-2"></i>
                                     Tornar-se Sócio
                                 </a>
-                                <a href="#atividades" class="btn btn-outline-light btn-lg me-3">
-                                    <i class="fas fa-calendar-alt me-2"></i>
-                                    Ver Atividades
+                                <a href="#planos" class="btn btn-outline-light btn-lg me-3">
+                                    <i class="fas fa-chess-knight me-2"></i>
+                                    Ver Planos
                                 </a>
                                 <a href="{% url 'login' %}" class="btn btn-link-light btn-lg">
                                     <i class="fas fa-sign-in-alt me-2"></i>
@@ -46,9 +46,9 @@
                                     <i class="fas fa-tachometer-alt me-2"></i>
                                     Ir ao Dashboard
                                 </a>
-                                <a href="#atividades" class="btn btn-outline-light btn-lg">
-                                    <i class="fas fa-calendar-alt me-2"></i>
-                                    Ver Atividades
+                                <a href="#planos" class="btn btn-outline-light btn-lg">
+                                    <i class="fas fa-chess-knight me-2"></i>
+                                    Ver Planos
                                 </a>
                             {% endif %}
                         </div>
@@ -85,7 +85,7 @@
     </section>
 
     <!-- Sobre o Clube -->
-    <section class="about-section">
+    <section id="sobre" class="about-section">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
@@ -218,6 +218,83 @@
         </div>
     </section>
 
+    <!-- Planos e Preços -->
+    <section id="planos" class="pricing-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">
+                    <i class="fas fa-chess-knight text-gold me-2"></i>
+                    Planos e Investimento
+                </h2>
+                <p class="section-subtitle">
+                    Escolha o plano ideal para o seu nível de comprometimento com o xadrez
+                </p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <!-- Sócio AXM -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card pricing-card-axm">
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Sócio AXM</h3>
+                            <p class="pricing-desc">Plano ideal para quem deseja integrar a comunidade AXM e utilizar a estrutura do clube.</p>
+                        </div>
+                        <ul class="pricing-benefits">
+                            <li><i class="fas fa-check text-success me-2"></i>Acesso livre ao clube</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Espaço para jogos livres, treinos e convivência</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Materiais de apoio e conteúdos introdutórios</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Comunidade AXM (grupo geral)</li>
+                            <li><i class="fas fa-check text-success me-2"></i>10% de desconto em torneios e eventos da AXM</li>
+                        </ul>
+                        <a href="{% url 'socios:registro_socio' %}" class="btn btn-axm w-100">
+                            <i class="fas fa-user-plus me-2"></i>Associar-se
+                        </a>
+                    </div>
+                </div>
+                <!-- Sócio Master -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card pricing-card-featured pricing-card-master">
+                        <div class="pricing-badge">Popular</div>
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Sócio Master</h3>
+                            <p class="pricing-desc">Plano voltado para jogadores ativos que buscam evolução técnica e maior participação nas atividades do clube.</p>
+                        </div>
+                        <ul class="pricing-benefits">
+                            <li><i class="fas fa-check text-success me-2"></i>Todos os benefícios do plano Sócio AXM</li>
+                            <li><i class="fas fa-check text-success me-2"></i>40% de desconto em torneios e eventos da AXM</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Grupo fechado de treino</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Conteúdos mensais guiados</li>
+                            <li><i class="fas fa-check text-success me-2"></i>1 aula coletiva mensal</li>
+                            <li><i class="fas fa-check text-success me-2"></i>50% de desconto na primeira camisa AXM</li>
+                        </ul>
+                        <a href="{% url 'socios:registro_socio' %}" class="btn btn-gold w-100">
+                            <i class="fas fa-user-plus me-2"></i>Associar-se
+                        </a>
+                    </div>
+                </div>
+                <!-- Sócio Grandmaster -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card pricing-card-grandmaster">
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Sócio Grandmaster</h3>
+                            <p class="pricing-desc">Plano premium, indicado para jogadores que buscam acompanhamento técnico contínuo e alto rendimento.</p>
+                        </div>
+                        <ul class="pricing-benefits">
+                            <li><i class="fas fa-check text-success me-2"></i>Todos os benefícios dos planos AXM e Master</li>
+                            <li><i class="fas fa-check text-success me-2"></i>60% de desconto em eventos e torneios</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Aulas semanais inclusas</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Mentoria individual</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Primeira camisa AXM gratuita</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Prioridade em vagas oficiais, equipes e eventos</li>
+                        </ul>
+                        <a href="{% url 'socios:registro_socio' %}" class="btn btn-grandmaster w-100">
+                            <i class="fas fa-user-plus me-2"></i>Associar-se
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Shop Preview Section -->
     {% if featured_products %}
     <section class="shop-preview-section">
@@ -308,7 +385,7 @@
     </section>
 
     <!-- Contato Section -->
-    <section class="contact-section">
+    <section id="contato" class="contact-section">
         <div class="container">
             <div class="row">
                 <div class="col-lg-6">
@@ -603,6 +680,144 @@
         margin-bottom: 1.5rem;
     }
 
+    /* Pricing Section */
+    .pricing-section {
+        padding: 5rem 0;
+        background: var(--white);
+    }
+
+    .pricing-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        height: 100%;
+        border: 2px solid var(--gray-200);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pricing-card .pricing-benefits {
+        flex: 1;
+    }
+
+    .pricing-card .btn {
+        margin-top: auto;
+    }
+
+    .pricing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--gold-color);
+    }
+
+    .pricing-card-axm {
+        border-color: #7dd3fc;
+    }
+    .pricing-card-axm:hover {
+        border-color: #38bdf8;
+    }
+    .pricing-card-axm .pricing-title {
+        color: #0284c7;
+    }
+
+    .pricing-card-master.pricing-card-featured {
+        border-color: var(--gold-color);
+        box-shadow: 0 0 0 1px var(--gold-color), var(--shadow-md);
+    }
+    .pricing-card-master.pricing-card-featured:hover {
+        box-shadow: 0 0 0 2px var(--gold-color), var(--shadow-xl);
+    }
+    .pricing-card-master .pricing-title {
+        color: var(--gold-color);
+    }
+
+    .pricing-card-grandmaster {
+        border-color: #fca5a5;
+    }
+    .pricing-card-grandmaster:hover {
+        border-color: #ef4444;
+    }
+    .pricing-card-grandmaster .pricing-title {
+        color: #dc2626;
+    }
+
+    .btn-axm {
+        background: #38bdf8;
+        border-color: #38bdf8;
+        color: white;
+    }
+    .btn-axm:hover {
+        background: #0284c7;
+        border-color: #0284c7;
+        color: white;
+    }
+
+    .btn-grandmaster {
+        background: #ef4444;
+        border-color: #ef4444;
+        color: white;
+    }
+    .btn-grandmaster:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+        color: white;
+    }
+
+    .pricing-badge {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--gradient-gold);
+        color: var(--white);
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .pricing-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .pricing-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.75rem;
+    }
+
+    .pricing-desc {
+        font-size: 0.95rem;
+        color: var(--gray-600);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .pricing-benefits {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .pricing-benefits li {
+        padding: 0.4rem 0;
+        font-size: 0.95rem;
+        color: var(--gray-800);
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .pricing-benefits li i {
+        flex-shrink: 0;
+        margin-top: 0.2rem;
+    }
+
     /* CTA Section */
     .cta-section {
         padding: 5rem 0;
@@ -758,10 +973,16 @@
         
         .about-section,
         .activities-section,
+        .pricing-section,
         .shop-preview-section,
         .cta-section,
         .contact-section {
             padding: 3rem 0;
+        }
+
+        .pricing-card {
+            padding: 1.5rem 1rem;
+            margin-bottom: 1rem;
         }
         
         .section-title {
