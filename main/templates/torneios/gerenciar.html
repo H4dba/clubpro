@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Torneios - AXM{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-cog text-gold me-2"></i>Gerenciar Torneios</h1>
+        <div>
+            <a href="{% url 'torneios:lista' %}" class="btn btn-outline-secondary me-2">Ver lista pública</a>
+            <a href="{% url 'torneios:anunciar' %}" class="btn btn-gold">
+                <i class="fas fa-plus me-2"></i>Anunciar torneio
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Inscritos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in torneios %}
+                    <tr>
+                        <td>{{ t.name }}</td>
+                        <td>{{ t.get_tournament_type_display }}</td>
+                        <td>{{ t.start_time|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge {% if t.status == 'pending' %}bg-warning{% elif t.status == 'in_progress' %}bg-info{% elif t.status == 'finished' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ t.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ t.participants.count }}</td>
+                        <td>
+                            <a href="{% url 'torneios:detalhe' t.pk %}" class="btn btn-sm btn-outline-primary" title="Ver">Ver</a>
+                            <a href="{% url 'torneios:inscritos' t.pk %}" class="btn btn-sm btn-outline-info" title="Inscritos">Inscritos</a>
+                            {% if t.status == 'pending' %}
+                            <a href="{% url 'torneios:editar' t.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar">Editar</a>
+                            <form method="post" action="{% url 'torneios:iniciar' t.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success" title="Iniciar torneio">Iniciar</button>
+                            </form>
+                            {% elif t.status == 'in_progress' or t.status == 'finished' %}
+                            <a href="{% url 'main:tournament_detail' t.pk %}" class="btn btn-sm btn-primary" title="Gestão de partidas">Partidas</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Nenhum torneio cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

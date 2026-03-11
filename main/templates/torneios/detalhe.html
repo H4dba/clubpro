@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ torneio.name }} - AXM{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'torneios:lista' %}">Torneios</a></li>
+            <li class="breadcrumb-item active">{{ torneio.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ torneio.name }}</h1>
+            {% if torneio.description %}
+            <div class="mb-4">
+                <h5>Descrição</h5>
+                <p class="text-muted">{{ torneio.description|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Tipo</span>
+                            <strong>{{ torneio.get_tournament_type_display }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Ritmo</span>
+                            <strong>{{ torneio.get_tournament_speed_display }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Relógio</span>
+                            <strong>{{ torneio.clock_limit }} min + {{ torneio.clock_increment }} s</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Data e hora</span>
+                            <strong>{{ torneio.start_time|date:"d/m/Y" }} às {{ torneio.start_time|time:"H:i" }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Inscritos</span>
+                            <strong>{{ torneio.participants.count }}</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card sticky-top">
+                <div class="card-body">
+                    {% if inscrito %}
+                    <p class="text-success mb-3"><i class="fas fa-check-circle me-2"></i>Você está inscrito neste torneio.</p>
+                    {% if torneio.status == 'pending' %}
+                    <form method="post" action="{% url 'torneios:desinscrever' torneio.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger w-100">Cancelar inscrição</button>
+                    </form>
+                    {% endif %}
+                    {% elif pode_inscrever %}
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'torneios:inscrever' torneio.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-gold w-100">
+                            <i class="fas fa-user-plus me-2"></i>Inscrever-se
+                        </button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted small mb-2">Faça login para se inscrever.</p>
+                    <a href="{% url 'login' %}?next={% url 'torneios:detalhe' torneio.pk %}" class="btn btn-gold w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>Entrar
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted mb-0">Inscrições encerradas.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

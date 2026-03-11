@@ -39,6 +39,39 @@ class TournamentForm(forms.ModelForm):
             raise forms.ValidationError("Start time must be in the future")
         return start_time
 
+class TorneioAnuncioForm(forms.ModelForm):
+    """Formulário simplificado para anunciar torneios (sem participantes iniciais)."""
+    class Meta:
+        model = Tournament
+        fields = [
+            'name', 'description', 'tournament_type', 'tournament_speed',
+            'clock_limit', 'clock_increment', 'minutes', 'start_time',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome do torneio'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Descrição e regras'}),
+            'tournament_type': forms.Select(attrs={'class': 'form-select'}),
+            'tournament_speed': forms.Select(attrs={'class': 'form-select'}),
+            'clock_limit': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'value': 10}),
+            'clock_increment': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'value': 0}),
+            'minutes': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'value': 60}),
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tournament_type'].choices = [
+            ('internal_swiss', 'Suíço (Interno)'),
+            ('internal_round_robin', 'Round Robin (Interno)'),
+        ]
+
+    def clean_start_time(self):
+        start_time = self.cleaned_data.get('start_time')
+        if start_time and start_time < timezone.now():
+            raise forms.ValidationError("A data de início deve ser no futuro.")
+        return start_time
+
+
 class MatchResultForm(forms.ModelForm):
     class Meta:
         model = Match

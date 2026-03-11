@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Torneios - AXM{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-trophy text-gold me-2"></i>Torneios</h1>
+        {% if user.is_staff or user.is_superuser %}
+        <a href="{% url 'torneios:gerenciar' %}" class="btn btn-outline-primary">
+            <i class="fas fa-cog me-2"></i>Gerenciar
+        </a>
+        {% endif %}
+    </div>
+    <p class="text-muted mb-4">Confira os torneios anunciados e inscreva-se nos que tiverem vagas abertas.</p>
+
+    {% if torneios %}
+    <div class="row g-4">
+        {% for torneio in torneios %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ torneio.name }}</h5>
+                    <p class="card-text text-muted small">{{ torneio.description|truncatewords:20 }}</p>
+                    <ul class="list-unstyled small mb-3">
+                        <li><i class="fas fa-chess me-2 text-gold"></i>{{ torneio.get_tournament_type_display }}</li>
+                        <li><i class="fas fa-clock me-2 text-gold"></i>{{ torneio.get_tournament_speed_display }} • {{ torneio.clock_limit }}+{{ torneio.clock_increment }}</li>
+                        <li><i class="fas fa-calendar me-2 text-gold"></i>{{ torneio.start_time|date:"d/m/Y H:i" }}</li>
+                        <li><i class="fas fa-users me-2 text-gold"></i>{{ torneio.participants.count }} inscritos</li>
+                    </ul>
+                    <a href="{% url 'torneios:detalhe' torneio.pk %}" class="btn btn-primary w-100">
+                        <i class="fas fa-info-circle me-2"></i>Ver detalhes
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+        <p class="text-muted">Nenhum torneio com inscrições abertas no momento.</p>
+        {% if user.is_staff or user.is_superuser %}
+        <a href="{% url 'torneios:anunciar' %}" class="btn btn-gold">Anunciar torneio</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

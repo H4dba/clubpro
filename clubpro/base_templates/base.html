@@ -344,6 +344,12 @@
                             Contato
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'torneios:lista' %}">
+                            <i class="fas fa-trophy"></i>
+                            Torneios
+                        </a>
+                    </li>
                     {% elif user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">
@@ -351,14 +357,12 @@
                             Dashboard
                         </a>
                     </li>
-                    {% if user.is_staff or user.is_superuser %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'main:tournament_dashboard' %}">
+                        <a class="nav-link" href="{% url 'torneios:lista' %}">
                             <i class="fas fa-trophy"></i>
                             Torneios
                         </a>
                     </li>
-                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'shop:product_list' %}">
                             <i class="fas fa-store"></i>

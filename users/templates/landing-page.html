@@ -180,13 +180,13 @@
                         <p>Participe de torneios internos e represente a AXM em competições regionais e nacionais. 
                            Teste suas habilidades e melhore seu rating.</p>
                         {% if not user.is_authenticated %}
-                        <a href="{% url 'socios:registro_socio' %}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-user-plus me-2"></i>
-                            Tornar-se Sócio
+                        <a href="{% url 'torneios:lista' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-trophy me-2"></i>
+                            Ver Torneios
                         </a>
                         {% else %}
-                        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-info-circle me-2"></i>
+                        <a href="{% url 'torneios:lista' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-trophy me-2"></i>
                             Ver Torneios
                         </a>
                         {% endif %}
@@ -407,9 +407,23 @@
                         <i class="fas fa-envelope text-gold me-2"></i>
                         Entre em Contato
                     </h3>
-                    <p class="mb-3">
+                    <div class="contact-info mb-3">
+                        <p class="mb-2">
+                            <i class="fas fa-phone text-gold me-2"></i>
+                            <a href="https://wa.me/5521970882088" target="_blank" rel="noopener noreferrer" class="text-decoration-none">(21) 97088-2088</a>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-envelope text-gold me-2"></i>
+                            <a href="mailto:xadrezmarica@gmail.com" class="text-decoration-none">xadrezmarica@gmail.com</a>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fab fa-instagram text-gold me-2"></i>
+                            <a href="https://instagram.com/ax_marica" target="_blank" rel="noopener noreferrer" class="text-decoration-none">@ax_marica</a>
+                        </p>
+                    </div>
+                    <p class="text-muted">
                         Para informações sobre se tornar sócio, atividades e horários, 
-                        entre em contato através do sistema ou visite nossa página de contato.
+                        entre em contato conosco.
                     </p>
                     {% if not user.is_authenticated %}
                     <a href="{% url 'socios:registro_socio' %}" class="btn btn-gold">
