@@ -73,18 +73,9 @@ def register_view(request):
     return render(request, "register.html", {"form": form})
 
 def landing_page(request):
-    """Página inicial do sistema com estatísticas reais"""
-    from socios.models import Socio
+    """Página inicial do sistema"""
     from main.models import Tournament
-    from django.contrib.auth import get_user_model
-    
-    User = get_user_model()
-    
-    # Real statistics
-    total_members = Socio.objects.filter(status='ativo').count()
-    total_tournaments = Tournament.objects.filter(status__in=['in_progress', 'finished']).count()
-    total_users = User.objects.filter(is_active=True).count()
-    
+
     # Recent tournaments
     recent_tournaments = Tournament.objects.filter(
         status__in=['in_progress', 'finished']
@@ -102,9 +93,6 @@ def landing_page(request):
         pass
     
     context = {
-        'total_members': total_members,
-        'total_tournaments': total_tournaments,
-        'total_users': total_users,
         'recent_tournaments': recent_tournaments,
         'featured_products': featured_products,
     }

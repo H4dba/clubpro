@@ -52,20 +52,6 @@
                                 </a>
                             {% endif %}
                         </div>
-                        <div class="hero-stats">
-                            <div class="stat-item">
-                                <div class="stat-number">{{ total_members|default:0 }}+</div>
-                                <div class="stat-label">Sócios Ativos</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">{{ total_tournaments|default:0 }}+</div>
-                                <div class="stat-label">Torneios Realizados</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">{{ total_users|default:0 }}+</div>
-                                <div class="stat-label">Jogadores Cadastrados</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 <div class="col-lg-5">
@@ -549,22 +535,6 @@
         text-decoration: underline;
     }
 
-    .hero-stats {
-        display: flex;
-        gap: 3rem;
-    }
-
-    .stat-item {
-        text-align: center;
-    }
-
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--gold-color);
-        line-height: 1;
-    }
-
     /* Hero Chess Board */
     .hero-chess-board {
         position: relative;
@@ -971,11 +941,6 @@
             margin-bottom: 0;
         }
         
-        .hero-stats {
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
         .hero-chess-board {
             height: 250px;
             margin-top: 2rem;
@@ -1069,11 +1034,6 @@
         
         .hero-title small {
             font-size: 1.2rem;
-        }
-        
-        .hero-stats {
-            flex-wrap: wrap;
-            gap: 2rem;
         }
         
         .chess-piece {
