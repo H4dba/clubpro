@@ -43,9 +43,10 @@ class Tournament(models.Model):
     password = models.CharField(max_length=50, blank=True, verbose_name="Senha")
     min_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Mínimo")
     max_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Máximo")
-    current_round = models.IntegerField(default=0, verbose_name="Rodada Atual")
-    total_rounds = models.IntegerField(default=0, verbose_name="Total de Rodadas")
     is_lichess = models.BooleanField(default=True, verbose_name="Torneio do Lichess")
+    prize = models.TextField(blank=True, verbose_name="Premiação")
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Valor da Inscrição")
+    rules_pdf = models.FileField(upload_to='tournament_rules/', blank=True, null=True, verbose_name="Regulamento (PDF)")
 
     def __str__(self):
         return self.name
@@ -64,17 +65,16 @@ class Participant(models.Model):
     name = models.CharField(max_length=100, blank=True, verbose_name="Nome")  # For unregistered players
     rating = models.IntegerField(null=True, blank=True, verbose_name="Rating")  # For unregistered players
     score = models.FloatField(default=0)
-    tiebreak_1 = models.FloatField(default=0, help_text="Buchholz or Sonneborn-Berger")
-    tiebreak_2 = models.FloatField(default=0, help_text="Direct encounter")
     registered_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
+    payment_confirmed = models.BooleanField(default=False, verbose_name="Pagamento Confirmado")
 
     class Meta:
         unique_together = [
             ('tournament', 'player'),  # Only for registered players
             ('tournament', 'name'),    # Only for unregistered players
         ]
-        ordering = ['-score', '-tiebreak_1', '-tiebreak_2']
+        ordering = ['-score']
         verbose_name = "Participante"
         verbose_name_plural = "Participantes"
 

@@ -7,7 +7,7 @@
         <a href="{% url 'main:tournament_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 
-    <form method="post" class="tournament-form">
+    <form method="post" enctype="multipart/form-data" class="tournament-form">
         {% csrf_token %}
         
         {% if form.non_field_errors %}
@@ -129,6 +129,38 @@
                     {% if form.password.errors %}
                         <div class="error-message">{{ form.password.errors.0 }}</div>
                     {% endif %}
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="form-section">
+                <h3>Additional Information</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.price.id_for_label }}">Entry Price (Valor da Inscrição)</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                            <div class="error-message">{{ form.price.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.prize.id_for_label }}">Prize Information (Premiação)</label>
+                    {{ form.prize }}
+                    {% if form.prize.errors %}
+                        <div class="error-message">{{ form.prize.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.rules_pdf.id_for_label }}">Rules PDF (Regulamento PDF)</label>
+                    {{ form.rules_pdf }}
+                    {% if form.rules_pdf.errors %}
+                        <div class="error-message">{{ form.rules_pdf.errors.0 }}</div>
+                    {% endif %}
+                    <small class="form-text text-muted">Upload a PDF file with the tournament rules (optional).</small>
                 </div>
             </div>
         </div>

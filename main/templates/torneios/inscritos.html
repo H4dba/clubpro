@@ -26,6 +26,8 @@
                         <th>#</th>
                         <th>Nome</th>
                         <th>Data da inscrição</th>
+                        <th>Status</th>
+                        <th>Ação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,6 +36,23 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ p.get_display_name }}</td>
                         <td>{{ p.registered_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if p.payment_confirmed %}
+                                <span class="badge bg-success">Confirmado</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pendente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'torneios:confirmar_pagamento' torneio.pk p.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                {% if p.payment_confirmed %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desfazer Confirmação"><i class="fas fa-times"></i> Reverter</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm btn-success" title="Confirmar Pagamento"><i class="fas fa-check"></i> Aprovar</button>
+                                {% endif %}
+                            </form>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>

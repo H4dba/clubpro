@@ -48,6 +48,9 @@ services:
 
   nginx:
     image: nginx:alpine
+    profiles:
+      - nginx
+      - prod
     ports:
       - "${NGINX_PORT:-80}:80"
       - 443:443

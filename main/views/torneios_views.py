@@ -32,17 +32,17 @@ def torneios_lista(request):
 def torneios_detalhe(request, pk):
     """Detalhe do torneio com botão de inscrição (público)."""
     torneio = get_object_or_404(Tournament, pk=pk)
-    inscrito = False
+    participacao = None
     if request.user.is_authenticated:
-        inscrito = torneio.participants.filter(player=request.user).exists()
+        participacao = torneio.participants.filter(player=request.user).first()
     pode_inscrever = (
         torneio.status == 'pending' and
         torneio.start_time > timezone.now() and
-        not inscrito
+        not participacao
     )
     return render(request, 'torneios/detalhe.html', {
         'torneio': torneio,
-        'inscrito': inscrito,
+        'participacao': participacao,
         'pode_inscrever': pode_inscrever,
     })
 
@@ -61,8 +61,8 @@ def torneios_inscrever(request, pk):
     if torneio.participants.filter(player=request.user).exists():
         messages.info(request, 'Você já está inscrito neste torneio.')
         return redirect('torneios:detalhe', pk=pk)
-    Participant.objects.create(tournament=torneio, player=request.user)
-    messages.success(request, f'Inscrição realizada! Você está inscrito em {torneio.name}.')
+    Participant.objects.create(tournament=torneio, player=request.user, name=f"__user_{request.user.id}__")
+    messages.success(request, f'Inscrição solicitada para {torneio.name}. Aguarde a confirmação de pagamento pelo administrador.')
     return redirect('torneios:detalhe', pk=pk)
 
 
@@ -92,7 +92,7 @@ def torneios_gerenciar(request):
 def torneios_anunciar(request):
     """Anunciar novo torneio."""
     if request.method == 'POST':
-        form = TorneioAnuncioForm(request.POST)
+        form = TorneioAnuncioForm(request.POST, request.FILES)
         if form.is_valid():
             torneio = form.save(commit=False)
             torneio.created_by = request.user
@@ -117,7 +117,7 @@ def torneios_editar(request, pk):
         messages.error(request, 'Apenas torneios com inscrições abertas podem ser editados.')
         return redirect('torneios:gerenciar')
     if request.method == 'POST':
-        form = TorneioAnuncioForm(request.POST, instance=torneio)
+        form = TorneioAnuncioForm(request.POST, request.FILES, instance=torneio)
         if form.is_valid():
             form.save()
             messages.success(request, 'Torneio atualizado.')
@@ -151,7 +151,7 @@ def torneios_iniciar(request, pk):
         messages.error(request, 'Este torneio já foi iniciado ou finalizado.')
         return redirect('torneios:gerenciar')
     torneio.status = 'in_progress'
-    num = torneio.participants.count()
+    num = torneio.participants.filter(payment_confirmed=True).count()
     if torneio.tournament_type in ['swiss', 'internal_swiss']:
         torneio.total_rounds = min(num - 1, 7) if num > 1 else 0
     elif torneio.tournament_type in ['round_robin', 'internal_round_robin']:
@@ -159,3 +159,18 @@ def torneios_iniciar(request, pk):
     torneio.save()
     messages.success(request, 'Torneio iniciado. Use a gestão de torneios para rodadas e resultados.')
     return redirect('main:tournament_detail', pk=pk)
+
+
+@user_passes_test(is_staff_or_superuser)
+@require_POST
+def torneios_confirmar_pagamento(request, torneio_pk, participant_pk):
+    """Alternar status de pagamento do participante."""
+    torneio = get_object_or_404(Tournament, pk=torneio_pk)
+    participant = get_object_or_404(Participant, pk=participant_pk, tournament=torneio)
+    
+    participant.payment_confirmed = not participant.payment_confirmed
+    participant.save()
+    
+    status = "Confirmado" if participant.payment_confirmed else "Aguardando confirmação"
+    messages.success(request, f'Pagamento de {participant.get_display_name()} agora está: {status}.')
+    return redirect('torneios:inscritos', pk=torneio.pk)

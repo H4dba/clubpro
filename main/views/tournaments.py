@@ -2,10 +2,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from ..models import Tournament, Match
-from ..forms import TournamentForm, MatchResultForm
+from ..models import Tournament
+from ..forms import TournamentForm
 from services.LichessService import LichessApi
-from ..services.tournament_pairings import generate_next_round
 
 def is_tournament_manager(user):
     return user.is_authenticated
@@ -20,7 +19,7 @@ def tournament_dashboard(request):
 @user_passes_test(is_tournament_manager)
 def tournament_create(request):
     if request.method == 'POST':
-        form = TournamentForm(request.POST)
+        form = TournamentForm(request.POST, request.FILES)
         if form.is_valid():
             tournament = form.save(commit=False)
             tournament.created_by = request.user
@@ -33,7 +32,7 @@ def tournament_create(request):
                 # Add participants
                 participants = form.cleaned_data.get('participants', [])
                 for user in participants:
-                    tournament.participants.create(player=user)
+                    tournament.participants.create(player=user, name=f"__user_{user.id}__")
                 
                 messages.success(request, 'Tournament created successfully!')
                 return redirect('main:tournament_detail', pk=tournament.id)
@@ -71,22 +70,6 @@ def tournament_create(request):
 def tournament_detail(request, pk):
     tournament = get_object_or_404(Tournament, pk=pk)
     
-    # Get current matches and check if any are pending
-    current_matches = Match.objects.filter(
-        tournament=tournament,
-        round_number=tournament.current_round
-    ).order_by('board_number')
-    
-    # Get all past rounds matches
-    past_rounds = {}
-    for round_num in range(1, tournament.current_round):
-        past_rounds[round_num] = Match.objects.filter(
-            tournament=tournament,
-            round_number=round_num
-        ).order_by('board_number')
-    
-    has_pending_matches = current_matches.filter(result='pending').exists()
-
     # Get all users except those already participating
     available_users = get_user_model().objects.exclude(
         id__in=tournament.participants.filter(player__isnull=False).values_list('player_id', flat=True)
@@ -99,7 +82,7 @@ def tournament_detail(request, pk):
             participant_ids = request.POST.getlist('participants')
             for user_id in participant_ids:
                 user = get_user_model().objects.get(id=user_id)
-                tournament.participants.create(player=user)
+                tournament.participants.create(player=user, name=f"__user_{user.id}__")
             messages.success(request, 'Players added successfully!')
             
         elif action == 'add_unregistered_player':
@@ -122,60 +105,16 @@ def tournament_detail(request, pk):
                 tournament.participants.filter(id=participant_id).delete()
                 messages.success(request, 'Player removed successfully!')
                 
-        elif action == 'start_round':
-            if tournament.status == 'pending':
-                tournament.status = 'in_progress'
-                # Set total rounds based on number of players for Swiss tournament
-                num_players = tournament.participants.count()
-                if tournament.tournament_type in ['swiss', 'internal_swiss']:
-                    tournament.total_rounds = min(num_players - 1, 7)  # Standard Swiss rounds limit
-                elif tournament.tournament_type in ['round_robin', 'internal_round_robin']:
-                    tournament.total_rounds = num_players - 1 if num_players % 2 == 0 else num_players
-                tournament.save()
-            
-            if has_pending_matches:
-                messages.error(request, 'Cannot start next round. Complete all current matches first.')
-            elif tournament.current_round >= tournament.total_rounds:
-                tournament.status = 'finished'
-                tournament.save()
-                messages.error(request, 'Tournament has reached its maximum number of rounds.')
-            else:
-                if generate_next_round(tournament):
-                    messages.success(request, f'Round {tournament.current_round} started!')
-                else:
-                    messages.error(request, 'Cannot start next round. Make sure all current matches are completed.')
-            
         return redirect('main:tournament_detail', pk=pk)
     
-    standings = tournament.participants.all().order_by('-score', '-tiebreak_1', '-tiebreak_2')
+    standings = tournament.participants.all().order_by('-score')
     
     return render(request, 'tournament_detail.html', {
         'tournament': tournament,
-        'current_matches': current_matches,
-        'past_rounds': past_rounds,
         'standings': standings,
         'available_users': available_users,
-        'has_pending_matches': has_pending_matches,
     })
 
-@user_passes_test(is_tournament_manager)
-def match_result(request, tournament_pk, match_pk):
-    match = get_object_or_404(Match, pk=match_pk, tournament_id=tournament_pk)
-    
-    if request.method == 'POST':
-        form = MatchResultForm(request.POST, instance=match)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Match result recorded successfully!')
-            return redirect('main:tournament_detail', pk=tournament_pk)
-    else:
-        form = MatchResultForm(instance=match)
-    
-    return render(request, 'match_result_form.html', {
-        'form': form,
-        'match': match,
-        'tournament': match.tournament
-    })
 
 @user_passes_test(is_tournament_manager)
 def tournament_edit(request, pk):
@@ -185,7 +124,7 @@ def tournament_edit(request, pk):
         return redirect('main:tournament_dashboard')
         
     if request.method == 'POST':
-        form = TournamentForm(request.POST, instance=tournament)
+        form = TournamentForm(request.POST, request.FILES, instance=tournament)
         if form.is_valid():
             tournament = form.save()
             
@@ -195,7 +134,7 @@ def tournament_edit(request, pk):
                 tournament.participants.all().delete()
                 # Add new participants
                 for user in form.cleaned_data['participants']:
-                    tournament.participants.create(player=user)
+                    tournament.participants.create(player=user, name=f"__user_{user.id}__")
             
             messages.success(request, 'Tournament updated successfully!')
             return redirect('main:tournament_detail', pk=tournament.id)

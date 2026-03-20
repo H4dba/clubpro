@@ -1,3 +1,3 @@
-from .tournaments import TournamentForm, TorneioAnuncioForm, MatchResultForm
+from .tournaments import TournamentForm, TorneioAnuncioForm
 
-__all__ = ['TournamentForm', 'MatchResultForm']
+__all__ = ['TournamentForm', 'TorneioAnuncioForm']

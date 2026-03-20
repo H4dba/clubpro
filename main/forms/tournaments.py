@@ -1,5 +1,5 @@
 from django import forms
-from ..models import Tournament, Participant, Match
+from ..models import Tournament, Participant
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
@@ -17,11 +17,12 @@ class TournamentForm(forms.ModelForm):
             'name', 'description', 'tournament_type', 
             'clock_limit', 'clock_increment', 'tournament_speed',
             'start_time', 'is_private', 'min_rating', 'max_rating',
-            'password', 'minutes'
+            'password', 'minutes', 'price', 'prize', 'rules_pdf'
         ]
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'description': forms.Textarea(attrs={'rows': 4}),
+            'prize': forms.Textarea(attrs={'rows': 4}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -46,6 +47,7 @@ class TorneioAnuncioForm(forms.ModelForm):
         fields = [
             'name', 'description', 'tournament_type', 'tournament_speed',
             'clock_limit', 'clock_increment', 'minutes', 'start_time',
+            'price', 'prize', 'rules_pdf'
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome do torneio'}),
@@ -56,6 +58,8 @@ class TorneioAnuncioForm(forms.ModelForm):
             'clock_increment': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'value': 0}),
             'minutes': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'value': 60}),
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'prize': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Informações de premiação'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': 0.01}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -69,29 +73,4 @@ class TorneioAnuncioForm(forms.ModelForm):
         start_time = self.cleaned_data.get('start_time')
         if start_time and start_time < timezone.now():
             raise forms.ValidationError("A data de início deve ser no futuro.")
-        return start_time
-
-
-class MatchResultForm(forms.ModelForm):
-    class Meta:
-        model = Match
-        fields = ['result']
-        widgets = {
-            'result': forms.Select(
-                attrs={'class': 'form-select'},
-                choices=[
-                    ('pending', 'Pendente'),
-                    ('white_win', 'Vitória Brancas'),
-                    ('black_win', 'Vitória Pretas'),
-                    ('draw', 'Empate'),
-                    ('forfeit_white', 'WO Brancas'),
-                    ('forfeit_black', 'WO Pretas'),
-                ]
-            )
-        }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # If this is a bye match, only show bye as option
-        if self.instance and self.instance.black_player is None:
-            self.fields['result'].widget.choices = [('bye', 'Bye')]
+        return start_time

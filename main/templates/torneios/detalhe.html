@@ -46,15 +46,42 @@
                             <span>Inscritos</span>
                             <strong>{{ torneio.participants.count }}</strong>
                         </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Valor da Inscrição</span>
+                            <strong>{% if torneio.price > 0 %}R$ {{ torneio.price }}{% else %}Gratuito{% endif %}</strong>
+                        </li>
                     </ul>
                 </div>
             </div>
+            
+            {% if torneio.prize %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-trophy me-2 text-warning"></i>Premiação</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ torneio.prize|linebreaksbr }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if torneio.rules_pdf %}
+            <div class="mb-4">
+                <a href="{{ torneio.rules_pdf.url }}" target="_blank" class="btn btn-outline-info">
+                    <i class="fas fa-file-pdf me-2"></i>Ver Regulamento (PDF)
+                </a>
+            </div>
+            {% endif %}
         </div>
         <div class="col-lg-4">
             <div class="card sticky-top">
                 <div class="card-body">
-                    {% if inscrito %}
-                    <p class="text-success mb-3"><i class="fas fa-check-circle me-2"></i>Você está inscrito neste torneio.</p>
+                    {% if participacao %}
+                        {% if participacao.payment_confirmed %}
+                        <p class="text-success mb-3"><i class="fas fa-check-circle me-2"></i>Você está inscrito e sua participação está confirmada.</p>
+                        {% else %}
+                        <p class="text-warning mb-3"><i class="fas fa-clock me-2"></i>Sua inscrição aguarda a confirmação do pagamento pelo administrador.</p>
+                        {% endif %}
                     {% if torneio.status == 'pending' %}
                     <form method="post" action="{% url 'torneios:desinscrever' torneio.pk %}">
                         {% csrf_token %}
