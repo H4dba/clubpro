@@ -132,6 +132,23 @@ def torneios_editar(request, pk):
 
 
 @user_passes_test(is_staff_or_superuser)
+def torneios_excluir(request, pk):
+    """Excluir torneio."""
+    torneio = get_object_or_404(Tournament, pk=pk)
+    if request.method == 'POST':
+        confirm_name = request.POST.get('confirm_name', '')
+        if confirm_name == torneio.name:
+            torneio_name = torneio.name
+            torneio.delete()
+            messages.success(request, f'O torneio "{torneio_name}" foi excluído com sucesso.')
+            return redirect('torneios:gerenciar')
+        else:
+            messages.error(request, 'O nome digitado não confere. O torneio não foi excluído.')
+            
+    return render(request, 'torneios/excluir.html', {'torneio': torneio})
+
+
+@user_passes_test(is_staff_or_superuser)
 def torneios_inscritos(request, pk):
     """Listar inscritos no torneio."""
     torneio = get_object_or_404(Tournament, pk=pk)
