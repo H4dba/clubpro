@@ -41,10 +41,8 @@ class UsuarioCustom(AbstractUser):
         verbose_name="Permissões"
     )
 
-    # Campos básicos de integração com Lichess
-    lichess_id = models.CharField(max_length=100, null=True, blank=True, verbose_name="ID do Lichess")
-    lichess_access_token = models.CharField(max_length=255, null=True, blank=True, verbose_name="Token de Acesso")
-    is_lichess_connected = models.BooleanField(default=False, verbose_name="Conectado ao Lichess")
+    chesscom_username = models.CharField(max_length=100, null=True, blank=True, verbose_name="Usuário Chess.com")
+    is_chesscom_connected = models.BooleanField(default=False, verbose_name="Conectado ao Chess.com")
 
     class Meta:
         verbose_name = "Usuário"
@@ -55,111 +53,91 @@ class UsuarioCustom(AbstractUser):
         return self.tipo_plano and self.tipo_plano.preco > 0
 
     @property
-    def perfil_lichess(self):
-        """Retorna o perfil do Lichess associado ao usuário"""
+    def perfil_chesscom(self):
+        """Retorna o perfil do Chess.com associado ao usuário"""
         try:
-            return self.lichessprofile
-        except LichessProfile.DoesNotExist:
+            return self.chesscomprofile
+        except ChessComProfile.DoesNotExist:
             return None
 
     def __str__(self):
         return f"{self.username} - {self.first_name} {self.last_name}".strip()
 
 
-class LichessProfile(models.Model):
-    """Perfil completo do usuário no Lichess com estatísticas detalhadas"""
+class ChessComProfile(models.Model):
+    """Perfil completo do usuário no Chess.com com estatísticas detalhadas"""
     user = models.OneToOneField(UsuarioCustom, on_delete=models.CASCADE, verbose_name="Usuário")
-    lichess_id = models.CharField(max_length=100, unique=True, verbose_name="ID do Lichess")
+    chesscom_username = models.CharField(max_length=100, unique=True, verbose_name="Usuário Chess.com")
     
-    # Estatísticas de jogos por categoria de tempo
-    bullet_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Bullet")
+    # Ratings e jogos por controle de tempo
     bullet_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Bullet")
-    blitz_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Blitz")
+    bullet_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Bullet")
     blitz_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Blitz")
-    rapid_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Rapid")
+    blitz_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Blitz")
     rapid_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Rapid")
-    classical_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Classical")
-    classical_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Classical")
-    puzzles_solved = models.IntegerField(null=True, blank=True, verbose_name="Problemas Resolvidos")
-    puzzles_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating de Problemas")
+    rapid_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Rapid")
+    daily_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Daily")
+    daily_games_played = models.IntegerField(null=True, blank=True, verbose_name="Jogos Daily")
     
-    # Campos adicionais do perfil
-    lichess_username = models.CharField(max_length=100, null=True, blank=True, verbose_name="Nome de Usuário")
-    country = models.CharField(max_length=10, null=True, blank=True, verbose_name="País")
-    title = models.CharField(max_length=10, null=True, blank=True, verbose_name="Título")  # GM, IM, etc.
-    patron = models.BooleanField(default=False, verbose_name="Patrono do Lichess")
-    created_at = models.DateTimeField(null=True, blank=True, verbose_name="Criado em (Lichess)")
-    seen_at = models.DateTimeField(null=True, blank=True, verbose_name="Última vez visto")
-    play_time_total = models.IntegerField(null=True, blank=True, verbose_name="Tempo total de jogo (segundos)")
+    # Puzzles / Tactics
+    tactics_highest = models.IntegerField(null=True, blank=True, verbose_name="Tactics (maior rating)")
+    puzzle_rush_best = models.IntegerField(null=True, blank=True, verbose_name="Puzzle Rush (melhor score)")
+    
+    # FIDE (retornado pela API do Chess.com)
+    fide_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating FIDE")
+    
     profile_url = models.URLField(null=True, blank=True, verbose_name="URL do Perfil")
-    
-    # Controle de datas locais
+
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
     created_at_local = models.DateTimeField(auto_now_add=True, verbose_name="Criado em (local)")
 
     class Meta:
-        verbose_name = "Perfil do Lichess"
-        verbose_name_plural = "Perfis do Lichess"
+        verbose_name = "Perfil do Chess.com"
+        verbose_name_plural = "Perfis do Chess.com"
 
     def __str__(self):
-        return f"Perfil Lichess de {self.user.username}"
+        return f"Perfil Chess.com de {self.user.username}"
 
-    def atualizar_de_api_lichess(self, dados_api):
-        """Atualiza o perfil com dados da API do Lichess"""
-        perfs = dados_api.get('perfs', {})
-        
-        # Atualiza ratings e jogos para cada categoria de tempo
-        for categoria in ['bullet', 'blitz', 'rapid', 'classical']:
-            if categoria in perfs:
-                perf_data = perfs[categoria]
-                setattr(self, f'{categoria}_rating', perf_data.get('rating'))
-                setattr(self, f'{categoria}_games_played', perf_data.get('games'))
-        
-        # Atualiza dados de problemas
-        if 'puzzle' in perfs:
-            puzzle_data = perfs['puzzle']
-            self.puzzles_rating = puzzle_data.get('rating')
-            self.puzzles_solved = puzzle_data.get('games')
-        
-        # Atualiza outros campos do perfil
-        self.lichess_username = dados_api.get('username')
-        self.country = dados_api.get('profile', {}).get('country')
-        self.title = dados_api.get('title')
-        self.patron = dados_api.get('patron', False)
-        
-        # Converte timestamps se existirem
-        if 'createdAt' in dados_api:
-            from datetime import datetime
-            self.created_at = datetime.fromtimestamp(dados_api['createdAt'] / 1000)
-        if 'seenAt' in dados_api:
-            from datetime import datetime
-            self.seen_at = datetime.fromtimestamp(dados_api['seenAt'] / 1000)
-        
+    def atualizar_de_api(self, dados_api):
+        """Atualiza o perfil com dados da API do Chess.com (/pub/player/{username}/stats)"""
+        for tc, field_prefix in [('chess_bullet', 'bullet'), ('chess_blitz', 'blitz'),
+                                  ('chess_rapid', 'rapid'), ('chess_daily', 'daily')]:
+            tc_data = dados_api.get(tc, {})
+            last = tc_data.get('last', {})
+            record = tc_data.get('record', {})
+            setattr(self, f'{field_prefix}_rating', last.get('rating'))
+            total = (record.get('win', 0) + record.get('loss', 0) + record.get('draw', 0)) or None
+            setattr(self, f'{field_prefix}_games_played', total)
+
+        tactics = dados_api.get('tactics', {})
+        self.tactics_highest = tactics.get('highest', {}).get('rating')
+
+        pr = dados_api.get('puzzle_rush', {})
+        self.puzzle_rush_best = pr.get('best', {}).get('score')
+
+        self.fide_rating = dados_api.get('fide') or None
+
+        self.profile_url = f'https://www.chess.com/member/{self.chesscom_username}'
         self.save()
 
     @property
     def maior_rating(self):
-        """Retorna o maior rating entre todas as categorias"""
-        ratings = [r for r in [self.bullet_rating, self.blitz_rating, 
-                              self.rapid_rating, self.classical_rating] if r]
+        ratings = [r for r in [self.bullet_rating, self.blitz_rating,
+                               self.rapid_rating, self.daily_rating] if r]
         return max(ratings) if ratings else None
 
     @property
     def total_jogos(self):
-        """Retorna o total de jogos em todas as categorias"""
         jogos = [g for g in [self.bullet_games_played, self.blitz_games_played,
-                            self.rapid_games_played, self.classical_games_played] if g]
+                             self.rapid_games_played, self.daily_games_played] if g]
         return sum(jogos) if jogos else 0
 
     @property
     def categoria_principal(self):
-        """Retorna a categoria com mais jogos"""
         categorias = {
             'bullet': self.bullet_games_played or 0,
             'blitz': self.blitz_games_played or 0,
             'rapid': self.rapid_games_played or 0,
-            'classical': self.classical_games_played or 0,
+            'daily': self.daily_games_played or 0,
         }
         return max(categorias, key=categorias.get) if any(categorias.values()) else None
-
-

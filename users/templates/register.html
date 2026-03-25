@@ -94,20 +94,19 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="id_username" class="form-label">
-                                        <i class="fas fa-user me-2"></i>Nome de Usuário
+                                    <label for="id_chesscom_username" class="form-label">
+                                        <i class="fas fa-chess me-2"></i>Usuário Chess.com
                                     </label>
                                     <input type="text" 
-                                           name="username" 
-                                           class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
-                                           id="id_username"
-                                           value="{{ form.username.value|default:'' }}"
-                                           placeholder="Escolha um nome de usuário único"
-                                           required>
+                                           name="chesscom_username" 
+                                           class="form-control {% if form.chesscom_username.errors %}is-invalid{% endif %}" 
+                                           id="id_chesscom_username"
+                                           value="{{ form.chesscom_username.value|default:'' }}"
+                                           placeholder="Seu usuário no Chess.com (opcional)">
                                     <small class="form-text text-muted">
-                                        Use apenas letras, números e underscores
+                                        Opcional — pode conectar depois no Dashboard
                                     </small>
-                                    {% if form.username.errors %}<div class="invalid-feedback">{{ form.username.errors.0 }}</div>{% endif %}
+                                    {% if form.chesscom_username.errors %}<div class="invalid-feedback">{{ form.chesscom_username.errors.0 }}</div>{% endif %}
                                 </div>
                             </div>
                         </div>

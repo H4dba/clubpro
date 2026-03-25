@@ -1,1 +1,1 @@
-from . LichessService import *
+from .ChessComService import *

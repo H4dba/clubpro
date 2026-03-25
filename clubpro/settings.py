@@ -61,7 +61,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
-    'lichess',
     'main',
     'socios',
     'shop',
@@ -193,12 +192,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Redirect to this URL after successful login
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = '/users/login/'
-LICHESS_CLIENT_SECRET = 'lichess-api-demo'
 HOST = os.getenv('HOST', 'localhost')
-# USE_SSL is already defined above in security settings
 PROTOCOL = 'https' if USE_SSL else 'http'
-LICHESS_REDIRECT_URI = f'{PROTOCOL}://{HOST}/users/lichess-callback/'
-LICHESS_CLIENT_ID = f'{PROTOCOL}://{HOST}'
 
 # Landing page — Google Maps (optional embed src from Maps → Share → Embed a map)
 AXM_MAPS_ADDRESS = os.getenv(

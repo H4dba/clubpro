@@ -15,10 +15,10 @@
                             Olá, {{ user.username }}!
                         </h1>
                         <p class="welcome-subtitle mb-0">
-                            {% if user.is_lichess_connected %}
+                            {% if user.is_chesscom_connected %}
                                 Bem-vindo de volta à AXM - Academia de Xadrez de Maricá. Aqui está um resumo da sua atividade.
                             {% else %}
-                                Conecte sua conta Lichess para desbloquear todas as funcionalidades!
+                                Conecte sua conta Chess.com para desbloquear todas as funcionalidades!
                             {% endif %}
                         </p>
                     </div>
@@ -33,21 +33,21 @@
         </div>
     </div>
 
-    {% if not user.is_lichess_connected %}
-        <!-- Card de Conexão Lichess -->
+    {% if not user.is_chesscom_connected %}
+        <!-- Card de Conexão Chess.com -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card connect-lichess-card">
+                <div class="card connect-chesscom-card">
                     <div class="card-body p-4">
                         <div class="row align-items-center">
                             <div class="col-md-8">
                                 <h4 class="mb-2">
-                                    <i class="fab fa-lichess me-2 text-warning"></i>
-                                    Conectar ao Lichess
+                                    <i class="fas fa-chess-pawn me-2 text-success"></i>
+                                    Conectar ao Chess.com
                                 </h4>
                                 <p class="mb-3 text-muted">
-                                    Conecte sua conta Lichess para sincronizar ratings, participar de torneios 
-                                    e acompanhar suas estatísticas em tempo real.
+                                    Informe seu usuário do Chess.com para sincronizar seus ratings
+                                    e acompanhar suas estatísticas.
                                 </p>
                                 <div class="connect-benefits mb-3">
                                     <small class="d-block mb-1">
@@ -56,19 +56,26 @@
                                     </small>
                                     <small class="d-block mb-1">
                                         <i class="fas fa-check text-success me-2"></i>
-                                        Participação em torneios do clube
+                                        Ranking do clube baseado no seu desempenho
                                     </small>
                                     <small class="d-block">
                                         <i class="fas fa-check text-success me-2"></i>
-                                        Histórico completo de partidas
+                                        Estatísticas de Bullet, Blitz e Rápidas
                                     </small>
                                 </div>
                             </div>
-                            <div class="col-md-4 text-center">
-                                <a href="{% url 'connect_lichess' %}" class="btn btn-gold btn-lg">
-                                    <i class="fab fa-lichess me-2"></i>
-                                    Conectar Agora
-                                </a>
+                            <div class="col-md-4">
+                                <form method="post" action="{% url 'conectar_chesscom' %}">
+                                    {% csrf_token %}
+                                    <div class="mb-2">
+                                        <input type="text" name="chesscom_username" class="form-control"
+                                               placeholder="Seu usuário no Chess.com" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-gold btn-lg w-100">
+                                        <i class="fas fa-link me-2"></i>
+                                        Conectar Agora
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -76,7 +83,7 @@
             </div>
         </div>
     {% else %}
-        <!-- Seção de Ratings e Atualização -->
+        <!-- Seção de Ratings -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
@@ -84,77 +91,71 @@
                         <div>
                             <h5 class="mb-0">
                                 <i class="fas fa-chart-line me-2"></i>
-                                Seus Ratings no Lichess
+                                Seus Ratings no Chess.com
+                                <small class="text-muted ms-2">({{ user.chesscom_username }})</small>
                             </h5>
                         </div>
-                        <a href="{% url 'atualizar_dados_lichess' %}" class="btn btn-sm btn-gold">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Atualizar
-                        </a>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="https://www.chess.com/member/{{ user.chesscom_username }}" target="_blank"
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-external-link-alt me-1"></i>Perfil
+                            </a>
+                            <a href="{% url 'atualizar_dados_chesscom' %}" class="btn btn-sm btn-gold">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Atualizar
+                            </a>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="ratings-modern-grid">
-                            {% if perfil_lichess.bullet_rating %}
+                            {% if perfil_chesscom.bullet_rating %}
                                 <div class="rating-card-modern bullet">
                                     <div class="rating-icon">
                                         <i class="fas fa-bolt"></i>
                                     </div>
                                     <div class="rating-content">
                                         <h6 class="rating-type">Bullet</h6>
-                                        <div class="rating-value">{{ perfil_lichess.bullet_rating }}</div>
-                                        <small class="rating-games">{{ perfil_lichess.bullet_games_played|default:0 }} jogos</small>
+                                        <div class="rating-value">{{ perfil_chesscom.bullet_rating }}</div>
+                                        <small class="rating-games">{{ perfil_chesscom.bullet_games_played|default:0 }} jogos</small>
                                     </div>
                                 </div>
                             {% endif %}
                             
-                            {% if perfil_lichess.blitz_rating %}
+                            {% if perfil_chesscom.blitz_rating %}
                                 <div class="rating-card-modern blitz">
                                     <div class="rating-icon">
-                                        <i class="fas fa-zap"></i>
+                                        <i class="fas fa-forward"></i>
                                     </div>
                                     <div class="rating-content">
                                         <h6 class="rating-type">Blitz</h6>
-                                        <div class="rating-value">{{ perfil_lichess.blitz_rating }}</div>
-                                        <small class="rating-games">{{ perfil_lichess.blitz_games_played|default:0 }} jogos</small>
+                                        <div class="rating-value">{{ perfil_chesscom.blitz_rating }}</div>
+                                        <small class="rating-games">{{ perfil_chesscom.blitz_games_played|default:0 }} jogos</small>
                                     </div>
                                 </div>
                             {% endif %}
                             
-                            {% if perfil_lichess.rapid_rating %}
+                            {% if perfil_chesscom.rapid_rating %}
                                 <div class="rating-card-modern rapid">
                                     <div class="rating-icon">
                                         <i class="fas fa-clock"></i>
                                     </div>
                                     <div class="rating-content">
-                                        <h6 class="rating-type">Rapid</h6>
-                                        <div class="rating-value">{{ perfil_lichess.rapid_rating }}</div>
-                                        <small class="rating-games">{{ perfil_lichess.rapid_games_played|default:0 }} jogos</small>
+                                        <h6 class="rating-type">Rápidas</h6>
+                                        <div class="rating-value">{{ perfil_chesscom.rapid_rating }}</div>
+                                        <small class="rating-games">{{ perfil_chesscom.rapid_games_played|default:0 }} jogos</small>
                                     </div>
                                 </div>
                             {% endif %}
                             
-                            {% if perfil_lichess.classical_rating %}
-                                <div class="rating-card-modern classical">
-                                    <div class="rating-icon">
-                                        <i class="fas fa-hourglass-half"></i>
-                                    </div>
-                                    <div class="rating-content">
-                                        <h6 class="rating-type">Classical</h6>
-                                        <div class="rating-value">{{ perfil_lichess.classical_rating }}</div>
-                                        <small class="rating-games">{{ perfil_lichess.classical_games_played|default:0 }} jogos</small>
-                                    </div>
-                                </div>
-                            {% endif %}
-                            
-                            {% if perfil_lichess.puzzles_rating %}
+                            {% if perfil_chesscom.tactics_highest %}
                                 <div class="rating-card-modern puzzles">
                                     <div class="rating-icon">
                                         <i class="fas fa-puzzle-piece"></i>
                                     </div>
                                     <div class="rating-content">
-                                        <h6 class="rating-type">Puzzles</h6>
-                                        <div class="rating-value">{{ perfil_lichess.puzzles_rating }}</div>
-                                        <small class="rating-games">{{ perfil_lichess.puzzles_solved|default:0 }} resolvidos</small>
+                                        <h6 class="rating-type">Problemas</h6>
+                                        <div class="rating-value">{{ perfil_chesscom.tactics_highest }}</div>
+                                        <small class="rating-games">maior rating</small>
                                     </div>
                                 </div>
                             {% endif %}
@@ -162,95 +163,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Seção de Jogos -->
-        <div class="row mb-4">
-            {% if current_games %}
-            <div class="col-lg-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-play-circle me-2"></i>
-                            Jogos Atuais
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="games-modern-list">
-                            {% for game in current_games %}
-                            <div class="game-modern-card">
-                                <div class="game-players">
-                                    <div class="player white">
-                                        <span class="player-name">{{ game.white.name }}</span>
-                                        <small class="player-rating">({{ game.white.rating }})</small>
-                                    </div>
-                                    <div class="vs-divider">
-                                        <i class="fas fa-chess"></i>
-                                    </div>
-                                    <div class="player black">
-                                        <span class="player-name">{{ game.black.name }}</span>
-                                        <small class="player-rating">({{ game.black.rating }})</small>
-                                    </div>
-                                </div>
-                                <div class="game-meta">
-                                    <span class="game-speed">{{ game.speed|title }}</span>
-                                    <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-sm btn-outline">
-                                        <i class="fas fa-external-link-alt me-1"></i>Ver
-                                    </a>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            
-            {% if recent_games %}
-            <div class="col-lg-{% if current_games %}6{% else %}12{% endif %} mb-3">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-history me-2"></i>
-                            Jogos Recentes
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="games-modern-list">
-                            {% for game in recent_games %}
-                            <div class="game-modern-card">
-                                <div class="game-players">
-                                    <div class="player white">
-                                        <span class="player-name">{{ game.white.name }}</span>
-                                        <small class="player-rating">({{ game.white.rating }})</small>
-                                    </div>
-                                    <div class="vs-divider">
-                                        {% if game.winner == 'white' %}
-                                            <i class="fas fa-crown text-warning"></i>
-                                        {% elif game.winner == 'black' %}
-                                            <i class="fas fa-crown text-dark"></i>
-                                        {% else %}
-                                            <i class="fas fa-handshake text-muted"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="player black">
-                                        <span class="player-name">{{ game.black.name }}</span>
-                                        <small class="player-rating">({{ game.black.rating }})</small>
-                                    </div>
-                                </div>
-                                <div class="game-meta">
-                                    <span class="game-speed">{{ game.speed|title }}</span>
-                                    <a href="https://lichess.org/{{ game.id }}" target="_blank" class="btn btn-sm btn-outline">
-                                        <i class="fas fa-external-link-alt me-1"></i>Ver
-                                    </a>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     {% endif %}
 
@@ -267,7 +179,6 @@
                 <div class="card-body">
                     <div class="row">
                         {% if user.is_staff or user.is_superuser %}
-                            <!-- Admin: Mostra todos os sistemas -->
                             <div class="col-md-4 mb-3">
                                 <a href="{% url 'socios:dashboard' %}" class="system-card-link">
                                     <div class="system-card">
@@ -319,7 +230,6 @@
                                 </a>
                             </div>
                         {% else %}
-                            <!-- Usuário comum: Mostra apenas a loja -->
                             <div class="col-md-4 mb-3">
                                 <a href="{% url 'shop:product_list' %}" class="system-card-link">
                                     <div class="system-card">
@@ -365,10 +275,10 @@
                                         <i class="fas fa-user me-1"></i>Jogador
                                     </th>
                                     <th class="border-0">
-                                        <i class="fas fa-clock me-1"></i>Rapid
+                                        <i class="fas fa-clock me-1"></i>Rápidas
                                     </th>
                                     <th class="border-0">
-                                        <i class="fas fa-zap me-1"></i>Blitz
+                                        <i class="fas fa-forward me-1"></i>Blitz
                                     </th>
                                     <th class="border-0">
                                         <i class="fas fa-bolt me-1"></i>Bullet
@@ -397,6 +307,12 @@
                                             <strong>{{ player.username }}</strong>
                                             {% if player.username == user.username %}
                                                 <small class="ms-2 text-muted">(Você)</small>
+                                            {% endif %}
+                                            {% if player.chesscom_username %}
+                                                <a href="https://www.chess.com/member/{{ player.chesscom_username }}" target="_blank"
+                                                   class="ms-2 text-muted" title="Ver perfil no Chess.com">
+                                                    <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>
+                                                </a>
                                             {% endif %}
                                         </div>
                                     </td>
@@ -428,13 +344,11 @@
 </div>
 
 <style>
-    /* Dashboard Específico */
     .dashboard-modern {
         max-width: 1400px;
         margin: 0 auto;
     }
 
-    /* Welcome Card */
     .welcome-card {
         background: var(--gradient-primary);
         color: var(--white);
@@ -463,14 +377,13 @@
         color: var(--gold-color) !important;
     }
 
-    /* Connect Lichess Card */
-    .connect-lichess-card {
+    .connect-chesscom-card {
         background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
         border: 2px dashed var(--gray-300);
         transition: all var(--transition-normal);
     }
 
-    .connect-lichess-card:hover {
+    .connect-chesscom-card:hover {
         border-color: var(--gold-color);
         transform: translateY(-2px);
     }
@@ -482,7 +395,6 @@
         border-left: 4px solid var(--success-color);
     }
 
-    /* Ratings Grid Moderno */
     .ratings-modern-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -569,73 +481,6 @@
         font-size: 0.85rem;
     }
 
-    /* Games Lists */
-    .games-modern-list {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-
-    .game-modern-card {
-        background: var(--light-gray);
-        border-radius: var(--radius-md);
-        padding: 1rem;
-        margin-bottom: 1rem;
-        transition: all var(--transition-fast);
-    }
-
-    .game-modern-card:last-child {
-        margin-bottom: 0;
-    }
-
-    .game-modern-card:hover {
-        background: var(--white);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .game-players {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 0.75rem;
-    }
-
-    .player {
-        flex: 1;
-        text-align: center;
-    }
-
-    .player-name {
-        font-weight: 600;
-        display: block;
-    }
-
-    .player-rating {
-        color: var(--gray-600);
-        font-size: 0.85rem;
-    }
-
-    .vs-divider {
-        margin: 0 1rem;
-        font-size: 1.2rem;
-        color: var(--gray-600);
-    }
-
-    .game-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .game-speed {
-        background: var(--primary-color);
-        color: var(--white);
-        padding: 0.25rem 0.5rem;
-        border-radius: var(--radius-sm);
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-
-    /* Ranking Table */
     .table {
         margin-bottom: 0;
     }
@@ -683,7 +528,6 @@
         height: 24px;
     }
 
-    /* System Cards */
     .system-card-link {
         text-decoration: none;
         color: inherit;
@@ -753,7 +597,6 @@
         color: var(--gray-500);
     }
 
-    /* Responsividade */
     @media (max-width: 768px) {
         .welcome-title {
             font-size: 1.75rem;
@@ -770,15 +613,6 @@
         
         .rating-value {
             font-size: 1.5rem;
-        }
-        
-        .game-players {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .vs-divider {
-            margin: 0;
         }
 
         .system-card {

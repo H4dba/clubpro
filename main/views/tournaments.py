@@ -4,7 +4,6 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from ..models import Tournament
 from ..forms import TournamentForm
-from services.LichessService import LichessApi
 
 def is_tournament_manager(user):
     return user.is_authenticated
@@ -23,41 +22,15 @@ def tournament_create(request):
         if form.is_valid():
             tournament = form.save(commit=False)
             tournament.created_by = request.user
+            tournament.status = 'pending'
+            tournament.save()
             
-            if tournament.tournament_type.startswith('internal_'):
-                tournament.is_lichess = False
-                tournament.status = 'pending'
-                tournament.save()
-                
-                # Add participants
-                participants = form.cleaned_data.get('participants', [])
-                for user in participants:
-                    tournament.participants.create(player=user, name=f"__user_{user.id}__")
-                
-                messages.success(request, 'Tournament created successfully!')
-                return redirect('main:tournament_detail', pk=tournament.id)
-            else:
-                try:
-                    lichess_api = LichessApi(request.user.lichess_access_token)
-                    tournament_data = {
-                        'name': tournament.name,
-                        'clock_limit': tournament.clock_limit,
-                        'clock_increment': tournament.clock_increment,
-                        'minutes': tournament.minutes,
-                        'start_time': tournament.start_time,
-                        'description': tournament.description,
-                    }
-                    
-                    lichess_response = lichess_api.create_tournament(tournament_data)
-                    tournament.lichess_id = lichess_response['id']
-                    tournament.status = 'created'
-                    tournament.save()
-                    
-                    messages.success(request, 'Tournament created successfully on Lichess!')
-                    return redirect('main:tournament_dashboard')
-                    
-                except Exception as e:
-                    messages.error(request, f'Failed to create tournament on Lichess: {str(e)}')
+            participants = form.cleaned_data.get('participants', [])
+            for user in participants:
+                tournament.participants.create(player=user, name=f"__user_{user.id}__")
+            
+            messages.success(request, 'Torneio criado com sucesso!')
+            return redirect('main:tournament_detail', pk=tournament.id)
     else:
         form = TournamentForm()
     
@@ -70,7 +43,6 @@ def tournament_create(request):
 def tournament_detail(request, pk):
     tournament = get_object_or_404(Tournament, pk=pk)
     
-    # Get all users except those already participating
     available_users = get_user_model().objects.exclude(
         id__in=tournament.participants.filter(player__isnull=False).values_list('player_id', flat=True)
     )
@@ -89,7 +61,6 @@ def tournament_detail(request, pk):
             player_name = request.POST.get('player_name')
             player_rating = request.POST.get('player_rating')
             if player_name:
-                # Check if this name is already in use
                 if not tournament.participants.filter(name=player_name).exists():
                     tournament.participants.create(
                         name=player_name,
@@ -128,11 +99,8 @@ def tournament_edit(request, pk):
         if form.is_valid():
             tournament = form.save()
             
-            # Update participants if provided
             if form.cleaned_data.get('participants'):
-                # Remove existing participants
                 tournament.participants.all().delete()
-                # Add new participants
                 for user in form.cleaned_data['participants']:
                     tournament.participants.create(player=user, name=f"__user_{user.id}__")
             
@@ -140,7 +108,6 @@ def tournament_edit(request, pk):
             return redirect('main:tournament_detail', pk=tournament.id)
     else:
         form = TournamentForm(instance=tournament)
-        # Pre-select current participants
         form.fields['participants'].initial = [p.player.id for p in tournament.participants.all()]
     
     return render(request, 'tournament_form.html', {

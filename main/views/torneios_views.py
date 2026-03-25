@@ -96,7 +96,7 @@ def torneios_anunciar(request):
         if form.is_valid():
             torneio = form.save(commit=False)
             torneio.created_by = request.user
-            torneio.is_lichess = False
+            torneio.is_online = False
             torneio.status = 'pending'
             torneio.save()
             messages.success(request, f'Torneio "{torneio.name}" anunciado com sucesso!')

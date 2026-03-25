@@ -135,6 +135,7 @@ class SocioForm(forms.ModelForm):
         self.fields['profissao'].required = False
         self.fields['aceita_emails'].required = False
         self.fields['aceita_whatsapp'].required = False
+
     
     class Meta:
         model = Socio

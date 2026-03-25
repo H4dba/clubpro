@@ -50,11 +50,11 @@
                         {% if tournament.status == 'pending' %}
                             <a href="{% url 'main:tournament_edit' tournament.pk %}" class="btn btn-sm btn-secondary">Edit</a>
                         {% endif %}
-                        {% if tournament.lichess_id %}
-                            <a href="https://lichess.org/tournament/{{ tournament.lichess_id }}" 
+                        {% if tournament.external_url %}
+                            <a href="{{ tournament.external_url }}" 
                                target="_blank" 
                                class="btn btn-sm btn-secondary">
-                                View on Lichess
+                                Ver Online
                             </a>
                         {% endif %}
                     </td>

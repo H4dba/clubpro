@@ -20,7 +20,7 @@ class Tournament(models.Model):
 
     STATUS_CHOICES = [
         ('pending', 'Pendente'),
-        ('created', 'Criado no Lichess'),
+        ('created', 'Criado'),
         ('in_progress', 'Em Andamento'),
         ('started', 'Iniciado'),
         ('finished', 'Finalizado'),
@@ -38,12 +38,12 @@ class Tournament(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    lichess_id = models.CharField(max_length=100, blank=True, null=True)
+    external_url = models.URLField(blank=True, verbose_name="Link Externo do Torneio")
     is_private = models.BooleanField(default=False, verbose_name="Torneio Privado")
     password = models.CharField(max_length=50, blank=True, verbose_name="Senha")
     min_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Mínimo")
     max_rating = models.IntegerField(null=True, blank=True, verbose_name="Rating Máximo")
-    is_lichess = models.BooleanField(default=True, verbose_name="Torneio do Lichess")
+    is_online = models.BooleanField(default=False, verbose_name="Torneio Online")
     prize = models.TextField(blank=True, verbose_name="Premiação")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Valor da Inscrição")
     rules_pdf = models.FileField(upload_to='tournament_rules/', blank=True, null=True, verbose_name="Regulamento (PDF)")

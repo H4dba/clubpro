@@ -7,9 +7,9 @@ urlpatterns = [
     path("logout/", custom_logout, name="logout"),
     path("register/", register_view, name="register"),
     path("landing-page/", landing_page, name="landing-page"),
-    #path("user_info/", teste_lichess, name="teste_lichess"),
-    path('connect-lichess/', connect_lichess, name='connect_lichess'),
-    path('lichess-callback/', lichess_callback, name='lichess_callback'),
-    path('atualizar-lichess/', atualizar_dados_lichess, name='atualizar_dados_lichess'),
+    path('conectar-chesscom/', conectar_chesscom, name='conectar_chesscom'),
+    path('atualizar-chesscom/', atualizar_dados_chesscom, name='atualizar_dados_chesscom'),
+    path('admin/usuarios/', admin_users_list, name='admin_users_list'),
+    path('admin/usuarios/<int:user_id>/editar/', admin_user_edit, name='admin_user_edit'),
     path('dashboard/', dashboard, name='dashboard'),
 ]
