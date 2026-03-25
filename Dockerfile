@@ -19,23 +19,11 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy wait script
+# Copy helper scripts
 COPY wait-for-db.py /usr/local/bin/wait-for-db.py
-RUN chmod +x /usr/local/bin/wait-for-db.py
-
-# Create entrypoint script
-RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
-    echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'cd /app' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'echo "Waiting for postgres..."' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'python /usr/local/bin/wait-for-db.py' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'echo "Running migrations..."' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'python manage.py migrate --noinput' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'echo "Collecting static files..."' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'python manage.py collectstatic --noinput || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'echo "Starting server..."' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'exec "$@"' >> /usr/local/bin/docker-entrypoint.sh && \
-    chmod +x /usr/local/bin/docker-entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN dos2unix /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/wait-for-db.py /usr/local/bin/docker-entrypoint.sh
 
 # Copy project
 COPY . /app/

@@ -1,0 +1,5 @@
+# Ensure shell scripts always use LF line endings (important for Docker on Windows)
+*.sh text eol=lf
+
+# Default behaviour
+* text=auto
