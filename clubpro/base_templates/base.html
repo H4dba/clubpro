@@ -7,6 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AXM - Academia de Xadrez de Maricá{% endblock %}</title>
 
+    <!-- Favicon -->
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/axm-logo.png' %}">
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -302,7 +306,6 @@
     <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'landing-page' %}">
-                {% load static %}
                 <img src="{% static 'images/axm-logo.png' %}" alt="AXM Logo" class="logo" onerror="this.style.display='none';">
                 <span>AXM</span>
             </a>
