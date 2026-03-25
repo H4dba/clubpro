@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+
+{% block title %}Administração de Usuários - AXM{% endblock %}
+
+{% block content %}
+<div class="admin-users fade-in-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="page-title">
+                            <i class="fas fa-users-cog text-gold me-3"></i>
+                            Usuários do Sistema
+                        </h1>
+                        <p class="page-subtitle">Gerencie as contas de acesso e permissões dos usuários</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="filters-form">
+                        <div class="row align-items-end">
+                            <div class="col-lg-8 col-md-8 mb-3">
+                                <label for="q" class="form-label">Buscar Usuário</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="q"
+                                           name="q"
+                                           value="{{ query }}"
+                                           placeholder="Usuário, nome, e-mail ou nick Chess.com...">
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 mb-3">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary flex-fill">
+                                        <i class="fas fa-filter me-1"></i>
+                                        Filtrar
+                                    </button>
+                                    <a href="{% url 'admin_users_list' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>
+                                        Limpar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Usuários -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                <i class="fas fa-list me-2"></i>
+                Lista de Usuários
+                {% if query %}
+                    <span class="badge bg-warning ms-2">Filtrado: "{{ query }}"</span>
+                {% endif %}
+            </span>
+            <span class="badge bg-light text-dark">{{ page_obj.paginator.count }} usuário(s)</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-3">Usuário</th>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Chess.com</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Permissão</th>
+                        <th class="text-end pe-3">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <strong>{{ item.username }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ item.get_full_name|default:"-" }}</td>
+                        <td>
+                            <a href="mailto:{{ item.email }}" class="text-decoration-none text-muted">
+                                {{ item.email|default:"-" }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if item.chesscom_username %}
+                                <a href="https://www.chess.com/member/{{ item.chesscom_username }}"
+                                   target="_blank"
+                                   class="text-decoration-none">
+                                    <i class="fas fa-chess me-1 text-muted"></i>{{ item.chesscom_username }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if not item.is_active %}
+                                <span class="badge bg-danger">Inativo</span>
+                            {% elif item.is_chesscom_connected %}
+                                <span class="badge bg-success">Conectado</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Ativo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if item.is_superuser %}
+                                <span class="badge bg-danger">Superuser</span>
+                            {% elif item.is_staff %}
+                                <span class="badge bg-warning text-dark">Staff</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">Membro</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'admin_user_edit' item.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">Nenhum usuário encontrado.</p>
+                                {% if query %}
+                                    <a href="{% url 'admin_users_list' %}" class="btn btn-sm btn-outline-secondary mt-2">
+                                        <i class="fas fa-times me-1"></i>Limpar filtro
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-chevron-left me-1"></i>Anterior
+                    </a>
+                </li>
+            {% endif %}
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&page={{ page_obj.next_page_number }}">
+                        Próxima<i class="fas fa-chevron-right ms-1"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .admin-users {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .text-gold {
+        color: var(--gold-color) !important;
+    }
+
+    .card-header {
+        background: var(--gradient-primary);
+        color: var(--white);
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: none;
+        padding: 1rem 0.75rem;
+    }
+
+    .table tbody td {
+        padding: 0.875rem 0.75rem;
+        vertical-align: middle;
+        border-color: var(--gray-200);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--primary-rgb, 26, 26, 46), 0.04);
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filters-form .form-label {
+        font-weight: 600;
+        color: var(--gray-700, #495057);
+        margin-bottom: 0.5rem;
+    }
+
+    .pagination .page-link {
+        border-radius: var(--radius-md);
+        margin: 0 0.2rem;
+        border: 1px solid var(--gray-300);
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: transparent;
+        color: var(--gray-600);
+    }
+</style>
+{% endblock %}
