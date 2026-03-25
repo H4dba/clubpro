@@ -379,9 +379,24 @@
                         <i class="fas fa-map-marker-alt text-gold me-2"></i>
                         Localização
                     </h3>
-                    <p class="mb-3">
+                    <p class="mb-2">
                         <strong>Academia de Xadrez de Maricá</strong><br>
-                        Maricá, Rio de Janeiro
+                        {{ axm_maps_address }}
+                    </p>
+                    <div class="map-embed rounded shadow-sm border mb-2">
+                        <iframe
+                            title="Localização da Academia de Xadrez de Maricá no Google Maps"
+                            src="{{ maps_embed_src }}"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                    <p class="mb-3">
+                        <a href="{{ maps_open_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-google me-1"></i>
+                            Abrir no Google Maps
+                        </a>
                     </p>
                     <p class="text-muted">
                         Entre em contato conosco para mais informações sobre localização, 
@@ -907,6 +922,24 @@
     .contact-section {
         padding: 4rem 0;
         background: var(--light-gray);
+    }
+
+    .contact-section .map-embed {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        margin-top: 0.25rem;
+        overflow: hidden;
+        background: var(--gray-200);
+    }
+
+    .contact-section .map-embed iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
     }
 
     /* Mobile-First Responsive Styles */

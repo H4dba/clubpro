@@ -199,3 +199,10 @@ HOST = os.getenv('HOST', 'localhost')
 PROTOCOL = 'https' if USE_SSL else 'http'
 LICHESS_REDIRECT_URI = f'{PROTOCOL}://{HOST}/users/lichess-callback/'
 LICHESS_CLIENT_ID = f'{PROTOCOL}://{HOST}'
+
+# Landing page — Google Maps (optional embed src from Maps → Share → Embed a map)
+AXM_MAPS_ADDRESS = os.getenv(
+    'AXM_MAPS_ADDRESS',
+    'Rua Prefeito Hilário Costa e Silva, 143, Centro Maricá, RJ, Brasil',
+)
+GOOGLE_MAPS_EMBED_SRC = os.getenv('GOOGLE_MAPS_EMBED_SRC', '').strip()

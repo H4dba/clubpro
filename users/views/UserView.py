@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from urllib.parse import quote
 
+from django.conf import settings
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
@@ -92,11 +93,21 @@ def landing_page(request):
     except:
         pass
     
+    address = settings.AXM_MAPS_ADDRESS
+    q = quote(address)
+    maps_open_url = f'https://www.google.com/maps/search/?api=1&query={q}'
+    maps_embed_src = settings.GOOGLE_MAPS_EMBED_SRC or (
+        f'https://maps.google.com/maps?q={q}&hl=pt-BR&z=17&output=embed'
+    )
+
     context = {
         'recent_tournaments': recent_tournaments,
         'featured_products': featured_products,
+        'axm_maps_address': address,
+        'maps_open_url': maps_open_url,
+        'maps_embed_src': maps_embed_src,
     }
-    
+
     return render(request, "landing-page.html", context)
 
 def custom_logout(request):
