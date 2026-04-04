@@ -42,4 +42,9 @@ urlpatterns = [
     path('associar-se/', views_enhanced.registro_socio, name='registro_socio'),
     path('meu-perfil/', views_enhanced.member_portal, name='member_portal'),
     path('meu-perfil/atualizar/', views_enhanced.member_update_info, name='member_update_info'),
+
+    # AbacatePay payment flow
+    path('pagamento/aguardando/<int:socio_id>/', views.pagamento_aguardando, name='pagamento_aguardando'),
+    path('pagamento/verificar/<int:socio_id>/', views.verificar_pagamento, name='verificar_pagamento'),
+    path('pagamento/webhook/', views.pagamento_webhook, name='pagamento_webhook'),
 ]

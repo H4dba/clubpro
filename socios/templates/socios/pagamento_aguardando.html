@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Aguardando Pagamento - AXM{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+
+            {% if ja_pago %}
+            {# Webhook already activated the account #}
+            <div class="card border-0 shadow text-center">
+                <div class="card-body py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle fa-5x text-success"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Pagamento confirmado!</h2>
+                    <p class="text-muted mb-4">
+                        Seu cadastro como sócio foi ativado com sucesso.<br>
+                        Bem-vindo(a), <strong>{{ socio.nome_exibicao }}</strong>!
+                    </p>
+                    <a href="{% url 'socios:member_portal' %}" class="btn btn-success btn-lg px-5">
+                        <i class="fas fa-id-card me-2"></i>Ver meu perfil de sócio
+                    </a>
+                </div>
+            </div>
+
+            {% elif socio.status == 'ativo' %}
+            {# Activated by some other means #}
+            <div class="card border-0 shadow text-center">
+                <div class="card-body py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle fa-5x text-success"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Cadastro ativo!</h2>
+                    <p class="text-muted mb-4">
+                        Seu cadastro já está ativo. Bem-vindo(a), <strong>{{ socio.nome_exibicao }}</strong>!
+                    </p>
+                    <a href="{% url 'socios:member_portal' %}" class="btn btn-success btn-lg px-5">
+                        <i class="fas fa-id-card me-2"></i>Ver meu perfil de sócio
+                    </a>
+                </div>
+            </div>
+
+            {% else %}
+            {# Payment still pending #}
+            <div class="card border-0 shadow text-center">
+                <div class="card-body py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-clock fa-5x text-warning"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Aguardando pagamento</h2>
+                    <p class="text-muted mb-3">
+                        Olá, <strong>{{ socio.nome_exibicao }}</strong>!<br>
+                        Seu cadastro foi criado mas ainda não recebemos a confirmação do pagamento.
+                    </p>
+
+                    {% if cobranca %}
+                    <div class="alert alert-info text-start mb-4">
+                        <p class="mb-1"><strong>Valor:</strong> R$ {{ cobranca.valor }}</p>
+                        <p class="mb-0"><strong>Referência:</strong> {{ cobranca.billing_id }}</p>
+                    </div>
+
+                    <a href="{{ cobranca.billing_url }}" class="btn btn-primary btn-lg px-5 mb-3">
+                        <i class="fas fa-credit-card me-2"></i>Pagar agora
+                    </a>
+                    <br>
+                    {% endif %}
+
+                    <p class="small text-muted mb-4">
+                        Se você já realizou o pagamento, clique no botão abaixo para consultar
+                        o status diretamente na plataforma de pagamento.
+                    </p>
+
+                    <form method="post" action="{% url 'socios:verificar_pagamento' socio.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-sync-alt me-2"></i>Verificar novamente
+                        </button>
+                    </form>
+
+                    <div class="mt-4">
+                        <a href="{% url 'dashboard' %}" class="text-muted small">
+                            <i class="fas fa-home me-1"></i>Voltar ao início
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

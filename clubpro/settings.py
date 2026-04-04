@@ -33,12 +33,14 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.app',  # Trust all ngrok-free.app subdomains
     'https://clubpro.onrender.com',
+    'https://935b-168-121-201-241.ngrok-free.app'
 ]
 
 # If you're using CORS headers, also add:
 CORS_ALLOWED_ORIGINS = [
     'https://*.ngrok-free.app',
     'https://clubpro.onrender.com',
+    'https://935b-168-121-201-241.ngrok-free.app'
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -194,6 +196,10 @@ LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = '/users/login/'
 HOST = os.getenv('HOST', 'localhost')
 PROTOCOL = 'https' if USE_SSL else 'http'
+
+# AbacatePay
+ABACATEPAY_API_KEY = os.getenv('ABACATEPAY_API_KEY', '')
+ABACATEPAY_WEBHOOK_SECRET = os.getenv('ABACATEPAY_WEBHOOK_SECRET', '')
 
 # Landing page — Google Maps (optional embed src from Maps → Share → Embed a map)
 AXM_MAPS_ADDRESS = os.getenv(

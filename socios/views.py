@@ -1,16 +1,23 @@
+import json
+import logging
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Sum, F
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from .models import Socio, TipoAssinatura, DocumentoSocio, HistoricoPagamento
+from .models import Socio, TipoAssinatura, DocumentoSocio, HistoricoPagamento, CobrancaAbacatePay
 from .forms import SocioForm, TipoAssinaturaForm, DocumentoSocioForm, HistoricoPagamentoForm
+
+logger = logging.getLogger(__name__)
 
 
 def is_admin_or_manager(user):
@@ -861,3 +868,141 @@ def atualizar_status_socio(request, socio_id):
             })
     
     return JsonResponse({'success': False, 'message': 'Erro ao atualizar status'})
+
+
+# ---------------------------------------------------------------------------
+# AbacatePay – payment pending page & webhook
+# ---------------------------------------------------------------------------
+
+@login_required
+def verificar_pagamento(request, socio_id):
+    """
+    Called when the user clicks 'Verificar novamente'.
+    Polls AbacatePay's billing list for the latest status and activates the
+    socio immediately if the payment is confirmed, then redirects back to the
+    waiting page (which will render the success state).
+    """
+    from .services import verificar_status_cobranca
+
+    socio = get_object_or_404(Socio, id=socio_id, usuario=request.user)
+    cobranca = CobrancaAbacatePay.objects.filter(socio=socio).order_by('-created_at').first()
+
+    if not cobranca:
+        messages.warning(request, 'Nenhuma cobrança encontrada para este cadastro.')
+        return redirect('socios:pagamento_aguardando', socio_id=socio_id)
+
+    if cobranca.status == CobrancaAbacatePay.STATUS_PAGO:
+        # Already marked as paid locally — nothing to do
+        return redirect('socios:pagamento_aguardando', socio_id=socio_id)
+
+    try:
+        status = verificar_status_cobranca(cobranca.billing_id)
+    except Exception as exc:
+        logger.error("Erro ao verificar status da cobrança %s: %s", cobranca.billing_id, exc)
+        messages.error(request, 'Não foi possível consultar o status do pagamento. Tente novamente em instantes.')
+        return redirect('socios:pagamento_aguardando', socio_id=socio_id)
+
+    if status == 'PAID':
+        _ativar_socio_apos_pagamento(cobranca)
+        messages.success(request, 'Pagamento confirmado! Seu cadastro foi ativado.')
+    else:
+        messages.info(request, f'Pagamento ainda não confirmado (status: {status or "desconhecido"}). Tente novamente em alguns instantes.')
+
+    return redirect('socios:pagamento_aguardando', socio_id=socio_id)
+
+
+@login_required
+def pagamento_aguardando(request, socio_id):
+    """Page shown after the user returns from AbacatePay payment page."""
+    socio = get_object_or_404(Socio, id=socio_id, usuario=request.user)
+    cobranca = CobrancaAbacatePay.objects.filter(socio=socio).order_by('-created_at').first()
+
+    # Refresh status from DB (webhook may have already activated the socio)
+    socio.refresh_from_db()
+
+    context = {
+        'socio': socio,
+        'cobranca': cobranca,
+        'ja_pago': socio.status == 'ativo' and (cobranca and cobranca.status == CobrancaAbacatePay.STATUS_PAGO),
+    }
+    return render(request, 'socios/pagamento_aguardando.html', context)
+
+
+@csrf_exempt
+@require_POST
+def pagamento_webhook(request):
+    """
+    AbacatePay completion_url webhook.
+    Called by AbacatePay when a billing is paid.
+    """
+    from django.conf import settings as django_settings
+
+    expected_secret = django_settings.ABACATEPAY_WEBHOOK_SECRET
+    received_secret = request.GET.get('webhookSecret', '')
+    if not expected_secret or received_secret != expected_secret:
+        logger.warning("AbacatePay webhook: invalid or missing secret")
+        return HttpResponse(status=403)
+
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        logger.warning("AbacatePay webhook: invalid JSON payload")
+        return HttpResponse(status=400)
+
+    # AbacatePay v1 format: {"event": "billing.paid", "data": {"id": ..., "status": ...}}
+    # Fallback: billing object sent directly or under 'billing'
+    billing_data = payload.get('data') or payload.get('billing') or payload
+    billing_id = billing_data.get('id') or ''
+    status = (billing_data.get('status') or '').upper()
+
+    logger.info("AbacatePay webhook: billing_id=%s status=%s", billing_id, status)
+
+    if not billing_id:
+        return HttpResponse(status=400)
+
+    try:
+        cobranca = CobrancaAbacatePay.objects.select_related('socio__tipo_assinatura').get(
+            billing_id=billing_id
+        )
+    except CobrancaAbacatePay.DoesNotExist:
+        logger.warning("AbacatePay webhook: cobranca not found for billing_id=%s", billing_id)
+        return HttpResponse(status=404)
+
+    if status == 'PAID' and cobranca.status != CobrancaAbacatePay.STATUS_PAGO:
+        _ativar_socio_apos_pagamento(cobranca)
+
+    return HttpResponse(status=200)
+
+
+def _ativar_socio_apos_pagamento(cobranca: CobrancaAbacatePay) -> None:
+    """Activates the socio and records the payment after AbacatePay confirms payment."""
+    socio = cobranca.socio
+    hoje = timezone.now().date()
+
+    socio.status = 'ativo'
+    socio.data_associacao = hoje
+
+    if socio.tipo_assinatura:
+        socio.data_vencimento = hoje + timedelta(days=socio.tipo_assinatura.duracao_dias)
+
+    socio.save(update_fields=['status', 'data_associacao', 'data_vencimento'])
+
+    HistoricoPagamento.objects.create(
+        socio=socio,
+        data_pagamento=hoje,
+        data_vencimento=socio.data_vencimento or hoje,
+        valor=cobranca.valor,
+        mes_referencia=hoje.replace(day=1),
+        forma_pagamento='pix',
+        status='confirmado',
+        descricao=f'Pagamento via AbacatePay – cobrança {cobranca.billing_id}',
+    )
+
+    cobranca.status = CobrancaAbacatePay.STATUS_PAGO
+    cobranca.save(update_fields=['status', 'updated_at'])
+
+    logger.info(
+        "AbacatePay: socio %s ativado após pagamento da cobrança %s",
+        socio.id,
+        cobranca.billing_id,
+    )

@@ -15,10 +15,11 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import csv
 
+from django.conf import settings
 from django.contrib.auth import login, get_user_model
 from django.db import transaction, IntegrityError
 
-from .models import Socio, TipoAssinatura, DocumentoSocio, HistoricoPagamento
+from .models import Socio, TipoAssinatura, DocumentoSocio, HistoricoPagamento, CobrancaAbacatePay
 from .forms import SocioForm, SocioRegistroForm, SocioRegistroFormAnonymous
 from socios.views import is_admin_or_manager
 
@@ -223,46 +224,69 @@ def registro_socio(request):
     from types import SimpleNamespace
     from users.views.UserView import SimpleUserCreationForm
 
-    # Logado e já é sócio -> redireciona
-    if request.user.is_authenticated and Socio.objects.filter(usuario=request.user).exists():
-        messages.info(request, 'Você já é um sócio cadastrado.')
-        return redirect('socios:member_portal')
+    # Logado e já tem um registro de sócio
+    if request.user.is_authenticated:
+        try:
+            socio_existente = Socio.objects.get(usuario=request.user)
+        except Socio.DoesNotExist:
+            socio_existente = None
+
+        if socio_existente:
+            if socio_existente.status == 'pendente_pagamento':
+                # Has a pending billing — send them back to the payment page
+                return redirect('socios:pagamento_aguardando', socio_id=socio_existente.id)
+            messages.info(request, 'Você já é um sócio cadastrado.')
+            return redirect('socios:member_portal')
 
     socio_mock = SimpleNamespace(id=None, foto=None, nome_exibicao='')
     registro_socio_guest = not request.user.is_authenticated
 
     if request.method == 'POST':
         if registro_socio_guest:
-            # Visitante: validar cadastro de usuário + dados de sócio (prefixos para evitar conflito no mesmo form)
             form_user = SimpleUserCreationForm(request.POST, prefix='user')
             form = SocioRegistroFormAnonymous(request.POST, request.FILES, prefix='socio')
             if form_user.is_valid() and form.is_valid():
                 try:
-                    user = form_user.save()
+                    # Save user and socio in a transaction — login() must stay OUTSIDE
+                    # because it cycles the session key (DB write); if the transaction
+                    # were later rolled back, that session record would disappear but
+                    # request.session would still hold the new key → SessionInterrupted.
+                    with transaction.atomic():
+                        user = form_user.save()
+                        socio = form.save(commit=False)
+                        socio.usuario = user
+                        socio.created_by = user
+                        socio.nome_completo = (user.get_full_name() or user.first_name or '').strip()
+                        socio.data_nascimento = user.data_nascimento
+                        socio.telefone = (user.telefone or '').strip()
+                        socio.email = (user.email or '').strip()
+                        socio.data_associacao = timezone.now().date()
+
+                        plano = socio.tipo_assinatura
+                        precisa_pagar = plano and plano.valor_mensal > 0
+                        socio.status = 'pendente_pagamento' if precisa_pagar else 'ativo'
+
+                        for _ in range(5):
+                            try:
+                                with transaction.atomic():
+                                    socio.numero_socio = ''
+                                    socio.save()
+                                break
+                            except IntegrityError as e:
+                                if 'numero_socio' in str(e) and 'unique' in str(e).lower():
+                                    continue
+                                raise
+                        else:
+                            socio.numero_socio = str(__import__('uuid').uuid4())[:8].upper()
+                            socio.save()
+
+                    # Login and external HTTP call happen AFTER the DB transaction commits
                     login(request, user)
-                    socio = form.save(commit=False)
-                    socio.usuario = user
-                    socio.created_by = user
-                    socio.nome_completo = (user.get_full_name() or user.first_name or '').strip()
-                    socio.data_nascimento = user.data_nascimento
-                    socio.telefone = (user.telefone or '').strip()
-                    socio.email = (user.email or '').strip()
-                    socio.status = 'ativo'
-                    socio.data_associacao = timezone.now().date()
-                    for _ in range(5):
-                        try:
-                            with transaction.atomic():
-                                socio.numero_socio = ''
-                                socio.save()
-                            break
-                        except IntegrityError as e:
-                            if 'numero_socio' in str(e) and 'unique' in str(e).lower():
-                                continue
-                            raise
-                    else:
-                        socio.numero_socio = str(__import__('uuid').uuid4())[:8].upper()
-                        socio.save()
-                    messages.success(request, f'Conta e cadastro de sócio realizados com sucesso! Bem-vindo(a), {socio.nome_exibicao}.')
+
+                    if precisa_pagar:
+                        return _redirecionar_para_pagamento(request, socio, plano)
+
+                    messages.success(request, f'Conta e cadastro realizados com sucesso! Bem-vindo(a), {socio.nome_exibicao}.')
                     return redirect('socios:member_portal')
                 except Exception as e:
                     messages.error(request, f'Erro ao salvar: {str(e)}')
@@ -274,17 +298,25 @@ def registro_socio(request):
                         for error in errors:
                             messages.error(request, f'{label}: {error}')
         else:
-            # Logado: só formulário de sócio
             form = SocioRegistroForm(request.POST, request.FILES)
             form_user = None
             if form.is_valid():
                 try:
-                    socio = form.save(commit=False)
-                    socio.usuario = request.user
-                    socio.created_by = request.user
-                    socio.status = 'ativo'
-                    socio.data_associacao = timezone.now().date()
-                    socio.save()
+                    with transaction.atomic():
+                        socio = form.save(commit=False)
+                        socio.usuario = request.user
+                        socio.created_by = request.user
+                        socio.data_associacao = timezone.now().date()
+
+                        plano = socio.tipo_assinatura
+                        precisa_pagar = plano and plano.valor_mensal > 0
+                        socio.status = 'pendente_pagamento' if precisa_pagar else 'ativo'
+                        socio.save()
+
+                    # External HTTP call happens AFTER the DB transaction commits
+                    if precisa_pagar:
+                        return _redirecionar_para_pagamento(request, socio, plano)
+
                     messages.success(request, f'Cadastro realizado com sucesso! Bem-vindo(a), {socio.nome_exibicao}.')
                     return redirect('socios:member_portal')
                 except Exception as e:
@@ -328,6 +360,46 @@ def registro_socio(request):
     return render(request, 'socios/form.html', context)
 
 
+def _redirecionar_para_pagamento(request, socio, tipo_assinatura):
+    """Creates an AbacatePay billing for socio and redirects to the payment URL."""
+    from .services import criar_cobranca_associacao
+
+    protocol = settings.PROTOCOL
+    host = request.get_host()
+    base = f"{protocol}://{host}"
+
+    return_url = base + reverse('socios:pagamento_aguardando', args=[socio.id])
+    webhook_secret = settings.ABACATEPAY_WEBHOOK_SECRET
+    completion_url = base + reverse('socios:pagamento_webhook') + f'?webhookSecret={webhook_secret}'
+
+    try:
+        resultado = criar_cobranca_associacao(
+            tipo_assinatura=tipo_assinatura,
+            socio_nome=socio.nome_exibicao,
+            socio_email=socio.email or '',
+            socio_cpf=socio.cpf or '',
+            socio_telefone=(socio.celular or socio.telefone or ''),
+            return_url=return_url,
+            completion_url=completion_url,
+        )
+    except Exception as exc:
+        messages.error(
+            request,
+            f'Não foi possível iniciar o pagamento: {exc}. '
+            'Por favor, tente novamente ou entre em contato com o clube.',
+        )
+        return redirect('socios:registro_socio')
+
+    CobrancaAbacatePay.objects.create(
+        socio=socio,
+        billing_id=resultado['billing_id'],
+        billing_url=resultado['billing_url'],
+        valor=tipo_assinatura.valor_mensal,
+    )
+
+    return redirect(resultado['billing_url'])
+
+
 @login_required
 def member_portal(request):
     """Member self-service portal"""
@@ -336,6 +408,10 @@ def member_portal(request):
     except Socio.DoesNotExist:
         messages.error(request, 'Você não é um sócio cadastrado')
         return redirect('dashboard')
+
+    # Redirect to payment page if registration is pending payment
+    if socio.status == 'pendente_pagamento':
+        return redirect('socios:pagamento_aguardando', socio_id=socio.id)
     
     # Payment history
     pagamentos = HistoricoPagamento.objects.filter(

@@ -251,10 +251,11 @@ class Socio(models.Model):
         ('inadimplente', 'Inadimplente'),
         ('suspenso', 'Suspenso'),
         ('inativo', 'Inativo'),
+        ('pendente_pagamento', 'Aguardando Pagamento'),
     ]
     status = models.CharField(
-        max_length=15, 
-        choices=status_choices, 
+        max_length=20,
+        choices=status_choices,
         default='ativo',
         verbose_name="Status"
     )
@@ -579,3 +580,45 @@ class HistoricoPagamento(models.Model):
         """Verifica se o pagamento está em atraso"""
         hoje = timezone.now().date()
         return self.data_vencimento < hoje and self.status == 'pendente'
+
+
+class CobrancaAbacatePay(models.Model):
+    """Registro de cobranças criadas no AbacatePay para associação de sócios"""
+
+    STATUS_PENDENTE = 'pendente'
+    STATUS_PAGO = 'pago'
+    STATUS_CANCELADO = 'cancelado'
+    STATUS_EXPIRADO = 'expirado'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDENTE, 'Pendente'),
+        (STATUS_PAGO, 'Pago'),
+        (STATUS_CANCELADO, 'Cancelado'),
+        (STATUS_EXPIRADO, 'Expirado'),
+    ]
+
+    socio = models.ForeignKey(
+        Socio,
+        on_delete=models.CASCADE,
+        related_name='cobranças_abacatepay',
+        verbose_name='Sócio',
+    )
+    billing_id = models.CharField(max_length=120, unique=True, verbose_name='ID da Cobrança (AbacatePay)')
+    billing_url = models.URLField(verbose_name='URL de Pagamento')
+    valor = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Valor (R$)')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDENTE,
+        verbose_name='Status',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Criado em')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Atualizado em')
+
+    class Meta:
+        verbose_name = 'Cobrança AbacatePay'
+        verbose_name_plural = 'Cobranças AbacatePay'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.billing_id} – {self.socio.nome_completo} ({self.get_status_display()})'
