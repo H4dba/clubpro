@@ -141,3 +141,35 @@ class ChessComProfile(models.Model):
             'daily': self.daily_games_played or 0,
         }
         return max(categorias, key=categorias.get) if any(categorias.values()) else None
+
+
+class PasswordResetOTP(models.Model):
+    """Modelo para armazenar tokens OTP temporários de redefinição de senha"""
+    user = models.ForeignKey(UsuarioCustom, on_delete=models.CASCADE, verbose_name="Usuário")
+    code = models.CharField(max_length=6, verbose_name="Código OTP")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
+    expires_at = models.DateTimeField(verbose_name="Expira em")
+    is_used = models.BooleanField(default=False, verbose_name="Usado")
+
+    class Meta:
+        verbose_name = "OTP de Redefinição de Senha"
+        verbose_name_plural = "OTPs de Redefinição de Senha"
+
+    def is_valid(self):
+        from django.utils import timezone
+        return not self.is_used and timezone.now() < self.expires_at
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            from django.utils import timezone
+            self.expires_at = timezone.now() + timezone.timedelta(minutes=15)
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def generate_code():
+        import random
+        return "".join([str(random.randint(0, 9)) for _ in range(6)])
+
+    def __str__(self):
+        return f"OTP {self.code} para {self.user.username}"
+

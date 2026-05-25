@@ -12,4 +12,7 @@ urlpatterns = [
     path('admin/usuarios/', admin_users_list, name='admin_users_list'),
     path('admin/usuarios/<int:user_id>/editar/', admin_user_edit, name='admin_user_edit'),
     path('dashboard/', dashboard, name='dashboard'),
+    path('password-reset/', password_reset_request_view, name='password_reset_request'),
+    path('password-reset/verify/', password_reset_verify_view, name='password_reset_verify'),
 ]
+

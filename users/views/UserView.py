@@ -528,3 +528,103 @@ def _connect_chesscom_for_user(user, chesscom_username: str) -> None:
         defaults={'chesscom_username': normalized_username},
     )
     perfil.atualizar_de_api(stats)
+
+
+def password_reset_request_view(request):
+    """View para solicitar o código OTP de redefinição de senha"""
+    if request.method == "POST":
+        email = (request.POST.get("email") or "").strip()
+        if not email:
+            messages.error(request, "Por favor, digite seu e-mail.")
+            return render(request, "password_reset_request.html")
+
+        UserModel = get_user_model()
+        user = UserModel.objects.filter(email__iexact=email).first()
+
+        if user:
+            from users.models import PasswordResetOTP
+            # Desativar OTPs anteriores ativos
+            PasswordResetOTP.objects.filter(user=user, is_used=False).update(is_used=True)
+
+            # Gerar novo OTP
+            otp_code = PasswordResetOTP.generate_code()
+            PasswordResetOTP.objects.create(user=user, code=otp_code)
+
+            # Enviar e-mail
+            from django.core.mail import send_mail
+            subject = "Seu código de recuperação de senha - AXM"
+            message = (
+                f"Olá, {user.first_name or user.username}.\n\n"
+                f"Seu código de verificação para redefinição de senha é: {otp_code}\n\n"
+                f"Este código é válido por 15 minutos."
+            )
+            from_email = settings.DEFAULT_FROM_EMAIL or "noreply@clubpro.com.br"
+            recipient_list = [user.email]
+
+            try:
+                send_mail(subject, message, from_email, recipient_list)
+                messages.success(request, f"Se o e-mail {email} estiver cadastrado, um código de verificação foi enviado.")
+            except Exception:
+                messages.error(request, "Erro ao enviar e-mail. Por favor, tente novamente mais tarde.")
+                return render(request, "password_reset_request.html")
+        else:
+            messages.success(request, f"Se o e-mail {email} estiver cadastrado, um código de verificação foi enviado.")
+
+        # Armazenar e-mail na sessão para auto-preencher na próxima etapa
+        request.session["reset_email"] = email
+        return redirect("password_reset_verify")
+
+    return render(request, "password_reset_request.html")
+
+
+def password_reset_verify_view(request):
+    """View para verificar o código OTP e redefinir a senha do usuário"""
+    email = request.session.get("reset_email", "")
+
+    if request.method == "POST":
+        email = (request.POST.get("email") or "").strip()
+        otp_code = (request.POST.get("code") or "").strip()
+        password = request.POST.get("password")
+        password_confirm = request.POST.get("password_confirm")
+
+        if not email or not otp_code or not password or not password_confirm:
+            messages.error(request, "Todos os campos são obrigatórios.")
+            return render(request, "password_reset_verify.html", {"email": email})
+
+        if password != password_confirm:
+            messages.error(request, "As senhas não coincidem.")
+            return render(request, "password_reset_verify.html", {"email": email})
+
+        if len(password) < 8:
+            messages.error(request, "A senha deve conter no mínimo 8 caracteres.")
+            return render(request, "password_reset_verify.html", {"email": email})
+
+        UserModel = get_user_model()
+        user = UserModel.objects.filter(email__iexact=email).first()
+
+        if not user:
+            messages.error(request, "Dados inválidos.")
+            return render(request, "password_reset_verify.html", {"email": email})
+
+        from users.models import PasswordResetOTP
+        # Encontrar OTP válido
+        otp = PasswordResetOTP.objects.filter(user=user, code=otp_code, is_used=False).first()
+
+        if otp and otp.is_valid():
+            with transaction.atomic():
+                user.set_password(password)
+                user.save()
+                otp.is_used = True
+                otp.save()
+
+            # Limpar e-mail da sessão
+            request.session.pop("reset_email", None)
+
+            messages.success(request, "Sua senha foi redefinida com sucesso. Faça login com a nova senha.")
+            return redirect("login")
+        else:
+            messages.error(request, "Código de verificação inválido ou expirado.")
+            return render(request, "password_reset_verify.html", {"email": email})
+
+    return render(request, "password_reset_verify.html", {"email": email})
+
