@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagamento - AXM{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+
+            {% if ja_pago or socio.status == 'ativo' %}
+            {# Payment confirmed (by the status-check on return or the webhook) #}
+            <div class="card border-0 shadow text-center">
+                <div class="card-body py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle fa-5x text-success"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Pagamento confirmado!</h2>
+                    <p class="text-muted mb-4">
+                        Obrigado, <strong>{{ socio.nome_exibicao }}</strong>!<br>
+                        Seu cadastro como sócio foi ativado com sucesso.
+                    </p>
+                    <a href="{% url 'socios:member_portal' %}" class="btn btn-success btn-lg px-5">
+                        <i class="fas fa-id-card me-2"></i>Acessar Meu Perfil
+                    </a>
+                </div>
+            </div>
+
+            {% else %}
+            {# Returned from payment but confirmation not received yet #}
+            <div class="card border-0 shadow text-center">
+                <div class="card-body py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-clock fa-5x text-warning"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Estamos processando seu pagamento</h2>
+                    <p class="text-muted mb-4">
+                        Obrigado, <strong>{{ socio.nome_exibicao }}</strong>!<br>
+                        Recebemos seu retorno, mas a confirmação do pagamento ainda não chegou.
+                        Isso pode levar alguns instantes.
+                    </p>
+                    <a href="{% url 'socios:pagamento_aguardando' socio.id %}" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-sync-alt me-2"></i>Acompanhar status
+                    </a>
+                </div>
+            </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

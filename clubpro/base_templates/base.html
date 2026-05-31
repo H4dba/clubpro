@@ -353,6 +353,14 @@
                             Torneios
                         </a>
                     </li>
+                    {% if shop_visible %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:product_list' %}">
+                            <i class="fas fa-store"></i>
+                            Loja
+                        </a>
+                    </li>
+                    {% endif %}
                     {% elif user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">
@@ -366,12 +374,14 @@
                             Torneios
                         </a>
                     </li>
+                    {% if shop_visible %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'shop:product_list' %}">
                             <i class="fas fa-store"></i>
                             Loja
                         </a>
                     </li>
+                    {% endif %}
                     {% if user.is_staff or user.is_superuser %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -382,9 +392,20 @@
                             <li><a class="dropdown-item" href="{% url 'admin_users_list' %}">
                                 <i class="fas fa-users-cog me-2"></i>Usuários
                             </a></li>
+                            {% if shop_visible %}
                             <li><a class="dropdown-item" href="{% url 'shop:admin_dashboard' %}">
                                 <i class="fas fa-store me-2"></i>Admin Loja
                             </a></li>
+                            <li><a class="dropdown-item" href="{% url 'shop:admin_order_list' %}">
+                                <i class="fas fa-receipt me-2"></i>Pedidos (Loja)
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'shop:admin_product_list' %}">
+                                <i class="fas fa-boxes me-2"></i>Produtos
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'shop:admin_category_list' %}">
+                                <i class="fas fa-tags me-2"></i>Categorias
+                            </a></li>
+                            {% endif %}
                         </ul>
                     </li>
                     {% endif %}
@@ -424,13 +445,15 @@
                 </ul>
 
                 <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
+                    {% if shop_visible %}
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{% url 'shop:cart' %}">
                             <i class="fas fa-shopping-cart"></i>
                             <span class="visually-hidden">Carrinho</span>
                         </a>
                     </li>
+                    {% endif %}
+                    {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
                             data-bs-toggle="dropdown">
@@ -446,6 +469,11 @@
                             <li><a class="dropdown-item" href="{% url 'dashboard' %}">
                                     <i class="fas fa-user me-2"></i>Perfil
                                 </a></li>
+                            {% if shop_visible %}
+                            <li><a class="dropdown-item" href="{% url 'shop:order_list' %}">
+                                    <i class="fas fa-box me-2"></i>Meus Pedidos
+                                </a></li>
+                            {% endif %}
                             {% load socios_tags %}
                             {% get_socio_for_user user as user_socio %}
                             {% if user_socio %}

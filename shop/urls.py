@@ -15,6 +15,9 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('pedidos/', views.order_list, name='order_list'),
     path('pedido/<str:order_number>/', views.order_detail, name='order_detail'),
+    path('pedido/<str:order_number>/sucesso/', views.pagamento_sucesso_pedido, name='pagamento_sucesso_pedido'),
+    path('pedido/<str:order_number>/verificar/', views.verificar_pagamento_pedido, name='verificar_pagamento_pedido'),
+    path('pedido/<str:order_number>/pagar/', views.gerar_cobranca_pedido, name='gerar_cobranca_pedido'),
     
     # Admin views
     path('admin/', admin_views.shop_admin_dashboard, name='admin_dashboard'),

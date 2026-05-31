@@ -314,10 +314,14 @@ def landing_page(request):
     featured_products = []
     try:
         from shop.models import Product
-        featured_products = Product.objects.filter(
+        featured_products = list(Product.objects.filter(
             is_active=True,
             is_featured=True
-        )[:3]
+        )[:3])
+        if len(featured_products) < 3:
+            exclude_ids = [p.id for p in featured_products]
+            additional = Product.objects.filter(is_active=True).exclude(id__in=exclude_ids)[:3 - len(featured_products)]
+            featured_products.extend(list(additional))
     except Exception:
         pass
     

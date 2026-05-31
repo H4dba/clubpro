@@ -14,6 +14,7 @@ from django.urls import reverse
 from datetime import datetime, timedelta
 from decimal import Decimal
 import csv
+import logging
 
 from django.conf import settings
 from django.contrib.auth import login, get_user_model
@@ -22,6 +23,8 @@ from django.db import transaction, IntegrityError
 from .models import Socio, TipoAssinatura, DocumentoSocio, HistoricoPagamento, CobrancaAbacatePay
 from .forms import SocioForm, SocioRegistroForm, SocioRegistroFormAnonymous
 from socios.views import is_admin_or_manager
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -360,7 +363,7 @@ def registro_socio(request):
     return render(request, 'socios/form.html', context)
 
 
-def _redirecionar_para_pagamento(request, socio, tipo_assinatura):
+def _redirecionar_para_pagamento(request, socio, tipo_assinatura, redirect_on_error='socios:registro_socio'):
     """Creates an AbacatePay billing for socio and redirects to the payment URL."""
     from .services import criar_cobranca_associacao
 
@@ -369,8 +372,7 @@ def _redirecionar_para_pagamento(request, socio, tipo_assinatura):
     base = f"{protocol}://{host}"
 
     return_url = base + reverse('socios:pagamento_aguardando', args=[socio.id])
-    webhook_secret = settings.ABACATEPAY_WEBHOOK_SECRET
-    completion_url = base + reverse('socios:pagamento_webhook') + f'?webhookSecret={webhook_secret}'
+    completion_url = base + reverse('socios:pagamento_sucesso', args=[socio.id])
 
     try:
         resultado = criar_cobranca_associacao(
@@ -383,12 +385,17 @@ def _redirecionar_para_pagamento(request, socio, tipo_assinatura):
             completion_url=completion_url,
         )
     except Exception as exc:
+        logger.error(
+            "Erro ao criar cobrança de associação do sócio %s no AbacatePay: %s",
+            socio.id,
+            exc,
+        )
         messages.error(
             request,
-            f'Não foi possível iniciar o pagamento: {exc}. '
+            'Não foi possível iniciar o pagamento no momento. '
             'Por favor, tente novamente ou entre em contato com o clube.',
         )
-        return redirect('socios:registro_socio')
+        return redirect(redirect_on_error)
 
     CobrancaAbacatePay.objects.create(
         socio=socio,
@@ -398,6 +405,45 @@ def _redirecionar_para_pagamento(request, socio, tipo_assinatura):
     )
 
     return redirect(resultado['billing_url'])
+
+
+@login_required
+def renovar_assinatura(request):
+    """Permite ao sócio renovar/pagar sua mensalidade via AbacatePay pelo portal."""
+    try:
+        socio = Socio.objects.get(usuario=request.user)
+    except Socio.DoesNotExist:
+        messages.error(request, 'Você não é um sócio cadastrado.')
+        return redirect('dashboard')
+        
+    if socio.bolsista:
+        messages.info(request, 'Bolsistas não possuem cobranças de mensalidade.')
+        return redirect('socios:member_portal')
+        
+    tipo_assinatura = socio.tipo_assinatura
+    if not tipo_assinatura or tipo_assinatura.valor_mensal <= 0:
+        messages.info(request, 'Seu plano de sócio é gratuito ou não requer pagamento.')
+        return redirect('socios:member_portal')
+        
+    # Prevenção de duplicidade: reusar cobrança pendente recente (criada nas últimas 24 horas)
+    h24_ago = timezone.now() - timedelta(hours=24)
+    cobranca_pendente = CobrancaAbacatePay.objects.filter(
+        socio=socio,
+        status=CobrancaAbacatePay.STATUS_PENDENTE,
+        created_at__gte=h24_ago
+    ).first()
+    
+    if cobranca_pendente:
+        messages.info(request, 'Você já possui uma cobrança pendente. Redirecionando para o pagamento...')
+        return redirect(cobranca_pendente.billing_url)
+        
+    # Se não há cobrança pendente válida, cria uma nova
+    return _redirecionar_para_pagamento(
+        request,
+        socio,
+        tipo_assinatura,
+        redirect_on_error='socios:member_portal'
+    )
 
 
 @login_required

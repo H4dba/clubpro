@@ -928,12 +928,48 @@ def pagamento_aguardando(request, socio_id):
     return render(request, 'socios/pagamento_aguardando.html', context)
 
 
+@login_required
+def pagamento_sucesso(request, socio_id):
+    """
+    AbacatePay completionUrl target. The user's browser is redirected here (GET)
+    after finishing the payment. We actively check the billing status so the
+    cadastro is activated even when the webhook can't reach the server (e.g. in
+    local/Docker dev).
+    """
+    from .services import verificar_status_cobranca
+
+    socio = get_object_or_404(Socio, id=socio_id, usuario=request.user)
+    cobranca = CobrancaAbacatePay.objects.filter(socio=socio).order_by('-created_at').first()
+
+    if cobranca and cobranca.status != CobrancaAbacatePay.STATUS_PAGO:
+        try:
+            status = verificar_status_cobranca(cobranca.billing_id)
+            if status == 'PAID':
+                _ativar_socio_apos_pagamento(cobranca)
+        except Exception as exc:
+            logger.error(
+                "Erro ao verificar status da cobrança %s na página de sucesso: %s",
+                cobranca.billing_id,
+                exc,
+            )
+
+    socio.refresh_from_db()
+
+    context = {
+        'socio': socio,
+        'cobranca': cobranca,
+        'ja_pago': socio.status == 'ativo' and (cobranca and cobranca.status == CobrancaAbacatePay.STATUS_PAGO),
+    }
+    return render(request, 'socios/pagamento_sucesso.html', context)
+
+
 @csrf_exempt
 @require_POST
 def pagamento_webhook(request):
     """
-    AbacatePay completion_url webhook.
-    Called by AbacatePay when a billing is paid.
+    AbacatePay server-to-server webhook (configured in the AbacatePay dashboard,
+    not passed as completionUrl). AbacatePay sends a POST with the event payload
+    and the configured secret appended as the ?webhookSecret=... query param.
     """
     from django.conf import settings as django_settings
 
@@ -964,12 +1000,37 @@ def pagamento_webhook(request):
         cobranca = CobrancaAbacatePay.objects.select_related('socio__tipo_assinatura').get(
             billing_id=billing_id
         )
+        if status == 'PAID' and cobranca.status != CobrancaAbacatePay.STATUS_PAGO:
+            _ativar_socio_apos_pagamento(cobranca)
+        elif status == 'CANCELLED':
+            cobranca.status = CobrancaAbacatePay.STATUS_CANCELADO
+            cobranca.save(update_fields=['status', 'updated_at'])
+            logger.info("AbacatePay webhook: cobranca %s cancelada", billing_id)
+        elif status == 'EXPIRED':
+            cobranca.status = CobrancaAbacatePay.STATUS_EXPIRADO
+            cobranca.save(update_fields=['status', 'updated_at'])
+            logger.info("AbacatePay webhook: cobranca %s expirada", billing_id)
     except CobrancaAbacatePay.DoesNotExist:
-        logger.warning("AbacatePay webhook: cobranca not found for billing_id=%s", billing_id)
-        return HttpResponse(status=404)
-
-    if status == 'PAID' and cobranca.status != CobrancaAbacatePay.STATUS_PAGO:
-        _ativar_socio_apos_pagamento(cobranca)
+        # Check if it is a shop order
+        try:
+            from shop.models import Order
+            from shop.views import _confirmar_pagamento_pedido
+            order = Order.objects.get(payment_id=billing_id)
+            if status == 'PAID' and order.payment_status != 'paid':
+                _confirmar_pagamento_pedido(order)
+            elif status == 'CANCELLED':
+                order.payment_status = 'failed'
+                order.status = 'cancelled'
+                order.save(update_fields=['payment_status', 'status'])
+                logger.info("AbacatePay webhook: pedido %s cancelado", order.order_number)
+            elif status == 'EXPIRED':
+                order.payment_status = 'failed'
+                order.status = 'cancelled'
+                order.save(update_fields=['payment_status', 'status'])
+                logger.info("AbacatePay webhook: pedido %s expirou", order.order_number)
+        except Order.DoesNotExist:
+            logger.warning("AbacatePay webhook: billing_id=%s not found anywhere", billing_id)
+            return HttpResponse(status=404)
 
     return HttpResponse(status=200)
 

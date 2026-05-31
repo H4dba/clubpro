@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Em breve - AXM{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+            <div class="card border-0 shadow text-center">
+                <div class="card-body py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-store-slash fa-5x text-warning"></i>
+                    </div>
+                    <h1 class="fw-bold mb-3">A loja ainda está no banco de reservas <span class="text-warning">&#9823;</span></h1>
+                    <p class="text-muted fs-5 mb-2">
+                        Estamos dando um <strong>xeque-mate</strong> nos últimos detalhes
+                        antes de abrir as portas.
+                    </p>
+                    <p class="text-muted mb-4">
+                        Nossas peças ainda estão sendo posicionadas no tabuleiro &mdash;
+                        volte em breve, prometemos que vai valer a abertura! &#128521;
+                    </p>
+                    <a href="{% url 'landing-page' %}" class="btn btn-gold btn-lg px-5">
+                        <i class="fas fa-home me-2"></i>Voltar ao início
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

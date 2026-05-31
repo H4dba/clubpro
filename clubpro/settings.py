@@ -52,6 +52,9 @@ if allowed_hosts_str:
 else:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+# Allow local wildcard DNS services for testing/webhook callbacks
+ALLOWED_HOSTS.extend(['127.0.0.1.nip.io', '.nip.io'])
+
 
 # Application definition
 
@@ -81,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'shop.middleware.ShopGateMiddleware',
 ]
 
 # Security settings for production
@@ -118,6 +122,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'shop.context_processors.shop_visibility',
             ],
         },
     },
@@ -197,9 +202,16 @@ LOGIN_URL = '/users/login/'
 HOST = os.getenv('HOST', 'localhost')
 PROTOCOL = 'https' if USE_SSL else 'http'
 
+# Shop availability. When False, only superusers can access /shop/ (everyone
+# else is redirected to the "em breve" page). Flip SHOP_ENABLED=True in .env to
+# open the shop to all users once it has been validated in production.
+SHOP_ENABLED = os.getenv('SHOP_ENABLED', 'False') == 'True'
+
 # AbacatePay
 ABACATEPAY_API_KEY = os.getenv('ABACATEPAY_API_KEY', '')
 ABACATEPAY_WEBHOOK_SECRET = os.getenv('ABACATEPAY_WEBHOOK_SECRET', '')
+# Endpoint base da API. A chave precisa ser da MESMA versão (v1/v2) do app no AbacatePay.
+ABACATEPAY_API_BASE_URL = os.getenv('ABACATEPAY_API_BASE_URL', 'https://api.abacatepay.com/v1')
 
 # Landing page — Google Maps (optional embed src from Maps → Share → Embed a map)
 AXM_MAPS_ADDRESS = os.getenv(
