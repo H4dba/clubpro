@@ -5,7 +5,7 @@ services:
       POSTGRES_DB: ${DB_NAME:-clubpro_db}
       POSTGRES_USER: ${DB_USER:-clubpro_user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-clubpro_password}
-    ports:
+    #ports:
       #- "${DB_PORT:-5436}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
