@@ -266,7 +266,7 @@ def registro_socio(request):
                         socio.data_associacao = timezone.now().date()
 
                         plano = socio.tipo_assinatura
-                        precisa_pagar = plano and plano.valor_mensal > 0
+                        precisa_pagar = settings.SHOP_ENABLED and plano and plano.valor_mensal > 0
                         socio.status = 'pendente_pagamento' if precisa_pagar else 'ativo'
 
                         for _ in range(5):
@@ -312,7 +312,7 @@ def registro_socio(request):
                         socio.data_associacao = timezone.now().date()
 
                         plano = socio.tipo_assinatura
-                        precisa_pagar = plano and plano.valor_mensal > 0
+                        precisa_pagar = settings.SHOP_ENABLED and plano and plano.valor_mensal > 0
                         socio.status = 'pendente_pagamento' if precisa_pagar else 'ativo'
                         socio.save()
 

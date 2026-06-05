@@ -203,8 +203,11 @@ HOST = os.getenv('HOST', 'localhost')
 PROTOCOL = 'https' if USE_SSL else 'http'
 
 # Shop availability. When False, only superusers can access /shop/ (everyone
-# else is redirected to the "em breve" page). Flip SHOP_ENABLED=True in .env to
-# open the shop to all users once it has been validated in production.
+# else is redirected to the "em breve" page). This flag also gates the
+# membership sign-up payment: while False, new members who pick a paid plan are
+# activated immediately instead of being sent to AbacatePay. Flip
+# SHOP_ENABLED=True in .env to open the shop and enable membership payments once
+# everything has been validated in production.
 SHOP_ENABLED = os.getenv('SHOP_ENABLED', 'False') == 'True'
 
 # AbacatePay
