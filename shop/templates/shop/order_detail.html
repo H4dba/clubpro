@@ -96,10 +96,23 @@
                     <p class="small small-md-normal mb-2"><strong>Método:</strong> {{ order.get_payment_method_display }}</p>
                     <p class="small small-md-normal mb-0"><strong>Data:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
                     
-                    {% if order.payment_method == 'pix' and order.payment_status == 'pending' %}
-                    <div class="alert alert-info mt-3 small">
-                        <h6 class="small">Pagamento via PIX</h6>
-                        <p class="small mb-0">O QR Code será gerado em breve. Verifique seu e-mail.</p>
+                    {% if order.payment_status == 'pending' %}
+                    <div class="alert alert-warning mt-3 small text-center">
+                        <h6 class="fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Aguardando Pagamento</h6>
+                        {% if order.billing_url %}
+                        <p class="small mb-2">Clique abaixo para pagar de forma segura via Pix ou Cartão.</p>
+                        <a href="{{ order.billing_url }}" class="btn btn-success btn-sm w-100 mb-2" target="_blank">
+                            <i class="fas fa-wallet me-2"></i>Ir para Pagamento
+                        </a>
+                        <a href="{% url 'shop:verificar_pagamento_pedido' order.order_number %}" class="btn btn-outline-secondary btn-sm w-100">
+                            <i class="fas fa-sync-alt me-2"></i>Verificar Pagamento
+                        </a>
+                        {% else %}
+                        <p class="small mb-2">Gere a cobrança para pagar de forma segura via Pix ou Cartão.</p>
+                        <a href="{% url 'shop:gerar_cobranca_pedido' order.order_number %}" class="btn btn-success btn-sm w-100">
+                            <i class="fas fa-wallet me-2"></i>Gerar Cobrança e Pagar
+                        </a>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>

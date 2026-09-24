@@ -40,8 +40,22 @@
                                        value="{{ member_info.phone|default:'' }}" required>
                             </div>
                             <div class="col-12 col-md-6">
+                                <label class="form-label small small-md-normal">CPF *</label>
+                                <input type="text" name="customer_cpf" class="form-control form-control-sm form-control-md-normal" 
+                                       value="{{ member_info.cpf|default:'' }}" placeholder="000.000.000-00" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-2 g-md-3 mb-3">
+                            <div class="col-12 col-md-6">
                                 <label class="form-label small small-md-normal">CEP *</label>
-                                <input type="text" name="shipping_zip" class="form-control form-control-sm form-control-md-normal" required>
+                                <input type="text" name="shipping_zip" class="form-control form-control-sm form-control-md-normal" 
+                                       value="{{ member_info.cep|default:'' }}" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small small-md-normal">Cidade *</label>
+                                <input type="text" name="shipping_city" class="form-control form-control-sm form-control-md-normal" 
+                                       value="{{ member_info.cidade|default:'' }}" required>
                             </div>
                         </div>
                         
@@ -52,11 +66,7 @@
                         </div>
                         
                         <div class="row g-2 g-md-3 mb-3">
-                            <div class="col-12 col-md-6">
-                                <label class="form-label small small-md-normal">Cidade *</label>
-                                <input type="text" name="shipping_city" class="form-control form-control-sm form-control-md-normal" required>
-                            </div>
-                            <div class="col-12 col-md-6">
+                            <div class="col-12">
                                 <label class="form-label small small-md-normal">Estado *</label>
                                 <select name="shipping_state" class="form-select form-select-sm form-select-md-normal" required>
                                     <option value="">Selecione</option>
@@ -74,7 +84,7 @@
                                     <option value="MS">MS</option>
                                     <option value="MG">MG</option>
                                     <option value="PA">PA</option>
-                                    <option value="PB">PB</option>
+                                    <option value="PB">PR</option>
                                     <option value="PR">PR</option>
                                     <option value="PE">PE</option>
                                     <option value="PI">PI</option>
@@ -162,4 +172,16 @@
         }
     }
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var stateSelect = document.querySelector('select[name="shipping_state"]');
+        if (stateSelect) {
+            var memberState = "{{ member_info.estado|default:'' }}";
+            if (memberState) {
+                stateSelect.value = memberState;
+            }
+        }
+    });
+</script>
 {% endblock %}

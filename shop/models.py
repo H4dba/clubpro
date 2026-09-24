@@ -262,6 +262,17 @@ class Order(models.Model):
     customer_name = models.CharField(max_length=200, verbose_name="Nome")
     customer_email = models.EmailField(verbose_name="E-mail")
     customer_phone = models.CharField(max_length=20, verbose_name="Telefone")
+    customer_cpf = models.CharField(
+        max_length=14,
+        blank=True,
+        null=True,
+        verbose_name="CPF"
+    )
+    billing_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="URL de Pagamento"
+    )
     
     # Shipping address
     shipping_address = models.TextField(verbose_name="Endereço de Entrega")

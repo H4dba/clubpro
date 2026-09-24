@@ -62,6 +62,16 @@
                     {% else %}
                         <p class="mb-0 text-muted">Nenhuma data de vencimento cadastrada.</p>
                     {% endif %}
+
+                    {% if not socio.bolsista %}
+                        {% if situacao_pagamento == 'vencido' or situacao_pagamento == 'vence_em_breve' %}
+                        <div class="mt-3">
+                            <a href="{% url 'socios:renovar_assinatura' %}" class="btn btn-gold w-100">
+                                <i class="fas fa-credit-card me-2"></i>Pagar Mensalidade / Renovar
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
             <div class="card">

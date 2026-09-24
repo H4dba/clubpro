@@ -6,9 +6,8 @@ from __future__ import annotations
 import logging
 
 import requests
-from abacatepay.billings.models import Billing, BillingIn
+from abacatepay.billings.models import Billing
 from abacatepay.constants import BASE_URL, USER_AGENT
-from abacatepay.customers.models import CustomerMetadata
 from abacatepay.utils.exceptions import raise_for_status
 from django.conf import settings
 
@@ -22,7 +21,17 @@ def _api_key() -> str:
             "ABACATEPAY_API_KEY não configurada. "
             "Adicione a chave no arquivo .env para habilitar pagamentos."
         )
+    if key.startswith("webh_"):
+        raise ValueError(
+            "ABACATEPAY_API_KEY parece ser um webhook secret (prefixo 'webh_'). "
+            "Use a API key gerada no painel do AbacatePay, não o secret do webhook."
+        )
     return key
+
+
+def _base_url() -> str:
+    """Base da API AbacatePay (configurável via ABACATEPAY_API_BASE_URL)."""
+    return (settings.ABACATEPAY_API_BASE_URL or BASE_URL).rstrip("/")
 
 
 def _post_billing(api_key: str, payload: dict) -> Billing:
@@ -34,7 +43,7 @@ def _post_billing(api_key: str, payload: dict) -> Billing:
     Using model_dump(exclude_none=True) keeps the body clean.
     """
     response = requests.post(
-        f"{BASE_URL}/billing/create",
+        f"{_base_url()}/billing/create",
         json=payload,
         headers={
             "Authorization": f"Bearer {api_key}",
@@ -55,6 +64,36 @@ def _post_billing(api_key: str, payload: dict) -> Billing:
     return Billing(**response.json()["data"])
 
 
+def sanitize_abacatepay_url(url: str) -> str:
+    """
+    AbacatePay SDK validates return_url and completion_url using a regex:
+    ^(https?:\/\/)(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(\/[^\s]*)?$
+    This regex fails for local hosts like 'localhost' or raw IPs like '127.0.0.1'.
+    We dynamically rewrite local addresses to use '127.0.0.1.nip.io' (wildcard DNS)
+    so they pass validation and resolve correctly to the local machine.
+    """
+    from urllib.parse import urlparse, urlunparse
+    parsed = urlparse(url)
+    netloc = parsed.netloc
+    
+    # Extract host and port
+    if ":" in netloc:
+        host, port = netloc.split(":", 1)
+        port_suffix = f":{port}"
+    else:
+        host = netloc
+        port_suffix = ""
+        
+    # Check if host is local (localhost or raw IP)
+    is_ip = all(c.isdigit() or c == '.' for c in host)
+    if host.lower() == 'localhost' or is_ip:
+        new_host = "127.0.0.1.nip.io"
+        new_netloc = f"{new_host}{port_suffix}"
+        parsed = parsed._replace(netloc=new_netloc)
+        
+    return urlunparse(parsed)
+
+
 def criar_cobranca_associacao(
     *,
     tipo_assinatura,
@@ -70,12 +109,16 @@ def criar_cobranca_associacao(
 
     Returns a dict with keys: billing_id, billing_url, valor_cents.
     """
+    return_url = sanitize_abacatepay_url(return_url)
+    completion_url = sanitize_abacatepay_url(completion_url)
     valor_cents = int(tipo_assinatura.valor_mensal * 100)
 
-    billing_in = BillingIn(
-        products=[
+    payload = {
+        "frequency": "ONE_TIME",
+        "methods": ["PIX"],
+        "products": [
             {
-                "external_id": f"plano-{tipo_assinatura.id}",
+                "externalId": f"plano-{tipo_assinatura.id}",
                 "name": tipo_assinatura.nome,
                 "quantity": 1,
                 "price": valor_cents,
@@ -86,19 +129,15 @@ def criar_cobranca_associacao(
                 ),
             }
         ],
-        return_url=return_url,
-        completion_url=completion_url,
-        customer=CustomerMetadata(
-            name=socio_nome or "Sócio",
-            email=socio_email,
-            tax_id=socio_cpf,
-            cellphone=socio_telefone or "(00) 00000-0000",
-        ),
-    )
-
-    # exclude_none=True ensures customerId (and any other None field) is never
-    # sent in the request body, which the AbacatePay API rejects with a 422.
-    payload = billing_in.model_dump(by_alias=True, exclude_none=True)
+        "returnUrl": return_url,
+        "completionUrl": completion_url,
+        "customer": {
+            "name": socio_nome or "Sócio",
+            "email": socio_email,
+            "taxId": socio_cpf,
+            "cellphone": socio_telefone or "(00) 00000-0000",
+        },
+    }
 
     billing = _post_billing(_api_key(), payload)
 
@@ -118,7 +157,7 @@ def verificar_status_cobranca(billing_id: str) -> str | None:
     api_key = _api_key()
 
     response = requests.get(
-        f"{BASE_URL}/billing/list",
+        f"{_base_url()}/billing/list",
         headers={
             "Authorization": f"Bearer {api_key}",
             "User-Agent": USER_AGENT,

@@ -28,17 +28,5 @@ LICHESS_CLIENT_SECRET=lichess-api-demo
 # AbacatePay (payment gateway)
 ABACATEPAY_API_KEY=your-abacatepay-api-key-here
 ABACATEPAY_WEBHOOK_SECRET=generate-with-python-secrets-token-urlsafe-32
-
-# Email Configuration (used for password recovery and other notifications)
-# EMAIL_BACKEND defaults to console backend when DEBUG=True (prints emails to stdout)
-# and to SMTP backend otherwise. Uncomment and set for real SMTP delivery:
-# EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-# EMAIL_HOST=smtp.example.com
-# EMAIL_PORT=587
-# EMAIL_HOST_USER=your-email@example.com
-# EMAIL_HOST_PASSWORD=your-email-password
-# EMAIL_USE_TLS=True
-# EMAIL_USE_SSL=False
-# DEFAULT_FROM_EMAIL=noreply@clubpro.local
 # Versão da API. A chave deve ser do app da MESMA versão (v1 ou v2). Padrão: v1.
 ABACATEPAY_API_BASE_URL=https://api.abacatepay.com/v1
