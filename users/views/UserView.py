@@ -7,7 +7,7 @@ from django.db import IntegrityError, transaction
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -112,6 +112,25 @@ class EmailAuthenticationForm(AuthenticationForm):
             self.confirm_login_allowed(self.user_cache)
 
         return self.cleaned_data
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(
+        label='E-mail',
+        max_length=254,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'autofocus': True}),
+    )
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        label='Nova senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'autocomplete': 'new-password'}),
+    )
+    new_password2 = forms.CharField(
+        label='Confirmação da nova senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'autocomplete': 'new-password'}),
+    )
 
 
 class AdminUserChessComForm(forms.ModelForm):

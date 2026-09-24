@@ -10,6 +10,7 @@ urlpatterns = [
             template_name="registration/password_reset_form.html",
             email_template_name="registration/password_reset_email.html",
             subject_template_name="registration/password_reset_subject.txt",
+            form_class=CustomPasswordResetForm,
             success_url="/users/esqueci-senha/enviado/",
         ),
         name="password_reset",
@@ -25,6 +26,7 @@ urlpatterns = [
         "redefinir-senha/<uidb64>/<token>/",
         auth_views.PasswordResetConfirmView.as_view(
             template_name="registration/password_reset_confirm.html",
+            form_class=CustomSetPasswordForm,
             success_url="/users/redefinir-senha/concluido/",
         ),
         name="password_reset_confirm",
